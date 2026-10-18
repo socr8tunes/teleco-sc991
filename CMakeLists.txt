@@ -1,0 +1,68 @@
+cmake_minimum_required(VERSION 3.16)
+project(teleco_calc VERSION 0.1.0 LANGUAGES C)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+option(TELECO_WERROR "Treat compiler warnings as errors" ON)
+option(TELECO_SANITIZE "Build with AddressSanitizer + UndefinedBehaviorSanitizer" OFF)
+set(TELECO_DIFF_COUNT 20000 CACHE STRING "Differential test vectors per operation")
+set(TELECO_DIFF_SEED 1 CACHE STRING "Differential test random seed")
+
+function(teleco_target_options tgt)
+  if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${tgt} PRIVATE
+      -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wstrict-prototypes)
+    if(TELECO_WERROR)
+      target_compile_options(${tgt} PRIVATE -Werror)
+    endif()
+    if(TELECO_SANITIZE)
+      target_compile_options(${tgt} PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
+      target_link_options(${tgt} PRIVATE -fsanitize=address,undefined)
+    endif()
+  endif()
+endfunction()
+
+# ---- portable core -------------------------------------------------------
+add_library(teleco_numeric STATIC
+  core/numeric/wide.c
+  core/numeric/decimal.c
+  core/numeric/arithmetic.c)
+target_include_directories(teleco_numeric PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/core)
+teleco_target_options(teleco_numeric)
+
+# ---- tests ---------------------------------------------------------------
+enable_testing()
+
+add_executable(test_decimal tests/unit/test_decimal.c)
+target_link_libraries(test_decimal PRIVATE teleco_numeric)
+teleco_target_options(test_decimal)
+add_test(NAME decimal_unit COMMAND test_decimal)
+
+add_executable(dec_difftest tests/differential/dec_difftest.c)
+target_link_libraries(dec_difftest PRIVATE teleco_numeric)
+teleco_target_options(dec_difftest)
+
+add_executable(bench_decimal tests/bench/bench_decimal.c)
+target_link_libraries(bench_decimal PRIVATE teleco_numeric)
+teleco_target_options(bench_decimal)
+
+file(GLOB TELECO_REGRESSION_VECTORS ${CMAKE_CURRENT_SOURCE_DIR}/tests/regression/*.vec)
+if(TELECO_REGRESSION_VECTORS)
+  add_test(NAME decimal_regression COMMAND dec_difftest ${TELECO_REGRESSION_VECTORS})
+endif()
+
+find_package(Python3 COMPONENTS Interpreter)
+if(Python3_Interpreter_FOUND)
+  add_test(NAME decimal_differential
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/differential/run_diff.py
+            --runner $<TARGET_FILE:dec_difftest>
+            --count ${TELECO_DIFF_COUNT} --seed ${TELECO_DIFF_SEED})
+else()
+  message(WARNING "Python3 not found: differential tests disabled")
+endif()
