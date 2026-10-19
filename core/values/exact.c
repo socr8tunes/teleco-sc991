@@ -374,7 +374,7 @@ int ex_mul(ex_t *r, const ex_t *x, const ex_t *y)
     }
     t.kind = EX_QS;
     if (x->b == 0 || y->b == 0 || x->s == y->s) {
-        int32_t s = x->b != 0 ? x->s : y->s;
+        int64_t s = x->b != 0 ? x->s : y->s;
         int64_t ss;
 
         t.s = s;
@@ -405,6 +405,9 @@ int ex_mul(ex_t *r, const ex_t *x, const ex_t *y)
         if (x->a != 0 || y->a != 0) {
             goto fail;
         }
+        if ((uint64_t)x->s > EX_SQRT_LIMIT / (uint64_t)y->s) {   /* product would exceed the factoring limit */
+            goto fail;
+        }
         if (ex_sqrt_split((uint64_t)x->s * (uint64_t)y->s, &k, &sq) != 0) {
             goto fail;
         }
@@ -413,7 +416,7 @@ int ex_mul(ex_t *r, const ex_t *x, const ex_t *y)
         }
         t.a = 0;
         t.b = f;
-        t.s = (int32_t)sq;
+        t.s = (int64_t)sq;
         if (sq == 1) {
             t.a = f;
             t.b = 0;
@@ -518,7 +521,7 @@ int ex_sqrt(ex_t *r, const ex_t *x)
     } else {
         t.a = 0;
         t.b = (int64_t)k;
-        t.s = (int32_t)s;
+        t.s = (int64_t)s;
     }
     normalize(&t);
     *r = t;

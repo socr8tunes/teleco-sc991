@@ -236,9 +236,28 @@ dec_status fx_pow(dec_t *r, const xnum_t *x, const xnum_t *y)
     }
     if (xn_int(y, &n)) {
         if (n > 2000000000LL || n < -2000000000LL) {
-            xn_zero(&z);
-            z.l[0] = 1;
-            z.e = ((xn_dec_exponent(x) < 0) == (n > 0)) ? -XN_EMAX : XN_EMAX;
+            /* huge integer exponent: |x|^n = exp(n ln|x|); exactly +-1 when |x| == 1 */
+            xnum_t one, l, t, nn, lim;
+            int odd = (int)(n & 1) != 0;
+            ax = *x;
+            ax.neg = 0;
+            xn_from_i64(&one, 1);
+            if (xn_cmp(&ax, &one) == 0) {
+                z = one;
+            } else {
+                xf_ln(&l, &ax);
+                xn_from_i64(&nn, n);
+                xn_mul(&t, &l, &nn);
+                xn_from_i64(&lim, 1000);
+                if (xn_cmp_abs(&t, &lim) > 0) {
+                    xn_zero(&z);
+                    z.l[0] = 1;
+                    z.e = t.neg ? -XN_EMAX : XN_EMAX;
+                } else {
+                    xf_exp(&z, &t);
+                }
+            }
+            z.neg = (uint8_t)(x->neg && odd && z.l[0] != 0);
             return done(r, &z, DEC_OK);
         }
         xn_powi(&z, x, n);

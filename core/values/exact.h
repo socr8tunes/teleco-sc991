@@ -27,7 +27,7 @@
 typedef struct ex {
     uint8_t kind;
     int64_t a, b, d;
-    int32_t s;
+    int64_t s;   /* squarefree radicand, up to EX_SQRT_LIMIT */
 } ex_t;
 
 void ex_none(ex_t *r);

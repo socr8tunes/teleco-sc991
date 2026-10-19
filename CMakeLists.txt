@@ -111,3 +111,10 @@ foreach(cf ${TELECO_CASE_FILES})
   get_filename_component(cn ${cf} NAME_WE)
   add_test(NAME cases_${cn} COMMAND test_script ${cf})
 endforeach()
+
+find_package(Python3 COMPONENTS Interpreter)
+if(Python3_FOUND)
+  add_test(NAME expression_differential
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/differential/run_expr_diff.py
+            --cli $<TARGET_FILE:teleco_cli> --count 1500 --seed ${TELECO_DIFF_SEED})
+endif()
