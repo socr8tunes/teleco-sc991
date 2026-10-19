@@ -32,7 +32,11 @@ endfunction()
 add_library(teleco_numeric STATIC
   core/numeric/wide.c
   core/numeric/decimal.c
-  core/numeric/arithmetic.c)
+  core/numeric/arithmetic.c
+  core/numeric/xnum.c
+  core/numeric/xconst.c
+  core/functions/xfunc.c
+  core/functions/mathfn.c)
 target_include_directories(teleco_numeric PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/core)
 teleco_target_options(teleco_numeric)
 
@@ -47,6 +51,10 @@ add_test(NAME decimal_unit COMMAND test_decimal)
 add_executable(dec_difftest tests/differential/dec_difftest.c)
 target_link_libraries(dec_difftest PRIVATE teleco_numeric)
 teleco_target_options(dec_difftest)
+
+add_executable(fn_difftest tests/differential/fn_difftest.c)
+target_link_libraries(fn_difftest PRIVATE teleco_numeric)
+teleco_target_options(fn_difftest)
 
 add_executable(bench_decimal tests/bench/bench_decimal.c)
 target_link_libraries(bench_decimal PRIVATE teleco_numeric)
@@ -63,6 +71,10 @@ if(Python3_Interpreter_FOUND)
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/differential/run_diff.py
             --runner $<TARGET_FILE:dec_difftest>
             --count ${TELECO_DIFF_COUNT} --seed ${TELECO_DIFF_SEED})
+  add_test(NAME function_differential
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/differential/run_fn_diff.py
+            --runner $<TARGET_FILE:fn_difftest>
+            --count 1500 --seed ${TELECO_DIFF_SEED})
 else()
   message(WARNING "Python3 not found: differential tests disabled")
 endif()
