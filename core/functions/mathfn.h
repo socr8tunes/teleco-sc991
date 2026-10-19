@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include "numeric/decimal.h"
+#include "numeric/xnum.h"
 
 typedef enum ang { ANG_DEG = 0, ANG_RAD = 1, ANG_GRAD = 2 } ang_t;
 
@@ -45,6 +46,32 @@ dec_status fn_tanh(dec_t *r, const dec_t *x);
 dec_status fn_asinh(dec_t *r, const dec_t *x);
 dec_status fn_acosh(dec_t *r, const dec_t *x);
 dec_status fn_atanh(dec_t *r, const dec_t *x);
+
+/*
+ * Same functions taking a full-precision xnum argument (used when the argument is
+ * an exact value such as pi/5, so it is not rounded to 16 digits first).
+ */
+dec_status fx_exp(dec_t *r, const xnum_t *x);
+dec_status fx_exp10(dec_t *r, const xnum_t *x);
+dec_status fx_ln(dec_t *r, const xnum_t *x);
+dec_status fx_log10(dec_t *r, const xnum_t *x);
+dec_status fx_log(dec_t *r, const xnum_t *base, const xnum_t *x);
+dec_status fx_pow(dec_t *r, const xnum_t *x, const xnum_t *y);
+dec_status fx_cbrt(dec_t *r, const xnum_t *x);
+dec_status fx_xroot(dec_t *r, const xnum_t *n, const xnum_t *x);
+dec_status fx_sin(dec_t *r, const xnum_t *x, ang_t a);
+dec_status fx_cos(dec_t *r, const xnum_t *x, ang_t a);
+dec_status fx_tan(dec_t *r, const xnum_t *x, ang_t a);
+dec_status fx_asin(dec_t *r, const xnum_t *x, ang_t a);
+dec_status fx_acos(dec_t *r, const xnum_t *x, ang_t a);
+dec_status fx_atan(dec_t *r, const xnum_t *x, ang_t a);
+dec_status fx_atan2(dec_t *r, const xnum_t *y, const xnum_t *x, ang_t a);
+dec_status fx_sinh(dec_t *r, const xnum_t *x);
+dec_status fx_cosh(dec_t *r, const xnum_t *x);
+dec_status fx_tanh(dec_t *r, const xnum_t *x);
+dec_status fx_asinh(dec_t *r, const xnum_t *x);
+dec_status fx_acosh(dec_t *r, const xnum_t *x);
+dec_status fx_atanh(dec_t *r, const xnum_t *x);
 
 /* ---- combinatorics ---- */
 dec_status fn_fact(dec_t *r, const dec_t *x);                      /* 0 <= x <= 69 integer */

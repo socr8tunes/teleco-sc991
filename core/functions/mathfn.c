@@ -125,51 +125,69 @@ void fn_e(dec_t *r)
 }
 
 /* ------------------------------------------------------------------------ */
-/* exp / log / pow                                                          */
+/* xnum-core implementations                                                */
 /* ------------------------------------------------------------------------ */
 
-dec_status fn_exp(dec_t *r, const dec_t *x)
+static int is_pow10_xn(const xnum_t *x)
 {
-    xnum_t a, y;
-    xn_from_dec(&a, x);
-    return done(r, &y, xf_exp(&y, &a));
+    int i;
+    uint32_t l = x->l[0];
+
+    for (i = 1; i < XN_LIMBS; i++) {
+        if (x->l[i] != 0) {
+            return 0;
+        }
+    }
+    while (l >= 10 && l % 10 == 0) {
+        l /= 10;
+    }
+    return l == 1;
 }
 
-dec_status fn_exp10(dec_t *r, const dec_t *x)
+/* integer value of an xnum if it is an integer of modest size */
+static int xn_int(const xnum_t *x, int64_t *n)
+{
+    return xn_is_int(x) && xn_to_i64(x, XN_TRUNC, n) == 0;
+}
+
+dec_status fx_exp(dec_t *r, const xnum_t *x)
+{
+    xnum_t y;
+    return done(r, &y, xf_exp(&y, x));
+}
+
+dec_status fx_exp10(dec_t *r, const xnum_t *x)
 {
     xnum_t a, y;
     int64_t k;
 
-    xn_from_dec(&a, x);
-    if (dec_to_i64(x, &k) == 0 && k > -1000 && k < 1000) {
+    if (xn_int(x, &k) && k > -1000 && k < 1000) {
         xn_pow10(&y, (int32_t)k);
         return done(r, &y, DEC_OK);
     }
-    xn_mul(&a, &a, &XC_LN10);
+    xn_mul(&a, x, &XC_LN10);
     return done(r, &y, xf_exp(&y, &a));
 }
 
-dec_status fn_ln(dec_t *r, const dec_t *x)
+dec_status fx_ln(dec_t *r, const xnum_t *x)
 {
-    xnum_t a, y;
-    xn_from_dec(&a, x);
-    return done(r, &y, xf_ln(&y, &a));
+    xnum_t y;
+    return done(r, &y, xf_ln(&y, x));
 }
 
-dec_status fn_log10(dec_t *r, const dec_t *x)
+dec_status fx_log10(dec_t *r, const xnum_t *x)
 {
-    xnum_t a, y, t;
+    xnum_t y, t;
     dec_status st;
 
-    if (x->m == 0 || x->neg) {
+    if (x->l[0] == 0 || x->neg) {
         dec_zero(r);
         return DEC_DOMAIN;
     }
-    if (x->m == DEC_MANT_MIN) {  /* exact power of ten */
-        return dec_from_i64(r, x->exp);
+    if (is_pow10_xn(x)) {
+        return dec_from_i64(r, xn_dec_exponent(x));
     }
-    xn_from_dec(&a, x);
-    st = xf_ln(&t, &a);
+    st = xf_ln(&t, x);
     if (st != DEC_OK) {
         dec_zero(r);
         return st;
@@ -178,22 +196,19 @@ dec_status fn_log10(dec_t *r, const dec_t *x)
     return xn_to_dec(r, &y);
 }
 
-dec_status fn_log(dec_t *r, const dec_t *base, const dec_t *x)
+dec_status fx_log(dec_t *r, const xnum_t *base, const xnum_t *x)
 {
-    xnum_t a, b, la, lb, y;
+    xnum_t la, lb, y, one;
     dec_status st;
-    dec_t one;
 
-    dec_from_i64(&one, 1);
-    if (base->m == 0 || base->neg || dec_cmp(base, &one) == 0 || x->m == 0 || x->neg) {
+    xn_from_u64(&one, 1);
+    if (base->l[0] == 0 || base->neg || xn_cmp(base, &one) == 0 || x->l[0] == 0 || x->neg) {
         dec_zero(r);
         return DEC_DOMAIN;
     }
-    xn_from_dec(&a, x);
-    xn_from_dec(&b, base);
-    st = xf_ln(&la, &a);
+    st = xf_ln(&la, x);
     if (st == DEC_OK) {
-        st = xf_ln(&lb, &b);
+        st = xf_ln(&lb, base);
     }
     if (st != DEC_OK) {
         dec_zero(r);
@@ -203,51 +218,50 @@ dec_status fn_log(dec_t *r, const dec_t *base, const dec_t *x)
     return xn_to_dec(r, &y);
 }
 
-dec_status fn_pow(dec_t *r, const dec_t *x, const dec_t *y)
+dec_status fx_pow(dec_t *r, const xnum_t *x, const xnum_t *y)
 {
-    xnum_t a, b, z;
+    xnum_t z, ax;
     int64_t n;
 
-    if (y->m == 0) {
-        if (x->m == 0) {
+    if (y->l[0] == 0) {
+        if (x->l[0] == 0) {
             dec_zero(r);
             return DEC_DOMAIN;          /* 0^0 */
         }
         return dec_from_i64(r, 1);
     }
-    if (x->m == 0) {
+    if (x->l[0] == 0) {
         dec_zero(r);
         return y->neg ? DEC_DIV_BY_ZERO : DEC_OK;
     }
-    xn_from_dec(&a, x);
-    if (dec_to_i64(y, &n) == 0) {
+    if (xn_int(y, &n)) {
         if (n > 2000000000LL || n < -2000000000LL) {
             xn_zero(&z);
             z.l[0] = 1;
-            z.e = ((xn_dec_exponent(&a) < 0) == (n > 0)) ? -XN_EMAX : XN_EMAX;
+            z.e = ((xn_dec_exponent(x) < 0) == (n > 0)) ? -XN_EMAX : XN_EMAX;
             return done(r, &z, DEC_OK);
         }
-        xn_powi(&z, &a, n);
+        xn_powi(&z, x, n);
         return done(r, &z, DEC_OK);
     }
     if (x->neg) {
         dec_zero(r);
         return DEC_DOMAIN;
     }
-    xn_from_dec(&b, y);
-    return done(r, &z, xf_pow_pos(&z, &a, &b));
+    ax = *x;
+    return done(r, &z, xf_pow_pos(&z, &ax, y));
 }
 
-dec_status fn_cbrt(dec_t *r, const dec_t *x)
+dec_status fx_cbrt(dec_t *r, const xnum_t *x)
 {
     xnum_t a, l, z;
     dec_status st;
 
-    if (x->m == 0) {
+    if (x->l[0] == 0) {
         dec_zero(r);
         return DEC_OK;
     }
-    xn_from_dec(&a, x);
+    a = *x;
     a.neg = 0;
     st = xf_ln(&l, &a);
     if (st != DEC_OK) {
@@ -260,75 +274,63 @@ dec_status fn_cbrt(dec_t *r, const dec_t *x)
     return xn_to_dec(r, &z);
 }
 
-dec_status fn_xroot(dec_t *r, const dec_t *n, const dec_t *x)
+dec_status fx_xroot(dec_t *r, const xnum_t *n, const xnum_t *x)
 {
-    xnum_t a, e, one, l, z;
+    xnum_t a, l, z;
     int64_t k = 0;
     int is_int;
     dec_status st;
 
-    if (n->m == 0) {
+    if (n->l[0] == 0) {
         dec_zero(r);
         return DEC_DOMAIN;
     }
-    if (x->m == 0) {
+    if (x->l[0] == 0) {
         dec_zero(r);
         return n->neg ? DEC_DIV_BY_ZERO : DEC_OK;
     }
-    is_int = dec_to_i64(n, &k) == 0;
+    is_int = xn_int(n, &k);
     if (x->neg && !(is_int && (k & 1))) {
         dec_zero(r);
         return DEC_DOMAIN;
     }
-    xn_from_dec(&a, x);
+    a = *x;
     a.neg = 0;
-    xn_from_dec(&e, n);
-    xn_from_u64(&one, 1);
     st = xf_ln(&l, &a);
     if (st != DEC_OK) {
         dec_zero(r);
         return st;
     }
-    xn_div(&l, &l, &e);            /* ln(x) / n */
+    xn_div(&l, &l, n);             /* ln(x) / n */
     xf_exp(&z, &l);
     z.neg = x->neg;
     return xn_to_dec(r, &z);
 }
 
-/* ------------------------------------------------------------------------ */
-/* trigonometry                                                             */
-/* ------------------------------------------------------------------------ */
+/* ---- trigonometry ---- */
 
-dec_status fn_sin(dec_t *r, const dec_t *x, ang_t a)
+dec_status fx_sin(dec_t *r, const xnum_t *x, ang_t a)
 {
-    xnum_t v, s, c;
+    xnum_t s, c;
     int rz, qo;
-    dec_status st;
-
-    xn_from_dec(&v, x);
-    st = xf_sincos(&v, unit_of(a), &s, &c, &rz, &qo);
+    dec_status st = xf_sincos(x, unit_of(a), &s, &c, &rz, &qo);
     return done(r, &s, st);
 }
 
-dec_status fn_cos(dec_t *r, const dec_t *x, ang_t a)
+dec_status fx_cos(dec_t *r, const xnum_t *x, ang_t a)
 {
-    xnum_t v, s, c;
+    xnum_t s, c;
     int rz, qo;
-    dec_status st;
-
-    xn_from_dec(&v, x);
-    st = xf_sincos(&v, unit_of(a), &s, &c, &rz, &qo);
+    dec_status st = xf_sincos(x, unit_of(a), &s, &c, &rz, &qo);
     return done(r, &c, st);
 }
 
-dec_status fn_tan(dec_t *r, const dec_t *x, ang_t a)
+dec_status fx_tan(dec_t *r, const xnum_t *x, ang_t a)
 {
-    xnum_t v, s, c, t;
+    xnum_t s, c, t;
     int rz, qo;
-    dec_status st;
+    dec_status st = xf_sincos(x, unit_of(a), &s, &c, &rz, &qo);
 
-    xn_from_dec(&v, x);
-    st = xf_sincos(&v, unit_of(a), &s, &c, &rz, &qo);
     if (st != DEC_OK) {
         dec_zero(r);
         return st;
@@ -341,60 +343,115 @@ dec_status fn_tan(dec_t *r, const dec_t *x, ang_t a)
     return xn_to_dec(r, &t);
 }
 
-dec_status fn_asin(dec_t *r, const dec_t *x, ang_t a)
+static dec_status inv_finish(dec_t *r, const xnum_t *y, dec_status st, ang_t a)
 {
-    xnum_t v, y, u;
-    dec_status st;
+    xnum_t u;
 
-    xn_from_dec(&v, x);
-    st = xf_asin(&y, &v);
     if (st != DEC_OK) {
         dec_zero(r);
         return st;
     }
-    xf_rad_to_unit(&u, &y, unit_of(a));
+    xf_rad_to_unit(&u, y, unit_of(a));
     return xn_to_dec(r, &u);
 }
 
-dec_status fn_acos(dec_t *r, const dec_t *x, ang_t a)
+dec_status fx_asin(dec_t *r, const xnum_t *x, ang_t a)
 {
-    xnum_t v, y, u;
-    dec_status st;
+    xnum_t y;
+    dec_status st = xf_asin(&y, x);
+    return inv_finish(r, &y, st, a);
+}
 
-    xn_from_dec(&v, x);
-    st = xf_acos(&y, &v);
-    if (st != DEC_OK) {
-        dec_zero(r);
-        return st;
+dec_status fx_acos(dec_t *r, const xnum_t *x, ang_t a)
+{
+    xnum_t y;
+    dec_status st = xf_acos(&y, x);
+    return inv_finish(r, &y, st, a);
+}
+
+dec_status fx_atan(dec_t *r, const xnum_t *x, ang_t a)
+{
+    xnum_t y;
+    dec_status st = xf_atan(&y, x);
+    return inv_finish(r, &y, st, a);
+}
+
+dec_status fx_atan2(dec_t *r, const xnum_t *y, const xnum_t *x, ang_t a)
+{
+    xnum_t t;
+    dec_status st = xf_atan2(&t, y, x);
+    return inv_finish(r, &t, st, a);
+}
+
+#define FX_HYP(name, kernel)                                   \
+    dec_status name(dec_t *r, const xnum_t *x)                 \
+    {                                                          \
+        xnum_t y;                                              \
+        return done(r, &y, kernel(&y, x));                     \
     }
-    xf_rad_to_unit(&u, &y, unit_of(a));
-    return xn_to_dec(r, &u);
-}
 
-dec_status fn_atan(dec_t *r, const dec_t *x, ang_t a)
-{
-    xnum_t v, y, u;
+FX_HYP(fx_sinh, xf_sinh)
+FX_HYP(fx_cosh, xf_cosh)
+FX_HYP(fx_tanh, xf_tanh)
+FX_HYP(fx_asinh, xf_asinh)
+FX_HYP(fx_acosh, xf_acosh)
+FX_HYP(fx_atanh, xf_atanh)
 
-    xn_from_dec(&v, x);
-    (void)xf_atan(&y, &v);
-    xf_rad_to_unit(&u, &y, unit_of(a));
-    return xn_to_dec(r, &u);
-}
+/* ---- decimal wrappers ---- */
+
+#define FN1(name, fx)                                          \
+    dec_status name(dec_t *r, const dec_t *x)                  \
+    {                                                          \
+        xnum_t a;                                              \
+        xn_from_dec(&a, x);                                    \
+        return fx(r, &a);                                      \
+    }
+
+#define FN2(name, fx)                                          \
+    dec_status name(dec_t *r, const dec_t *x, const dec_t *y)  \
+    {                                                          \
+        xnum_t a, b;                                           \
+        xn_from_dec(&a, x);                                    \
+        xn_from_dec(&b, y);                                    \
+        return fx(r, &a, &b);                                  \
+    }
+
+#define FNT(name, fx)                                          \
+    dec_status name(dec_t *r, const dec_t *x, ang_t m)         \
+    {                                                          \
+        xnum_t a;                                              \
+        xn_from_dec(&a, x);                                    \
+        return fx(r, &a, m);                                   \
+    }
+
+FN1(fn_exp, fx_exp)
+FN1(fn_exp10, fx_exp10)
+FN1(fn_ln, fx_ln)
+FN1(fn_log10, fx_log10)
+FN1(fn_cbrt, fx_cbrt)
+FN2(fn_log, fx_log)
+FN2(fn_pow, fx_pow)
+FN2(fn_xroot, fx_xroot)
+FNT(fn_sin, fx_sin)
+FNT(fn_cos, fx_cos)
+FNT(fn_tan, fx_tan)
+FNT(fn_asin, fx_asin)
+FNT(fn_acos, fx_acos)
+FNT(fn_atan, fx_atan)
+FN1(fn_sinh, fx_sinh)
+FN1(fn_cosh, fx_cosh)
+FN1(fn_tanh, fx_tanh)
+FN1(fn_asinh, fx_asinh)
+FN1(fn_acosh, fx_acosh)
+FN1(fn_atanh, fx_atanh)
 
 dec_status fn_atan2(dec_t *r, const dec_t *y, const dec_t *x, ang_t a)
 {
-    xnum_t vy, vx, t, u;
-    dec_status st;
+    xnum_t vy, vx;
 
     xn_from_dec(&vy, y);
     xn_from_dec(&vx, x);
-    st = xf_atan2(&t, &vy, &vx);
-    if (st != DEC_OK) {
-        dec_zero(r);
-        return st;
-    }
-    xf_rad_to_unit(&u, &t, unit_of(a));
-    return xn_to_dec(r, &u);
+    return fx_atan2(r, &vy, &vx, a);
 }
 
 dec_status fn_convert_angle(dec_t *r, const dec_t *x, ang_t from, ang_t to)
@@ -417,25 +474,6 @@ dec_status fn_convert_angle(dec_t *r, const dec_t *x, ang_t from, ang_t to)
     xf_rad_to_unit(&u, &t, unit_of(to));
     return xn_to_dec(r, &u);
 }
-
-/* ------------------------------------------------------------------------ */
-/* hyperbolic                                                               */
-/* ------------------------------------------------------------------------ */
-
-#define HYP(name, kernel)                                      \
-    dec_status name(dec_t *r, const dec_t *x)                  \
-    {                                                          \
-        xnum_t v, y;                                           \
-        xn_from_dec(&v, x);                                    \
-        return done(r, &y, kernel(&y, &v));                    \
-    }
-
-HYP(fn_sinh, xf_sinh)
-HYP(fn_cosh, xf_cosh)
-HYP(fn_tanh, xf_tanh)
-HYP(fn_asinh, xf_asinh)
-HYP(fn_acosh, xf_acosh)
-HYP(fn_atanh, xf_atanh)
 
 /* ------------------------------------------------------------------------ */
 /* combinatorics                                                            */

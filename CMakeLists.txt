@@ -36,7 +36,9 @@ add_library(teleco_numeric STATIC
   core/numeric/xnum.c
   core/numeric/xconst.c
   core/functions/xfunc.c
-  core/functions/mathfn.c)
+  core/functions/mathfn.c
+  core/values/exact.c
+  core/values/num.c)
 target_include_directories(teleco_numeric PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/core)
 teleco_target_options(teleco_numeric)
 
@@ -47,6 +49,11 @@ add_executable(test_decimal tests/unit/test_decimal.c)
 target_link_libraries(test_decimal PRIVATE teleco_numeric)
 teleco_target_options(test_decimal)
 add_test(NAME decimal_unit COMMAND test_decimal)
+
+add_executable(test_exact tests/unit/test_exact.c)
+target_link_libraries(test_exact PRIVATE teleco_numeric)
+teleco_target_options(test_exact)
+add_test(NAME exact_unit COMMAND test_exact)
 
 add_executable(dec_difftest tests/differential/dec_difftest.c)
 target_link_libraries(dec_difftest PRIVATE teleco_numeric)
