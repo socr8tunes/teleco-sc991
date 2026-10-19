@@ -38,7 +38,14 @@ add_library(teleco_numeric STATIC
   core/functions/xfunc.c
   core/functions/mathfn.c
   core/values/exact.c
-  core/values/num.c)
+  core/values/num.c
+  core/values/val.c
+  core/state/ctx.c
+  core/calc/errors.c
+  core/calc/format.c
+  core/calc/eval.c
+  core/parser/lexer.c
+  core/parser/expr.c)
 target_include_directories(teleco_numeric PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/core)
 teleco_target_options(teleco_numeric)
 
@@ -85,3 +92,22 @@ if(Python3_Interpreter_FOUND)
 else()
   message(WARNING "Python3 not found: differential tests disabled")
 endif()
+
+# ---- PC command line ------------------------------------------------------
+add_library(pc_script STATIC platform/pc/calc_script.c)
+target_link_libraries(pc_script PUBLIC teleco_numeric)
+target_include_directories(pc_script PUBLIC platform/pc)
+teleco_target_options(pc_script)
+
+add_executable(teleco_cli platform/pc/teleco_cli.c)
+target_link_libraries(teleco_cli PRIVATE pc_script)
+teleco_target_options(teleco_cli)
+
+add_executable(test_script tests/unit/test_script.c)
+target_link_libraries(test_script PRIVATE pc_script)
+teleco_target_options(test_script)
+file(GLOB TELECO_CASE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tests/cases/*.txt)
+foreach(cf ${TELECO_CASE_FILES})
+  get_filename_component(cn ${cf} NAME_WE)
+  add_test(NAME cases_${cn} COMMAND test_script ${cf})
+endforeach()
