@@ -1,5 +1,6 @@
 #include <string.h>
 #include "calc/format.h"
+#include "values/cplx.h"
 
 #define NDIG 16
 
@@ -240,7 +241,7 @@ static int ndigits_str(const char *s)
     return n;
 }
 
-void fmt_real(const ctx_t *c, const num_t *n, int exact, fmt_res_t *out)
+static void fmt_real_inner(const ctx_t *c, const num_t *n, int exact, fmt_res_t *out)
 {
     memset(out, 0, sizeof *out);
     if (exact && n->ex.kind != EX_NONE && ex_valid(&n->ex)) {
@@ -295,8 +296,53 @@ void fmt_real(const ctx_t *c, const num_t *n, int exact, fmt_res_t *out)
     fmt_dec_part(c, &n->v, &out->p);
 }
 
+void fmt_real(const ctx_t *c, const num_t *n, int exact, fmt_res_t *out)
+{
+    fmt_real_inner(c, n, exact, out);
+    out->p.kind = out->kind;
+}
+
 void fmt_value(const ctx_t *c, const val_t *v, int exact, fmt_res_t *out)
 {
+    if (v->k == V_CPLX) {
+        fmt_res_t a, b;
+        num_t t;
+        if (c->polar) {
+            cx_t z;
+            num_t mag, ang;
+            z.re = v->re; z.im = v->im;
+            if (cx_abs(&mag, &z) == DEC_OK && cx_arg(&ang, &z, c->angle) == DEC_OK) {
+                fmt_real(c, &mag, exact, &a);
+                fmt_real(c, &ang, exact, &b);
+                memset(out, 0, sizeof *out);
+                out->kind = FR_CPLX;
+                out->polar = 1;
+                out->p = a.p;
+                out->q = b.p;
+                return;
+            }
+        }
+        fmt_real(c, &v->re, exact, &a);
+        t = v->im;
+        fmt_real(c, &t, exact, &b);
+        if (exact && !num_is_zero(&v->re) && (a.kind == FR_DEC) != (b.kind == FR_DEC)) {
+            /* one part is exact and the other is not: show both as decimals */
+            fmt_real(c, &v->re, 0, &a);
+            fmt_real(c, &t, 0, &b);
+        }
+        memset(out, 0, sizeof *out);
+        out->kind = FR_CPLX;
+        out->p = a.p;
+        out->q = b.p;
+        out->re_zero = (uint8_t)num_is_zero(&v->re);
+        {
+            num_t one, ab;
+            num_from_int(&one, 1);
+            num_abs(&ab, &v->im);
+            out->im_one = (uint8_t)(num_cmp(&ab, &one) == 0);
+        }
+        return;
+    }
     fmt_real(c, &v->re, exact, out);
 }
 
@@ -332,15 +378,14 @@ static const char *ascii_fix(const char *s, char *tmp, size_t cap)
     return tmp;
 }
 
-size_t fmt_text(const fmt_res_t *r, int ascii, char *buf, size_t cap)
+static size_t part_text(const fmt_part_t *p, int skip_sign, int ascii, char *buf, size_t cap)
 {
     size_t pos = 0;
     char t1[96], t2[48];
-    const fmt_part_t *p = &r->p;
     if (cap == 0) return 0;
     buf[0] = 0;
-    if (p->neg) pos = put(buf, cap, pos, "-");
-    switch (r->kind) {
+    if (p->neg && !skip_sign) pos = put(buf, cap, pos, "-");
+    switch (p->kind) {
     case FR_MIXED:
         pos = put(buf, cap, pos, p->whole);
         pos = put(buf, cap, pos, " ");
@@ -374,6 +419,34 @@ size_t fmt_text(const fmt_res_t *r, int ascii, char *buf, size_t cap)
         break;
     }
     return pos;
+}
+
+size_t fmt_text(const fmt_res_t *r, int ascii, char *buf, size_t cap)
+{
+    size_t pos;
+    char tmp[128];
+    if (r->kind != FR_CPLX) return part_text(&r->p, 0, ascii, buf, cap);
+    buf[0] = 0;
+    if (r->polar) {
+        pos = part_text(&r->p, 0, ascii, buf, cap);
+        pos = put(buf, cap, pos, ascii ? "<" : "\xe2\x88\xa0");
+        part_text(&r->q, 0, ascii, tmp, sizeof tmp);
+        return put(buf, cap, pos, tmp);
+    }
+    pos = 0;
+    if (!r->re_zero) pos = put(buf, cap, pos, "") , pos = part_text(&r->p, 0, ascii, buf, cap);
+    if (r->q.neg) pos = put(buf, cap, pos, "-");
+    else if (!r->re_zero) pos = put(buf, cap, pos, "+");
+    if (!r->im_one) {
+        part_text(&r->q, 1, ascii, tmp, sizeof tmp);
+        if (r->q.kind == FR_EXACT && strchr(tmp, '+')) { pos = put(buf, cap, pos, "("); pos = put(buf, cap, pos, tmp); pos = put(buf, cap, pos, ")"); }
+        else pos = put(buf, cap, pos, tmp);
+    }
+    {
+        size_t l = strlen(buf);
+        if (ascii && l >= 2 && buf[l - 2] == 'p' && buf[l - 1] == 'i') pos = put(buf, cap, pos, " ");
+    }
+    return put(buf, cap, pos, "i");
 }
 
 size_t fmt_value_text(const ctx_t *c, const val_t *v, int exact, int ascii, char *buf, size_t cap)

@@ -12,6 +12,7 @@
 enum { FR_DEC = 0, FR_FRAC, FR_MIXED, FR_EXACT, FR_CPLX, FR_MAT, FR_VCT };
 
 typedef struct fmt_part {
+    uint8_t kind;        /* FR_DEC / FR_FRAC / FR_MIXED / FR_EXACT */
     char neg;
     char whole[16];      /* mixed fraction integer part                          */
     char num[48];        /* decimal digits, or numerator text (may hold sqrt/pi) */
@@ -24,6 +25,9 @@ typedef struct fmt_res {
     fmt_part_t p;        /* real part / the number            */
     fmt_part_t q;        /* imaginary part for FR_CPLX        */
     uint8_t rows, cols;  /* matrices                          */
+    uint8_t re_zero;     /* complex: real part is zero        */
+    uint8_t im_one;      /* complex: |imaginary part| is 1    */
+    uint8_t polar;       /* complex shown as r<theta          */
 } fmt_res_t;
 
 /*

@@ -31,6 +31,8 @@ static int setting(script_t *s, const char *line, char *out, size_t cap)
     else if (!strcmp(line, ":mixed")) c->frac_improper = 0;
     else if (!strcmp(line, ":cmplx on")) c->cplx = 1;
     else if (!strcmp(line, ":cmplx off")) c->cplx = 0;
+    else if (!strcmp(line, ":polar")) c->polar = 1;
+    else if (!strcmp(line, ":rect")) c->polar = 0;
     else if (!strcmp(line, ":reset")) { int ex = s->exact, as = s->ascii; script_init(s); s->exact = ex; s->ascii = as; }
     else { snprintf(out, cap, "unknown setting: %s", line); return 2; }
     return 1;

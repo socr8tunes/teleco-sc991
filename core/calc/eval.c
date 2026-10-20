@@ -5,6 +5,7 @@
 #include "calc/eval.h"
 #include "parser/lexer.h"
 #include "calc/nummethods.h"
+#include "values/cplx.h"
 
 typedef struct ev {
     ctx_t        *c;
@@ -36,6 +37,87 @@ static val_t *push(ev_t *e)
 static int is_real(const val_t *v) { return v->k == V_REAL; }
 
 static void set_real(val_t *v, const num_t *n) { val_real(v, n); }
+
+
+/* ---- complex support ---------------------------------------------------- */
+
+static int is_num(const val_t *v) { return v->k == V_REAL || v->k == V_CPLX; }
+
+static void to_cx(const val_t *v, cx_t *c)
+{
+    if (v->k == V_CPLX) { c->re = v->re; c->im = v->im; }
+    else cx_from_real(c, &v->re);
+}
+
+/* store a complex result; demote to real when the imaginary part is zero */
+static void from_cx(val_t *v, const cx_t *c)
+{
+    memset(v, 0, sizeof *v);
+    if (cx_is_real(c)) {
+        v->k = V_REAL;
+        v->re = c->re;
+        num_zero(&v->im);
+    } else {
+        v->k = V_CPLX;
+        v->re = c->re;
+        v->im = c->im;
+    }
+}
+
+static void cx_binary(ev_t *e, int op, const val_t *a, const val_t *b, val_t *r)
+{
+    cx_t x, y, z;
+    dec_status s = DEC_OK;
+    to_cx(a, &x);
+    to_cx(b, &y);
+    switch (op) {
+    case T_ADD: s = cx_add(&z, &x, &y); break;
+    case T_SUB: case T_EQ: s = cx_sub(&z, &x, &y); break;
+    case T_MUL: s = cx_mul(&z, &x, &y); break;
+    case T_DIV: s = cx_div(&z, &x, &y); break;
+    case T_POW: {
+        dec_t ed;
+        fn_e(&ed);
+        /* the constant e raised to a complex power is exp(), not exp(w ln e) */
+        if (a->k == V_REAL && dec_cmp(&a->re.v, &ed) == 0) s = cx_exp(&z, &y);
+        else s = cx_pow(&z, &x, &y);
+        break;
+    }
+    default: fail(e, CE_ARG); return;
+    }
+    if (DEC_STATUS_IS_ERROR(s)) { fail_st(e, s); return; }
+    from_cx(r, &z);
+}
+
+/* function of a complex argument. Returns 0 when handled. */
+static int cx_function(ev_t *e, int fn, const val_t *a, val_t *r)
+{
+    cx_t x, z;
+    num_t n;
+    dec_status s = DEC_OK;
+    to_cx(a, &x);
+    switch (fn) {
+    case T_SQRT: s = cx_sqrt(&z, &x); break;
+    case T_EXP: s = cx_exp(&z, &x); break;
+    case T_LN: s = cx_ln(&z, &x); break;
+    case T_LOG: s = cx_log10(&z, &x); break;
+    case T_SIN: s = cx_sin(&z, &x); break;
+    case T_COS: s = cx_cos(&z, &x); break;
+    case T_TAN: s = cx_tan(&z, &x); break;
+    case T_SINH: s = cx_sinh(&z, &x); break;
+    case T_COSH: s = cx_cosh(&z, &x); break;
+    case T_TANH: s = cx_tanh(&z, &x); break;
+    case T_CONJ: s = cx_conj(&z, &x); break;
+    case T_ABS: s = cx_abs(&n, &x); if (!s) set_real(r, &n); fail_st(e, s); return 0;
+    case T_ARG: s = cx_arg(&n, &x, e->c->angle); if (!s) set_real(r, &n); fail_st(e, s); return 0;
+    case T_RE: set_real(r, &x.re); return 0;
+    case T_IM: set_real(r, &x.im); return 0;
+    default: return -1;
+    }
+    if (DEC_STATUS_IS_ERROR(s)) { fail_st(e, s); return 0; }
+    from_cx(r, &z);
+    return 0;
+}
 
 /* ---- real operations --------------------------------------------------- */
 
@@ -223,7 +305,7 @@ static void run(ev_t *e, int pc, int end)
     if (++e->depth > MAX_DEPTH) { fail(e, CE_STACK); e->depth--; return; }
     while (pc < end && !e->err) {
         const ins_t *in = &p->code[pc++];
-        val_t *a, *b, *r;
+        val_t *a, *b;
         if (e->c->budget == 0) { fail(e, CE_TIME); break; }
         e->c->budget--;
         switch (in->op) {
@@ -231,6 +313,7 @@ static void run(ev_t *e, int pc, int end)
         case OP_POP: if (e->sp > 0) e->sp--; break;
         case OP_UNEG:
             a = &e->st[e->sp - 1];
+            if (a->k == V_CPLX) { cx_t x; to_cx(a, &x); fail_st(e, cx_neg(&x, &x)); if (!e->err) from_cx(a, &x); break; }
             if (!is_real(a)) { fail(e, CE_ARG); break; }
             fail_st(e, num_neg(&a->re, &a->re));
             break;
@@ -240,6 +323,10 @@ static void run(ev_t *e, int pc, int end)
             fn_e(&d); num_from_dec(&t, &d); set_real(push(e), &t);
             break;
         }
+        case T_I:
+            if (!e->c->cplx) { fail(e, CE_SYNTAX); break; }
+            { val_t *v = push(e); num_t z, o; memset(v, 0, sizeof *v); num_from_int(&z, 0); num_from_int(&o, 1); v->k = V_CPLX; v->re = z; v->im = o; }
+            break;
         case T_ANS: *push(e) = e->c->ans; break;
         case T_PREANS: *push(e) = e->c->preans; break;
         case T_VAR: *push(e) = e->c->var[in->a]; break;
@@ -261,13 +348,33 @@ static void run(ev_t *e, int pc, int end)
             if (e->sp < 2) { fail(e, CE_SYNTAX); break; }
             b = &e->st[--e->sp];
             a = &e->st[e->sp - 1];
-            if (!is_real(a) || !is_real(b)) { fail(e, CE_ARG); break; }
-            r = a;
-            { num_t t; real_binary(e, in->op, &a->re, &b->re, &t); if (!e->err) set_real(r, &t); }
+            if (is_real(a) && is_real(b)) {
+                int want_cx = 0;
+                if (e->c->cplx && in->op == T_POW && a->re.v.neg && !dec_is_zero(&a->re.v)) {
+                    int64_t iv;
+                    want_cx = dec_to_i64(&b->re.v, &iv) != 0;   /* negative base, non-integer exponent */
+                }
+                if (!want_cx) {
+                    num_t t;
+                    real_binary(e, in->op, &a->re, &b->re, &t);
+                    if (!e->err) set_real(a, &t);
+                    break;
+                }
+            }
+            if (!is_num(a) || !is_num(b) || in->op == T_NPR || in->op == T_NCR || (!e->c->cplx && (a->k == V_CPLX || b->k == V_CPLX) && 0)) { fail(e, CE_ARG); break; }
+            { val_t t; cx_binary(e, in->op, a, b, &t); if (!e->err) *a = t; }
             break;
         case T_FACT: case T_SQ: case T_CUBE: case T_RECIP: case T_PERCENT:
         case T_DEGSYM: case T_RADSYM: case T_GRADSYM:
             a = &e->st[e->sp - 1];
+            if (a->k == V_CPLX && (in->op == T_SQ || in->op == T_CUBE || in->op == T_RECIP || in->op == T_PERCENT)) {
+                val_t t, k;
+                if (in->op == T_SQ) { cx_binary(e, T_MUL, a, a, &t); }
+                else if (in->op == T_CUBE) { val_t sq; cx_binary(e, T_MUL, a, a, &sq); cx_binary(e, T_MUL, &sq, a, &t); }
+                else { val_int(&k, in->op == T_RECIP ? 1 : 100); if (in->op == T_RECIP) cx_binary(e, T_DIV, &k, a, &t); else cx_binary(e, T_DIV, a, &k, &t); }
+                if (!e->err) *a = t;
+                break;
+            }
             if (!is_real(a)) { fail(e, CE_ARG); break; }
             { num_t t; real_post(e, in->op, &a->re, &t); if (!e->err) set_real(a, &t); }
             break;
@@ -299,8 +406,31 @@ static void run(ev_t *e, int pc, int end)
             if (e->sp < argc) { fail(e, CE_SYNTAX); break; }
             if (argc == 1) {
                 a = &e->st[e->sp - 1];
+                if (a->k == V_CPLX) {
+                    val_t t;
+                    if (cx_function(e, fn, a, &t) != 0) { fail(e, CE_ARG); break; }
+                    if (!e->err) *a = t;
+                    break;
+                }
                 if (!is_real(a)) { fail(e, CE_ARG); break; }
-                { num_t t; real_fn1(e, fn, &a->re, &t); if (!e->err) set_real(a, &t); }
+                if (fn == T_ARG || fn == T_CONJ || fn == T_RE || fn == T_IM) {
+                    val_t t;
+                    if (!e->c->cplx) { fail(e, CE_SYNTAX); break; }
+                    cx_function(e, fn, a, &t);
+                    if (!e->err) *a = t;
+                    break;
+                }
+                {
+                    num_t t;
+                    int save = e->err;
+                    real_fn1(e, fn, &a->re, &t);
+                    if (e->err == CE_MATH && e->c->cplx && (fn == T_SQRT || fn == T_LN || fn == T_LOG)) {
+                        val_t c;
+                        e->err = save;
+                        if (cx_function(e, fn, a, &c) == 0 && !e->err) { *a = c; break; }
+                    }
+                    if (!e->err) set_real(a, &t);
+                }
             } else if (argc == 2 && (fn == T_LOG || fn == T_ROOT)) {
                 num_t t; dec_status s;
                 a = &e->st[e->sp - 2];

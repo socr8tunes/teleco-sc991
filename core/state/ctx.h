@@ -17,6 +17,7 @@ typedef struct ctx {
     uint8_t  fmt;              /* FMT_*                                     */
     uint8_t  fmt_digits;       /* digits for Fix / Sci (0..9)               */
     uint8_t  frac_improper;    /* d/c display instead of mixed fractions    */
+    uint8_t  polar;            /* complex results as r<theta                 */
     uint8_t  base;             /* 0 = decimal COMP; 2, 8, 10, 16 base-n     */
     val_t    var[N_VARS];      /* A B C D E F X Y M                         */
     val_t    ans, preans;
