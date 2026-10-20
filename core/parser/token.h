@@ -37,6 +37,7 @@ enum tok_type {
     T_ARG, T_CONJ, T_RE, T_IM,
     T_SIGMA, T_DDX, T_INTEGRAL,
     T_DET, T_TRN, T_IDEN, T_DOTP, T_CROSSP, T_ANGLEV, T_UNITV,
+    T_SOLVE,
     T_NOT, T_NEGB,
     /* postfix */
     T_FACT, T_SQ, T_CUBE, T_RECIP, T_PERCENT,

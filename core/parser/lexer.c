@@ -23,7 +23,7 @@ static const word_t WORDS[] = {
     {"det", T_DET, W_FN}, {"trn", T_TRN, W_FN}, {"iden", T_IDEN, W_FN},
     {"dot", T_DOTP, W_FN}, {"cross", T_CROSSP, W_FN},
     {"anglev", T_ANGLEV, W_FN}, {"unitv", T_UNITV, W_FN},
-    {"not", T_NOT, W_FN}, {"neg", T_NEGB, W_FN},
+    {"solve", T_SOLVE, W_FN}, {"not", T_NOT, W_FN}, {"neg", T_NEGB, W_FN},
     {"sqrt", T_SQRT, W_FN}, {"root", T_ROOT, W_FN},
     {"frac", T_FRAC, W_FN}, {"mfrac", T_MFRAC, W_FN},
     {"pi", T_PI, W_ATOM}, {"ans", T_ANS, W_ATOM}, {"preans", T_PREANS, W_ATOM},

@@ -4,6 +4,7 @@
 #include <string.h>
 #include "calc/eval.h"
 #include "parser/lexer.h"
+#include "calc/nummethods.h"
 
 typedef struct ev {
     ctx_t        *c;
@@ -120,10 +121,37 @@ static void run(ev_t *e, int pc, int end);
 
 /* ---- block functions (sigma) ------------------------------------------ */
 
+typedef struct bodyctx {
+    ev_t *e;
+    int   pc, len;
+} bodyctx_t;
+
+/* y = body(X = x) as a numerical-methods callback. */
+static calc_err_t body_cb(void *user, const dec_t *x, dec_t *y)
+{
+    bodyctx_t *b = (bodyctx_t *)user;
+    ev_t *e = b->e;
+    int sp = e->sp;
+    calc_err_t er;
+    num_t t;
+    num_from_dec(&t, x);
+    val_real(&e->c->var[VAR_X], &t);
+    run(e, b->pc, b->pc + b->len);
+    er = e->err;
+    if (!er && (e->sp != sp + 1 || !is_real(&e->st[sp]))) er = CE_ARG;
+    if (!er) *y = e->st[sp].re.v;
+    e->sp = sp;
+    if (er == CE_MATH || er == CE_ARG) e->err = CE_OK;   /* undefined at this point: caller decides */
+    return er;
+}
+
 static void block_fn(ev_t *e, const ins_t *in, int body_pc)
 {
     int argc = in->a, blen = in->y;
     val_t save_x = e->c->var[VAR_X];
+    bodyctx_t b;
+
+    b.e = e; b.pc = body_pc; b.len = blen;
 
     if (in->x == T_SIGMA && argc == 3) {
         val_t *vb = &e->st[e->sp - 1], *va = &e->st[e->sp - 2];
@@ -146,6 +174,43 @@ static void block_fn(ev_t *e, const ins_t *in, int body_pc)
         }
         e->c->var[VAR_X] = save_x;
         if (!e->err) set_real(push(e), &acc);
+        return;
+    }
+    if ((in->x == T_DDX && argc == 2) || (in->x == T_SOLVE && argc == 2)) {
+        val_t *vx = &e->st[e->sp - 1];
+        dec_t out, resid;
+        calc_err_t er;
+        if (!is_real(vx)) { fail(e, CE_ARG); return; }
+        e->sp--;
+        if (in->x == T_DDX) {
+            er = nm_derivative(body_cb, &b, &vx->re.v, &out);
+        } else {
+            er = nm_solve(body_cb, &b, &vx->re.v, &out, &resid);
+        }
+        e->c->var[VAR_X] = save_x;
+        if (er) { fail(e, er); return; }
+        {
+            num_t t;
+            num_from_dec(&t, &out);
+            if (in->x == T_SOLVE) {
+                val_real(&e->c->var[VAR_X], &t);    /* SOLVE leaves the root in X */
+                e->c->has_aux = 1;
+                num_from_dec(&e->c->aux, &resid);
+            }
+            set_real(push(e), &t);
+        }
+        return;
+    }
+    if (in->x == T_INTEGRAL && argc == 3) {
+        val_t *vb = &e->st[e->sp - 1], *va = &e->st[e->sp - 2];
+        dec_t out;
+        calc_err_t er;
+        if (!is_real(va) || !is_real(vb)) { fail(e, CE_ARG); return; }
+        e->sp -= 2;
+        er = nm_integrate(body_cb, &b, &va->re.v, &vb->re.v, &out);
+        e->c->var[VAR_X] = save_x;
+        if (er) { fail(e, er); return; }
+        { num_t t; num_from_dec(&t, &out); set_real(push(e), &t); }
         return;
     }
     e->c->var[VAR_X] = save_x;

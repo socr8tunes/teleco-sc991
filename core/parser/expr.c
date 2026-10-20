@@ -75,7 +75,7 @@ static void arity(int t, int *lo, int *hi)
     switch (t) {
     case T_LOG: *lo = 1; *hi = 2; break;
     case T_RANINT: case T_POL: case T_REC: case T_DOTP: case T_CROSSP: case T_ANGLEV:
-    case T_DDX:
+    case T_DDX: case T_SOLVE:
         *lo = *hi = 2; break;
     case T_SIGMA: case T_INTEGRAL: *lo = *hi = 3; break;
     default: break;
@@ -156,12 +156,16 @@ static void rotate_body(cs_t *c, int p0, int blen)
 
 static void parse_fn(cs_t *c, int ft)
 {
-    int lo, hi, argc = 0, body = (ft == T_SIGMA || ft == T_DDX || ft == T_INTEGRAL);
+    int lo, hi, argc = 0, body = (ft == T_SIGMA || ft == T_DDX || ft == T_INTEGRAL || ft == T_SOLVE);
     int p0 = c->pr->n, blen = 0;
 
     arity(ft, &lo, &hi);
     for (;;) {
         parse_or(c);
+        if (ft == T_SOLVE && argc == 0 && accept(c, T_EQ)) {
+            parse_or(c);
+            emit(c, T_EQ, 0, 0, 0);
+        }
         argc++;
         if (body && argc == 1) blen = c->pr->n - p0;
         if (c->err) return;

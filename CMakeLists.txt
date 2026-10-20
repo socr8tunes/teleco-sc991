@@ -43,6 +43,7 @@ add_library(teleco_numeric STATIC
   core/state/ctx.c
   core/calc/errors.c
   core/calc/format.c
+  core/calc/nummethods.c
   core/calc/eval.c
   core/parser/lexer.c
   core/parser/expr.c)
