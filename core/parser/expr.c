@@ -16,6 +16,7 @@ typedef struct cs {
     const tok_t *t;
     int n, p;
     prog_t *pr;
+    int base;
     int depth;
     calc_err_t err;
 } cs_t;
@@ -47,7 +48,7 @@ static void emit_const(cs_t *c, const num_t *v)
     c->pr->nconst++;
 }
 
-static int is_digit_tok(int t) { return t >= T_D0 && t <= T_D9; }
+static int is_digit_tok(int t) { return t >= T_D0 && t <= T_DF; }
 
 static int is_fn_tok(int t)
 {
@@ -56,7 +57,7 @@ static int is_fn_tok(int t)
 
 static int starts_atom(int t)
 {
-    if (is_digit_tok(t) || t == T_DOT) return 1;
+    if (is_digit_tok(t) || t == T_DOT || t == T_BASEPFX) return 1;
     if (is_fn_tok(t)) return 1;
     switch (t) {
     case T_LP: case T_LBRK: case T_FRAC: case T_MFRAC: case T_SQRT: case T_ROOT: case T_LOGB:
@@ -85,8 +86,35 @@ static void arity(int t, int *lo, int *hi)
     }
 }
 
+/* integer literal in base-n mode (32-bit two's complement) */
+static void parse_base_number(cs_t *c)
+{
+    int base = c->base;
+    uint64_t v = 0;
+    int digits = 0;
+    num_t n;
+    int64_t iv;
+
+    if (peek(c) == T_BASEPFX) { base = c->t[c->p].a; c->p++; }
+    while (is_digit_tok(peek(c))) {
+        int d = peek(c) - T_D0;
+        if (d >= base) { fail(c, CE_SYNTAX); return; }
+        v = v * (uint64_t)base + (uint64_t)d;
+        if (v > 0xFFFFFFFFu) { fail(c, CE_MATH); return; }
+        digits++;
+        c->p++;
+    }
+    if (!digits) { fail(c, CE_SYNTAX); return; }
+    iv = (int64_t)v;
+    if (base != 10 && iv >= 0x80000000LL) iv -= 0x100000000LL;     /* two's complement pattern */
+    else if (base == 10 && iv > 2147483647LL) { fail(c, CE_MATH); return; }
+    num_from_int(&n, iv);
+    emit_const(c, &n);
+}
+
 static void parse_number(cs_t *c)
 {
+    if (c->base) { parse_base_number(c); return; }
     char buf[48];
     int n = 0, dots = 0, hasexp = 0, digits = 0;
     num_t v;
@@ -199,7 +227,7 @@ static void parse_atom(cs_t *c)
     if (c->err) return;
     if (++c->depth > MAX_DEPTH) { fail(c, CE_STACK); return; }
 
-    if (is_digit_tok(t) || t == T_DOT) {
+    if (is_digit_tok(t) || t == T_DOT || t == T_BASEPFX) {
         parse_number_dms(c);
     } else if (t == T_LP) {
         c->p++;
@@ -432,11 +460,12 @@ static void parse_stmt(cs_t *c)
     }
 }
 
-calc_err_t compile_tokens(const tok_t *toks, int ntok, prog_t *p)
+calc_err_t compile_tokens(const tok_t *toks, int ntok, int base, prog_t *p)
 {
     cs_t c;
     memset(p, 0, sizeof *p);
-    c.t = toks; c.n = ntok; c.p = 0; c.pr = p; c.depth = 0; c.err = CE_OK;
+    p->base = (uint8_t)base;
+    c.t = toks; c.n = ntok; c.p = 0; c.pr = p; c.base = base; c.depth = 0; c.err = CE_OK;
     if (ntok == 0) return CE_SYNTAX;
     for (;;) {
         parse_stmt(&c);
@@ -452,11 +481,11 @@ calc_err_t compile_tokens(const tok_t *toks, int ntok, prog_t *p)
     return c.err;
 }
 
-calc_err_t compile_text(const char *s, prog_t *p)
+calc_err_t compile_text(const char *s, int base, prog_t *p)
 {
     tok_t toks[MAX_TOKENS];
     int n = 0;
-    calc_err_t e = lex_text(s, toks, MAX_TOKENS, &n);
+    calc_err_t e = lex_text(s, base, toks, MAX_TOKENS, &n);
     if (e) { memset(p, 0, sizeof *p); return e; }
-    return compile_tokens(toks, n, p);
+    return compile_tokens(toks, n, base, p);
 }

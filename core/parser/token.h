@@ -17,6 +17,8 @@ enum tok_type {
     T_NONE = 0,
     /* number literal parts */
     T_D0, T_D1, T_D2, T_D3, T_D4, T_D5, T_D6, T_D7, T_D8, T_D9,
+    T_DA, T_DB, T_DC, T_DD, T_DE, T_DF,           /* hex digits (base-n mode) */
+    T_BASEPFX,                                    /* a = 2, 8, 10 or 16: next number is in that base */
     T_DOT, T_EE, T_NEG,
     /* operators */
     T_ADD, T_SUB, T_MUL, T_DIV,

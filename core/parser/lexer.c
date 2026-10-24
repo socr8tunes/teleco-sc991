@@ -46,6 +46,7 @@ typedef struct grp {
 } grp_t;
 
 typedef struct lx {
+    int base;
     const char *s;
     int p;
     tok_t *out;
@@ -102,6 +103,25 @@ static int var_index(int c)
     }
 }
 
+static int hex_val(int c)
+{
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+    return -1;
+}
+
+/* integer digits in base-n mode */
+static void lex_base_number(lx_t *l)
+{
+    const char *s = l->s;
+    int v;
+    while ((v = hex_val((unsigned char)s[l->p])) >= 0 && v < l->base) {
+        emit(l, (uint8_t)(T_D0 + v), 0);
+        l->p++;
+    }
+}
+
 static void lex_number(lx_t *l)
 {
     const char *s = l->s;
@@ -149,10 +169,11 @@ static void lex_root_operand(lx_t *l)
     l->err = CE_SYNTAX;
 }
 
-calc_err_t lex_text(const char *str, tok_t *out, int cap, int *n)
+calc_err_t lex_text(const char *str, int base, tok_t *out, int cap, int *n)
 {
     lx_t L, *l = &L;
     memset(l, 0, sizeof *l);
+    l->base = base;
     l->s = str; l->out = out; l->cap = cap;
 
     while (!l->err && str[l->p]) {
@@ -160,6 +181,41 @@ calc_err_t lex_text(const char *str, tok_t *out, int cap, int *n)
         int c = (unsigned char)*s, k;
 
         if (c == ' ' || c == '\t' || c == '\n' || c == '\r') { l->p++; continue; }
+        if (l->base) {
+            /* base-n mode: 0x / 0b / 0o / 0d prefixes and digits of the current base */
+            if (c == '0') {
+                int pc = lower((unsigned char)s[1]);
+                int pb = pc == 'x' ? 16 : pc == 'b' ? 2 : pc == 'o' ? 8 : pc == 'd' ? 10 : 0;
+                int ok = pb && hex_val((unsigned char)s[2]) >= 0 && hex_val((unsigned char)s[2]) < pb;
+                if (l->base == 16 && pc != 'x') ok = 0;   /* 0b.. / 0d.. are plain hex digits here */
+                if (ok) {
+                    int save = l->base;
+                    emit(l, T_BASEPFX, (uint8_t)pb);
+                    l->p += 2;
+                    l->base = pb;
+                    lex_base_number(l);
+                    l->base = save;
+                    continue;
+                }
+            }
+            if (hex_val(c) >= 0 && hex_val(c) < l->base) {
+                int is_word = 0, i;
+                if (is_alpha(c)) {
+                    for (i = 0; i < NWORDS; i++) {
+                        int m = match_word(s, WORDS[i].name);
+                        if (m > 1 && (WORDS[i].kind == W_INFIX || (WORDS[i].kind == W_FN && s[m] == '('))) { is_word = 1; break; }
+                    }
+                }
+                if (!is_word) {
+                    if (l->n > 0 && l->p > 0 && l->s[l->p - 1] == ' ') {
+                        int lt = l->out[l->n - 1].t;
+                        if (lt >= T_D0 && lt <= T_DF) { l->err = CE_SYNTAX; break; }
+                    }
+                    lex_base_number(l);
+                    continue;
+                }
+            }
+        }
         if (is_digit(c) || c == '.') {
             /* "2 3" must not read as 23 */
             if (l->n > 0 && l->p > 0 && l->s[l->p - 1] == ' ') {

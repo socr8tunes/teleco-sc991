@@ -33,11 +33,12 @@ typedef struct prog {
     int    nconst;
     uint8_t has_eq;      /* contained '=' (equation) */
     uint8_t uses_x;      /* mentions variable X       */
+    uint8_t base;        /* 0 = normal mode, 2/8/10/16 = base-n mode */
 } prog_t;
 
 /* Token stream -> program. */
-calc_err_t compile_tokens(const tok_t *toks, int ntok, prog_t *p);
+calc_err_t compile_tokens(const tok_t *toks, int ntok, int base, prog_t *p);
 /* Text -> program (lex + compile). */
-calc_err_t compile_text(const char *s, prog_t *p);
+calc_err_t compile_text(const char *s, int base, prog_t *p);
 
 #endif

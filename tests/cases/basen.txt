@@ -1,0 +1,58 @@
+# Base-n mode: 32-bit two's complement, results shown in the current base.
+:reset
+:dec
+10+5 => 15
+10-15 => -5
+7*6 => 42
+7/2 => 3
+-7/2 => -3
+2147483647 => 2147483647
+2147483647+1 => Math ERROR
+2147483648 => Math ERROR
+1/0 => Math ERROR
+5 and 3 => 1
+5 or 3 => 7
+5 xor 3 => 6
+5 xnor 3 => -7
+not(5) => -6
+neg(5) => -5
+neg(0) => 0
+sin(1) => Syntax ERROR
+2^3 => Syntax ERROR
+1.5 => Syntax ERROR
+:hex
+FF => FF
+FF+1 => 100
+A+B => 15
+1F*2 => 3E
+FFFFFFFF => FFFFFFFF
+FFFFFFFF+1 => 0
+7FFFFFFF+1 => Math ERROR
+80000000 => 80000000
+0 - 1 => FFFFFFFF
+not(0) => FFFFFFFF
+FF and F0 => F0
+F0 or 0F => FF
+FF xor 0F => F0
+neg(1) => FFFFFFFF
+100000000 => Math ERROR
+0x1F => 1F
+0b101 => B101
+0o17 => Syntax ERROR
+G => Syntax ERROR
+:bin
+101+11 => 1000
+1010 and 0110 => 10
+1010 or 0101 => 1111
+not(0) => 11111111111111111111111111111111
+2 => Syntax ERROR
+0xFF => 11111111
+:oct
+17+1 => 20
+777 => 777
+8 => Syntax ERROR
+:dec
+0xFF => 255
+0b1111 => 15
+:comp
+10+5 => 15

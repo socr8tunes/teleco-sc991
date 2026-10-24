@@ -16,6 +16,7 @@
 #include "calc/errors.h"
 
 /* Returns CE_OK or CE_SYNTAX / CE_STACK. *n receives the token count. */
-calc_err_t lex_text(const char *s, tok_t *out, int cap, int *n);
+calc_err_t lex_text(const char *s, int base, tok_t *out, int cap, int *n);
+/* base: 0 = normal calculation mode, 2 / 8 / 10 / 16 = base-n mode (digits and 0x/0b/0o/0d prefixes). */
 
 #endif

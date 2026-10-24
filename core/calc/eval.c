@@ -479,6 +479,46 @@ static void block_fn(ev_t *e, const ins_t *in, int body_pc)
     fail(e, CE_ARG);
 }
 
+/* ---- base-n mode: 32-bit two's complement integers ---------------------- */
+
+static int base_allowed(int op, int fn)
+{
+    switch (op) {
+    case OP_CONST: case OP_POP: case OP_UNEG: case T_ADD: case T_SUB: case T_MUL: case T_DIV:
+    case T_AND: case T_OR: case T_XOR: case T_XNOR: case T_ANS: case T_PREANS:
+        return 1;
+    case OP_FN: return fn == T_NOT || fn == T_NEGB;
+    default: return 0;
+    }
+}
+
+static int base_result(ev_t *e, int64_t v, num_t *out)
+{
+    if (v < -2147483648LL || v > 2147483647LL) { fail(e, CE_MATH); return -1; }
+    num_from_int(out, v);
+    return 0;
+}
+
+static void base_binary(ev_t *e, int op, const num_t *a, const num_t *b, num_t *r)
+{
+    int64_t x, y, v = 0;
+    uint32_t ux, uy, w = 0;
+    if (dec_to_i64(&a->v, &x) || dec_to_i64(&b->v, &y)) { fail(e, CE_MATH); return; }
+    ux = (uint32_t)x; uy = (uint32_t)y;
+    switch (op) {
+    case T_ADD: v = x + y; break;
+    case T_SUB: v = x - y; break;
+    case T_MUL: v = x * y; break;
+    case T_DIV: if (y == 0) { fail(e, CE_MATH); return; } v = x / y; break;
+    case T_AND: w = ux & uy; v = (int32_t)w; break;
+    case T_OR: w = ux | uy; v = (int32_t)w; break;
+    case T_XOR: w = ux ^ uy; v = (int32_t)w; break;
+    case T_XNOR: w = ~(ux ^ uy); v = (int32_t)w; break;
+    default: fail(e, CE_SYNTAX); return;
+    }
+    base_result(e, v, r);
+}
+
 static void run(ev_t *e, int pc, int end)
 {
     const prog_t *p = e->p;
@@ -488,6 +528,7 @@ static void run(ev_t *e, int pc, int end)
         val_t *a, *b;
         if (e->c->budget == 0) { fail(e, CE_TIME); break; }
         e->c->budget--;
+        if (p->base && !base_allowed(in->op, in->op == OP_FN ? in->x : 0)) { fail(e, CE_SYNTAX); break; }
         switch (in->op) {
         case OP_CONST: set_real(push(e), &p->consts[in->x]); break;
         case OP_POP: if (e->sp > 0) e->sp--; break;
@@ -497,6 +538,7 @@ static void run(ev_t *e, int pc, int end)
             if (a->k == V_CPLX) { cx_t x; to_cx(a, &x); fail_st(e, cx_neg(&x, &x)); if (!e->err) from_cx(a, &x); break; }
             if (!is_real(a)) { fail(e, CE_ARG); break; }
             fail_st(e, num_neg(&a->re, &a->re));
+            if (!e->err && p->base) { int64_t iv; if (dec_to_i64(&a->re.v, &iv) || iv > 2147483647LL) fail(e, CE_MATH); }
             break;
         case T_PI: { num_t t; num_pi(&t); set_real(push(e), &t); break; }
         case T_E: {
@@ -573,6 +615,9 @@ static void run(ev_t *e, int pc, int end)
             if (is_mv(a)) { fail(e, CE_ARG); break; }
             e->c->var[in->a] = *a;
             break;
+        case T_AND: case T_OR: case T_XOR: case T_XNOR:
+            if (!p->base) { fail(e, CE_SYNTAX); break; }
+            /* fall through */
         case T_ADD: case T_SUB: case T_EQ: case T_MUL: case T_DIV: case T_POW: case T_NPR: case T_NCR:
             if (e->sp < 2) { fail(e, CE_SYNTAX); break; }
             b = &e->st[--e->sp];
@@ -581,6 +626,12 @@ static void run(ev_t *e, int pc, int end)
                 val_t t;
                 mat_binary(e, in->op, a, b, &t);
                 if (!e->err) *a = t;
+                break;
+            }
+            if (p->base && is_real(a) && is_real(b)) {
+                num_t t;
+                base_binary(e, in->op, &a->re, &b->re, &t);
+                if (!e->err) set_real(a, &t);
                 break;
             }
             if (is_real(a) && is_real(b)) {
@@ -710,6 +761,15 @@ static void run(ev_t *e, int pc, int end)
                 }
                 break;
             }
+            if ((fn == T_NOT || fn == T_NEGB) && argc == 1) {
+                int64_t x, v;
+                num_t t;
+                a = &e->st[e->sp - 1];
+                if (!p->base || !is_real(a) || dec_to_i64(&a->re.v, &x)) { fail(e, p->base ? CE_MATH : CE_SYNTAX); break; }
+                v = fn == T_NOT ? (int64_t)(int32_t)(~(uint32_t)x) : -x;
+                if (base_result(e, v, &t) == 0) set_real(a, &t);
+                break;
+            }
             if ((fn == T_NORMP || fn == T_NORMQ || fn == T_NORMR) && argc == 1) {
                 dec_t d;
                 num_t t;
@@ -824,7 +884,7 @@ calc_err_t eval_prog(ctx_t *c, const prog_t *p, val_t *out)
 calc_err_t calc_eval_tokens(ctx_t *c, const tok_t *t, int n, val_t *out)
 {
     static prog_t pr;
-    calc_err_t er = compile_tokens(t, n, &pr);
+    calc_err_t er = compile_tokens(t, n, c->base, &pr);
     if (er) return er;
     er = eval_prog(c, &pr, out);
     if (!er) {
@@ -846,7 +906,7 @@ calc_err_t calc_eval_text(ctx_t *c, const char *text, val_t *out)
 {
     tok_t toks[MAX_TOKENS];
     int n = 0;
-    calc_err_t er = lex_text(text, toks, MAX_TOKENS, &n);
+    calc_err_t er = lex_text(text, c->base, toks, MAX_TOKENS, &n);
     if (er) return er;
     return calc_eval_tokens(c, toks, n, out);
 }

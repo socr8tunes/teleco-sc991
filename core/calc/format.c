@@ -449,9 +449,37 @@ size_t fmt_text(const fmt_res_t *r, int ascii, char *buf, size_t cap)
     return put(buf, cap, pos, "i");
 }
 
+static size_t base_text(const ctx_t *c, const val_t *v, char *buf, size_t cap)
+{
+    int64_t x;
+    uint32_t u;
+    char tmp[40];
+    int n = 0, i, b = c->base;
+    if (v->k != V_REAL || dec_to_i64(&v->re.v, &x) || x < -2147483648LL || x > 2147483647LL) {
+        if (cap) buf[0] = 0;
+        return 0;
+    }
+    if (b == 10) {
+        int neg = x < 0;
+        uint64_t m = (uint64_t)(neg ? -x : x);
+        if (m == 0) tmp[n++] = '0';
+        while (m) { tmp[n++] = (char)('0' + m % 10u); m /= 10u; }
+        if (neg) tmp[n++] = '-';
+    } else {
+        u = (uint32_t)x;
+        if (u == 0) tmp[n++] = '0';
+        while (u) { unsigned d = u % (unsigned)b; tmp[n++] = (char)(d < 10 ? '0' + d : 'A' + d - 10); u /= (unsigned)b; }
+    }
+    if ((size_t)n + 1 > cap) n = (int)cap - 1;
+    for (i = 0; i < n; i++) buf[i] = tmp[n - 1 - i];
+    buf[n] = 0;
+    return (size_t)n;
+}
+
 size_t fmt_value_text(const ctx_t *c, const val_t *v, int exact, int ascii, char *buf, size_t cap)
 {
     fmt_res_t r;
+    if (c->base) return base_text(c, v, buf, cap);
     if (v->k == V_MAT || v->k == V_VCT) {
         const num_t *e;
         int rows, cols, i, j;

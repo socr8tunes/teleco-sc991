@@ -92,6 +92,11 @@ static int setting(script_t *s, const char *line, char *out, size_t cap)
         if (!ok) { snprintf(out, cap, "unknown stat type"); return 2; }
     }
     else if (!strncmp(line, ":data ", 6)) return data_cmd(s, line + 6, out, cap);
+    else if (!strcmp(line, ":comp")) c->base = 0;
+    else if (!strcmp(line, ":bin")) c->base = 2;
+    else if (!strcmp(line, ":oct")) c->base = 8;
+    else if (!strcmp(line, ":hex")) c->base = 16;
+    else if (!strcmp(line, ":dec")) c->base = 10;
     else if (!strcmp(line, ":reset")) { int ex = s->exact, as = s->ascii; script_init(s); s->exact = ex; s->ascii = as; }
     else { snprintf(out, cap, "unknown setting: %s", line); return 2; }
     return 1;
