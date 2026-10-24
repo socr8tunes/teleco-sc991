@@ -10,6 +10,8 @@
 #include "parser/program.h"
 #include "parser/lexer.h"
 
+#define MAT_MAX_R 4
+
 typedef struct cs {
     const tok_t *t;
     int n, p;
@@ -57,7 +59,7 @@ static int starts_atom(int t)
     if (is_digit_tok(t) || t == T_DOT) return 1;
     if (is_fn_tok(t)) return 1;
     switch (t) {
-    case T_LP: case T_FRAC: case T_MFRAC: case T_SQRT: case T_ROOT: case T_LOGB:
+    case T_LP: case T_LBRK: case T_FRAC: case T_MFRAC: case T_SQRT: case T_ROOT: case T_LOGB:
     case T_PI: case T_E: case T_I: case T_ANS: case T_PREANS: case T_RAN:
     case T_CONST: case T_STATVAR: case T_VAR: case T_MAT: case T_VCT:
         return 1;
@@ -78,6 +80,7 @@ static void arity(int t, int *lo, int *hi)
     case T_DDX: case T_SOLVE:
         *lo = *hi = 2; break;
     case T_SIGMA: case T_INTEGRAL: *lo = *hi = 3; break;
+    case T_VCTLIT: *lo = 2; *hi = 3; break;
     default: break;
     }
 }
@@ -202,6 +205,24 @@ static void parse_atom(cs_t *c)
         c->p++;
         parse_or(c);
         if (!accept(c, T_RP)) fail(c, CE_SYNTAX);
+    } else if (t == T_LBRK) {
+        int rows = 1, cols = 1, cur = 1;
+        c->p++;
+        for (;;) {
+            parse_or(c);
+            if (c->err) goto out;
+            if (accept(c, T_COMMA)) { cur++; continue; }
+            if (accept(c, T_SEMI)) {
+                if (rows == 1) cols = cur; else if (cur != cols) { fail(c, CE_SYNTAX); goto out; }
+                rows++; cur = 1;
+                continue;
+            }
+            break;
+        }
+        if (!accept(c, T_RBRK)) { fail(c, CE_SYNTAX); goto out; }
+        if (rows == 1) cols = cur; else if (cur != cols) { fail(c, CE_SYNTAX); goto out; }
+        if (rows > MAT_MAX_R || cols > MAT_MAX_R) { fail(c, CE_DIM); goto out; }
+        emit(c, OP_MATLIT, (uint8_t)rows, (uint16_t)cols, 0);
     } else if (t == T_FRAC) {
         c->p++;
         parse_or(c);

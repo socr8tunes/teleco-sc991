@@ -20,7 +20,7 @@ enum tok_type {
     T_DOT, T_EE, T_NEG,
     /* operators */
     T_ADD, T_SUB, T_MUL, T_DIV,
-    T_LP, T_RP, T_COMMA,
+    T_LP, T_RP, T_COMMA, T_LBRK, T_RBRK, T_SEMI,
     /* natural structures */
     T_FRAC, T_FRACSEP, T_FRACEND,                 /* num / den */
     T_MFRAC, T_MSEP1, T_MSEP2, T_MEND,            /* whole, num, den */
@@ -37,7 +37,7 @@ enum tok_type {
     T_ARG, T_CONJ, T_RE, T_IM,
     T_SIGMA, T_DDX, T_INTEGRAL,
     T_DET, T_TRN, T_IDEN, T_DOTP, T_CROSSP, T_ANGLEV, T_UNITV,
-    T_SOLVE,
+    T_SOLVE, T_VCTLIT,
     T_NOT, T_NEGB,
     /* postfix */
     T_FACT, T_SQ, T_CUBE, T_RECIP, T_PERCENT,

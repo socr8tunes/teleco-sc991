@@ -5,33 +5,36 @@ typedef struct word {
     const char *name;
     uint8_t tok;
     uint8_t kind;   /* 0 function group "name(", 1 atom, 2 infix word, 3 postfix word */
+    uint8_t aux;
 } word_t;
 
 enum { W_FN = 0, W_ATOM = 1, W_INFIX = 2, W_POST = 3 };
 
 static const word_t WORDS[] = {
-    {"sin", T_SIN, W_FN}, {"cos", T_COS, W_FN}, {"tan", T_TAN, W_FN},
-    {"asin", T_ASIN, W_FN}, {"acos", T_ACOS, W_FN}, {"atan", T_ATAN, W_FN},
-    {"sinh", T_SINH, W_FN}, {"cosh", T_COSH, W_FN}, {"tanh", T_TANH, W_FN},
-    {"asinh", T_ASINH, W_FN}, {"acosh", T_ACOSH, W_FN}, {"atanh", T_ATANH, W_FN},
-    {"log", T_LOG, W_FN}, {"ln", T_LN, W_FN}, {"exp", T_EXP, W_FN},
-    {"abs", T_ABS, W_FN}, {"cbrt", T_CBRT, W_FN},
-    {"int", T_INT, W_FN}, {"intg", T_INTG, W_FN}, {"rnd", T_RND, W_FN},
-    {"ranint", T_RANINT, W_FN}, {"pol", T_POL, W_FN}, {"rec", T_REC, W_FN},
-    {"arg", T_ARG, W_FN}, {"conj", T_CONJ, W_FN}, {"re", T_RE, W_FN}, {"im", T_IM, W_FN},
-    {"sum", T_SIGMA, W_FN}, {"ddx", T_DDX, W_FN}, {"integral", T_INTEGRAL, W_FN},
-    {"det", T_DET, W_FN}, {"trn", T_TRN, W_FN}, {"iden", T_IDEN, W_FN},
-    {"dot", T_DOTP, W_FN}, {"cross", T_CROSSP, W_FN},
-    {"anglev", T_ANGLEV, W_FN}, {"unitv", T_UNITV, W_FN},
-    {"solve", T_SOLVE, W_FN}, {"not", T_NOT, W_FN}, {"neg", T_NEGB, W_FN},
-    {"sqrt", T_SQRT, W_FN}, {"root", T_ROOT, W_FN},
-    {"frac", T_FRAC, W_FN}, {"mfrac", T_MFRAC, W_FN},
-    {"pi", T_PI, W_ATOM}, {"ans", T_ANS, W_ATOM}, {"preans", T_PREANS, W_ATOM},
-    {"ran#", T_RAN, W_ATOM},
-    {"npr", T_NPR, W_INFIX}, {"ncr", T_NCR, W_INFIX},
-    {"and", T_AND, W_INFIX}, {"or", T_OR, W_INFIX},
-    {"xor", T_XOR, W_INFIX}, {"xnor", T_XNOR, W_INFIX},
-    {"deg", T_DEGSYM, W_POST}, {"rad", T_RADSYM, W_POST}, {"grad", T_GRADSYM, W_POST},
+    {"sin", T_SIN, W_FN, 0}, {"cos", T_COS, W_FN, 0}, {"tan", T_TAN, W_FN, 0},
+    {"asin", T_ASIN, W_FN, 0}, {"acos", T_ACOS, W_FN, 0}, {"atan", T_ATAN, W_FN, 0},
+    {"sinh", T_SINH, W_FN, 0}, {"cosh", T_COSH, W_FN, 0}, {"tanh", T_TANH, W_FN, 0},
+    {"asinh", T_ASINH, W_FN, 0}, {"acosh", T_ACOSH, W_FN, 0}, {"atanh", T_ATANH, W_FN, 0},
+    {"log", T_LOG, W_FN, 0}, {"ln", T_LN, W_FN, 0}, {"exp", T_EXP, W_FN, 0},
+    {"abs", T_ABS, W_FN, 0}, {"cbrt", T_CBRT, W_FN, 0},
+    {"int", T_INT, W_FN, 0}, {"intg", T_INTG, W_FN, 0}, {"rnd", T_RND, W_FN, 0},
+    {"ranint", T_RANINT, W_FN, 0}, {"pol", T_POL, W_FN, 0}, {"rec", T_REC, W_FN, 0},
+    {"arg", T_ARG, W_FN, 0}, {"conj", T_CONJ, W_FN, 0}, {"re", T_RE, W_FN, 0}, {"im", T_IM, W_FN, 0},
+    {"sum", T_SIGMA, W_FN, 0}, {"ddx", T_DDX, W_FN, 0}, {"integral", T_INTEGRAL, W_FN, 0},
+    {"det", T_DET, W_FN, 0}, {"trn", T_TRN, W_FN, 0}, {"iden", T_IDEN, W_FN, 0},
+    {"dot", T_DOTP, W_FN, 0}, {"cross", T_CROSSP, W_FN, 0},
+    {"anglev", T_ANGLEV, W_FN, 0}, {"unitv", T_UNITV, W_FN, 0},
+    {"solve", T_SOLVE, W_FN, 0}, {"vct", T_VCTLIT, W_FN, 0}, {"not", T_NOT, W_FN, 0}, {"neg", T_NEGB, W_FN, 0},
+    {"sqrt", T_SQRT, W_FN, 0}, {"root", T_ROOT, W_FN, 0},
+    {"frac", T_FRAC, W_FN, 0}, {"mfrac", T_MFRAC, W_FN, 0},
+    {"pi", T_PI, W_ATOM, 0}, {"ans", T_ANS, W_ATOM, 0}, {"preans", T_PREANS, W_ATOM, 0},
+    {"ran#", T_RAN, W_ATOM, 0},
+    {"mata", T_MAT, W_ATOM, 0}, {"matb", T_MAT, W_ATOM, 1}, {"matc", T_MAT, W_ATOM, 2}, {"matd", T_MAT, W_ATOM, 3}, {"matans", T_MAT, W_ATOM, 4},
+    {"vcta", T_VCT, W_ATOM, 0}, {"vctb", T_VCT, W_ATOM, 1}, {"vctc", T_VCT, W_ATOM, 2}, {"vctd", T_VCT, W_ATOM, 3}, {"vctans", T_VCT, W_ATOM, 4},
+    {"npr", T_NPR, W_INFIX, 0}, {"ncr", T_NCR, W_INFIX, 0},
+    {"and", T_AND, W_INFIX, 0}, {"or", T_OR, W_INFIX, 0},
+    {"xor", T_XOR, W_INFIX, 0}, {"xnor", T_XNOR, W_INFIX, 0},
+    {"deg", T_DEGSYM, W_POST, 0}, {"rad", T_RADSYM, W_POST, 0}, {"grad", T_GRADSYM, W_POST, 0},
 };
 #define NWORDS (int)(sizeof WORDS / sizeof WORDS[0])
 
@@ -190,8 +193,10 @@ calc_err_t lex_text(const char *str, tok_t *out, int cap, int *n)
             else { lex_root_operand(l); emit(l, T_SQEND, 0); }
             continue;
         }
+        if (c == '[') { emit(l, T_LBRK, 0); push_group(l, T_RBRK, T_COMMA); l->p++; continue; }
+        if (c == ';') { emit(l, T_SEMI, 0); l->p++; continue; }
         if (c == '(') { emit(l, T_LP, 0); push_group(l, T_RP, T_COMMA); l->p++; continue; }
-        if (c == ')') {
+        if (c == ')' || c == ']') {
             if (l->ng == 0) { l->err = CE_SYNTAX; break; }
             l->ng--;
             emit(l, l->g[l->ng].close, 0);
@@ -209,6 +214,15 @@ calc_err_t lex_text(const char *str, tok_t *out, int cap, int *n)
             int v;
             l->p += k;
             while (str[l->p] == ' ') l->p++;
+            if ((lower((unsigned char)str[l->p]) == 'm' && lower((unsigned char)str[l->p + 1]) == 'a' && lower((unsigned char)str[l->p + 2]) == 't') ||
+                (lower((unsigned char)str[l->p]) == 'v' && lower((unsigned char)str[l->p + 1]) == 'c' && lower((unsigned char)str[l->p + 2]) == 't')) {
+                int vec = lower((unsigned char)str[l->p]) == 'v';
+                int id = lower((unsigned char)str[l->p + 3]) - 'a';
+                if (id < 0 || id > 3) { l->err = CE_SYNTAX; break; }
+                emit(l, T_STO, (uint8_t)((vec ? 24 : 16) + id));
+                l->p += 4;
+                continue;
+            }
             v = var_index((unsigned char)str[l->p]);
             if (v < 0) { l->err = CE_SYNTAX; break; }
             emit(l, T_STO, (uint8_t)v);
@@ -239,7 +253,7 @@ calc_err_t lex_text(const char *str, tok_t *out, int cap, int *n)
                     continue;
                 }
                 l->p = q;
-                emit(l, w->tok, 0);
+                emit(l, w->tok, w->aux);
                 continue;
             }
             if (c == 'e') { emit(l, T_E, 0); l->p++; continue; }

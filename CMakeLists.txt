@@ -41,6 +41,7 @@ add_library(teleco_numeric STATIC
   core/values/num.c
   core/values/val.c
   core/values/cplx.c
+  core/values/matrix.c
   core/state/ctx.c
   core/calc/errors.c
   core/calc/format.c

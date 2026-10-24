@@ -119,6 +119,185 @@ static int cx_function(ev_t *e, int fn, const val_t *a, val_t *r)
     return 0;
 }
 
+
+/* ---- matrices and vectors ---------------------------------------------- */
+
+static int is_mv(const val_t *v) { return v->k == V_MAT || v->k == V_VCT; }
+
+static mv_t mview(ev_t *e, const val_t *v)
+{
+    mv_t m;
+    if (v->k == V_MAT) {
+        mat_t *p = &e->c->mats[v->mat];
+        m.r = p->r; m.c = p->c; m.e = p->e;
+    } else {
+        vct_t *p = &e->c->vcts[v->mat];
+        m.r = p->r; m.c = (uint8_t)(p->r ? 1 : 0); m.e = p->e;
+    }
+    return m;
+}
+
+/* write dimensions of a computed view back into its storage */
+static void msync(ev_t *e, const val_t *v, const mv_t *m)
+{
+    if (v->k == V_MAT) { e->c->mats[v->mat].r = m->r; e->c->mats[v->mat].c = m->c; }
+    else e->c->vcts[v->mat].r = m->r;
+}
+
+static int tmp_new(ev_t *e, int vec, val_t *out)
+{
+    uint16_t *mask = vec ? &e->c->tmp_used_v : &e->c->tmp_used;
+    int i;
+    for (i = 0; i < N_MATS - MAT_NAMED; i++) {
+        if (!(*mask & (1u << i))) {
+            *mask = (uint16_t)(*mask | (1u << i));
+            memset(out, 0, sizeof *out);
+            out->k = vec ? V_VCT : V_MAT;
+            out->mat = (uint8_t)(MAT_NAMED + i);
+            return 0;
+        }
+    }
+    fail(e, CE_STACK);
+    return -1;
+}
+
+static void tmp_release(ev_t *e, const val_t *v)
+{
+    if (!is_mv(v) || v->mat < MAT_NAMED) return;
+    if (v->k == V_MAT) e->c->tmp_used = (uint16_t)(e->c->tmp_used & ~(1u << (v->mat - MAT_NAMED)));
+    else e->c->tmp_used_v = (uint16_t)(e->c->tmp_used_v & ~(1u << (v->mat - MAT_NAMED)));
+}
+
+static int mv_defined(ev_t *e, const val_t *v)
+{
+    mv_t m = mview(e, v);
+    if (m.r == 0) { fail(e, CE_DIM); return 0; }
+    return 1;
+}
+
+static calc_err_t dec_to_err(dec_status s, int dim)
+{
+    if (s == DEC_OK || s == DEC_UNDERFLOW) return CE_OK;
+    if (s == DEC_DOMAIN && dim) return CE_DIM;
+    return CE_MATH;
+}
+
+/* binary operation with at least one matrix/vector operand; result into *r */
+static void mat_binary(ev_t *e, int op, const val_t *a, const val_t *b, val_t *r)
+{
+    dec_status s = DEC_OK;
+    val_t o;
+    mv_t va, vb, vo;
+
+    if ((is_mv(a) && !mv_defined(e, a)) || (is_mv(b) && !mv_defined(e, b))) return;
+    if (is_mv(a) && is_mv(b)) {
+        int vec_out;
+        va = mview(e, a); vb = mview(e, b);
+        if (op == T_ADD || op == T_SUB) {
+            if (a->k != b->k) { fail(e, CE_DIM); return; }
+            vec_out = a->k == V_VCT;
+            if (tmp_new(e, vec_out, &o)) return;
+            vo = mview(e, &o);
+            s = (op == T_ADD) ? mx_add(&vo, &va, &vb) : mx_sub(&vo, &va, &vb);
+        } else if (op == T_MUL && a->k == V_MAT) {
+            vec_out = b->k == V_VCT;
+            if (tmp_new(e, vec_out, &o)) return;
+            vo = mview(e, &o);
+            s = mx_mul(&vo, &va, &vb);
+        } else {
+            fail(e, CE_ARG);
+            return;
+        }
+        if (s) { tmp_release(e, &o); fail(e, dec_to_err(s, 1)); return; }
+        msync(e, &o, &vo);
+    } else if (is_mv(a) && b->k == V_REAL && (op == T_MUL || op == T_DIV)) {
+        va = mview(e, a);
+        if (tmp_new(e, a->k == V_VCT, &o)) return;
+        vo = mview(e, &o);
+        s = op == T_MUL ? mx_scale(&vo, &va, &b->re) : mx_div_scalar(&vo, &va, &b->re);
+        if (s) { tmp_release(e, &o); fail(e, dec_to_err(s, 0)); return; }
+        msync(e, &o, &vo);
+    } else if (is_mv(b) && a->k == V_REAL && op == T_MUL) {
+        vb = mview(e, b);
+        if (tmp_new(e, b->k == V_VCT, &o)) return;
+        vo = mview(e, &o);
+        s = mx_scale(&vo, &vb, &a->re);
+        if (s) { tmp_release(e, &o); fail(e, dec_to_err(s, 0)); return; }
+        msync(e, &o, &vo);
+    } else if (is_mv(a) && a->k == V_MAT && op == T_POW && b->k == V_REAL) {
+        int64_t n;
+        mv_t base, acc, tmp;
+        val_t t1, t2;
+        int k;
+        va = mview(e, a);
+        if (va.r != va.c) { fail(e, CE_DIM); return; }
+        if (dec_to_i64(&b->re.v, &n) || n == 0 || n > 100 || n < -100) { fail(e, CE_ARG); return; }
+        if (tmp_new(e, 0, &o)) return;
+        if (tmp_new(e, 0, &t1)) return;
+        if (tmp_new(e, 0, &t2)) return;
+        vo = mview(e, &o); base = mview(e, &t1); tmp = mview(e, &t2);
+        (void)tmp;
+        if (n < 0) { s = mx_inv(&base, &va); n = -n; }
+        else { memcpy(base.e, va.e, (size_t)(va.r * va.c) * sizeof(num_t)); base.r = va.r; base.c = va.c; }
+        acc = vo;
+        if (!s) s = mx_identity(&acc, va.r);
+        for (k = 0; !s && n; ) {
+            if (n & 1) s = mx_mul(&acc, &acc, &base);
+            n >>= 1;
+            k++;
+            if (!s && n) s = mx_mul(&base, &base, &base);
+        }
+        tmp_release(e, &t1); tmp_release(e, &t2);
+        if (s) { tmp_release(e, &o); fail(e, dec_to_err(s, 0)); return; }
+        msync(e, &o, &acc);
+    } else {
+        fail(e, CE_ARG);
+        return;
+    }
+    tmp_release(e, a);
+    tmp_release(e, b);
+    *r = o;
+}
+
+/* unary operations producing matrices: neg, trn, inverse, square, cube. Returns via *r. */
+static void mat_unary(ev_t *e, int op, const val_t *a, val_t *r)
+{
+    mv_t va, vo;
+    val_t o;
+    dec_status s = DEC_OK;
+    if (!mv_defined(e, a)) return;
+    va = mview(e, a);
+    if (op == T_SQ || op == T_CUBE) {
+        val_t sq;
+        if (a->k != V_MAT) { fail(e, CE_ARG); return; }
+        mat_binary(e, T_MUL, a, a, &sq);
+        if (e->err) return;
+        if (op == T_CUBE) { val_t c; mat_binary(e, T_MUL, &sq, a, &c); if (e->err) return; *r = c; }
+        else *r = sq;
+        return;
+    }
+    if (tmp_new(e, a->k == V_VCT, &o)) return;
+    vo = mview(e, &o);
+    switch (op) {
+    case OP_UNEG: s = mx_neg(&vo, &va); break;
+    case T_TRN:
+        if (a->k != V_MAT) { tmp_release(e, &o); fail(e, CE_ARG); return; }
+        s = mx_trn(&vo, &va); break;
+    case T_RECIP:
+        if (a->k != V_MAT) { tmp_release(e, &o); fail(e, CE_ARG); return; }
+        if (va.r != va.c) { tmp_release(e, &o); fail(e, CE_DIM); return; }
+        s = mx_inv(&vo, &va); break;
+    case T_UNITV:
+        if (a->k != V_VCT) { tmp_release(e, &o); fail(e, CE_ARG); return; }
+        s = mx_unit(&vo, &va); break;
+    default: tmp_release(e, &o); fail(e, CE_ARG); return;
+    }
+    if (s) { tmp_release(e, &o); fail(e, dec_to_err(s, op == T_TRN)); return; }
+    msync(e, &o, &vo);
+    tmp_release(e, a);
+    *r = o;
+}
+
 /* ---- real operations --------------------------------------------------- */
 
 static void real_binary(ev_t *e, int op, const num_t *a, const num_t *b, num_t *r)
@@ -313,6 +492,7 @@ static void run(ev_t *e, int pc, int end)
         case OP_POP: if (e->sp > 0) e->sp--; break;
         case OP_UNEG:
             a = &e->st[e->sp - 1];
+            if (is_mv(a)) { val_t t; mat_unary(e, OP_UNEG, a, &t); if (!e->err) *a = t; break; }
             if (a->k == V_CPLX) { cx_t x; to_cx(a, &x); fail_st(e, cx_neg(&x, &x)); if (!e->err) from_cx(a, &x); break; }
             if (!is_real(a)) { fail(e, CE_ARG); break; }
             fail_st(e, num_neg(&a->re, &a->re));
@@ -327,6 +507,30 @@ static void run(ev_t *e, int pc, int end)
             if (!e->c->cplx) { fail(e, CE_SYNTAX); break; }
             { val_t *v = push(e); num_t z, o; memset(v, 0, sizeof *v); num_from_int(&z, 0); num_from_int(&o, 1); v->k = V_CPLX; v->re = z; v->im = o; }
             break;
+        case T_MAT: case T_VCT: {
+            val_t *v = push(e);
+            memset(v, 0, sizeof *v);
+            v->k = in->op == T_MAT ? V_MAT : V_VCT;
+            v->mat = in->a;
+            if (!mv_defined(e, v)) break;
+            break;
+        }
+        case OP_MATLIT: {
+            int rows = in->a, cols = in->x, n = rows * cols, i;
+            val_t o;
+            int vec = 0;
+            (void)vec;
+            if (e->sp < n) { fail(e, CE_SYNTAX); break; }
+            for (i = 0; i < n; i++) if (!is_real(&e->st[e->sp - n + i])) { fail(e, CE_ARG); break; }
+            if (e->err) break;
+            if (tmp_new(e, 0, &o)) break;
+            for (i = 0; i < n; i++) e->c->mats[o.mat].e[i] = e->st[e->sp - n + i].re;
+            e->c->mats[o.mat].r = (uint8_t)rows;
+            e->c->mats[o.mat].c = (uint8_t)cols;
+            e->sp -= n;
+            *push(e) = o;
+            break;
+        }
         case T_ANS: *push(e) = e->c->ans; break;
         case T_PREANS: *push(e) = e->c->preans; break;
         case T_VAR: *push(e) = e->c->var[in->a]; break;
@@ -342,12 +546,35 @@ static void run(ev_t *e, int pc, int end)
         }
         case T_STO:
             if (e->sp < 1) { fail(e, CE_SYNTAX); break; }
-            e->c->var[in->a] = e->st[e->sp - 1];
+            a = &e->st[e->sp - 1];
+            if (in->a >= 16) {
+                int slot = in->a & 7, vec = in->a >= 24;
+                val_t nm;
+                if (!is_mv(a) || (vec ? a->k != V_VCT : a->k != V_MAT) || !mv_defined(e, a)) { if (!e->err) fail(e, CE_ARG); break; }
+                if (a->mat != slot || 0) {
+                    if (vec) e->c->vcts[slot] = e->c->vcts[a->mat];
+                    else e->c->mats[slot] = e->c->mats[a->mat];
+                }
+                tmp_release(e, a);
+                memset(&nm, 0, sizeof nm);
+                nm.k = vec ? V_VCT : V_MAT;
+                nm.mat = (uint8_t)slot;
+                *a = nm;
+                break;
+            }
+            if (is_mv(a)) { fail(e, CE_ARG); break; }
+            e->c->var[in->a] = *a;
             break;
         case T_ADD: case T_SUB: case T_EQ: case T_MUL: case T_DIV: case T_POW: case T_NPR: case T_NCR:
             if (e->sp < 2) { fail(e, CE_SYNTAX); break; }
             b = &e->st[--e->sp];
             a = &e->st[e->sp - 1];
+            if (is_mv(a) || is_mv(b)) {
+                val_t t;
+                mat_binary(e, in->op, a, b, &t);
+                if (!e->err) *a = t;
+                break;
+            }
             if (is_real(a) && is_real(b)) {
                 int want_cx = 0;
                 if (e->c->cplx && in->op == T_POW && a->re.v.neg && !dec_is_zero(&a->re.v)) {
@@ -367,6 +594,12 @@ static void run(ev_t *e, int pc, int end)
         case T_FACT: case T_SQ: case T_CUBE: case T_RECIP: case T_PERCENT:
         case T_DEGSYM: case T_RADSYM: case T_GRADSYM:
             a = &e->st[e->sp - 1];
+            if (is_mv(a) && (in->op == T_SQ || in->op == T_CUBE || in->op == T_RECIP)) {
+                val_t t;
+                mat_unary(e, in->op, a, &t);
+                if (!e->err) *a = t;
+                break;
+            }
             if (a->k == V_CPLX && (in->op == T_SQ || in->op == T_CUBE || in->op == T_RECIP || in->op == T_PERCENT)) {
                 val_t t, k;
                 if (in->op == T_SQ) { cx_binary(e, T_MUL, a, a, &t); }
@@ -404,6 +637,83 @@ static void run(ev_t *e, int pc, int end)
         case OP_FN: {
             int fn = in->x, argc = in->a;
             if (e->sp < argc) { fail(e, CE_SYNTAX); break; }
+            if (fn == T_VCTLIT) {
+                val_t o;
+                int i;
+                for (i = 0; i < argc; i++) if (!is_real(&e->st[e->sp - argc + i])) { fail(e, CE_ARG); break; }
+                if (e->err || tmp_new(e, 1, &o)) break;
+                for (i = 0; i < argc; i++) e->c->vcts[o.mat].e[i] = e->st[e->sp - argc + i].re;
+                e->c->vcts[o.mat].r = (uint8_t)argc;
+                e->sp -= argc;
+                *push(e) = o;
+                break;
+            }
+            if ((argc == 1 && is_mv(&e->st[e->sp - 1])) || (argc == 2 && (is_mv(&e->st[e->sp - 1]) || is_mv(&e->st[e->sp - 2])))) {
+                val_t o, *x = &e->st[e->sp - argc];
+                if (argc == 1) {
+                    if (fn == T_DET) {
+                        num_t d;
+                        mv_t vx;
+                        if (x->k != V_MAT || !mv_defined(e, x)) { fail(e, CE_ARG); break; }
+                        vx = mview(e, x);
+                        { dec_status st = mx_det(&d, &vx); if (st) { fail(e, dec_to_err(st, 1)); break; } }
+                        tmp_release(e, x);
+                        set_real(x, &d);
+                    } else if (fn == T_ABS && x->k == V_VCT) {
+                        num_t d;
+                        mv_t vx;
+                        if (!mv_defined(e, x)) break;
+                        vx = mview(e, x);
+                        { dec_status st = mx_norm(&d, &vx); if (st) { fail(e, dec_to_err(st, 0)); break; } }
+                        tmp_release(e, x);
+                        set_real(x, &d);
+                    } else if (fn == T_TRN || fn == T_UNITV) {
+                        mat_unary(e, fn, x, &o);
+                        if (!e->err) *x = o;
+                    } else {
+                        fail(e, CE_ARG);
+                    }
+                } else {
+                    val_t *y = &e->st[e->sp - 1];
+                    mv_t vx, vy, vo;
+                    dec_status st = DEC_OK;
+                    if (!is_mv(x) || !is_mv(y) || !mv_defined(e, x) || !mv_defined(e, y)) { if (!e->err) fail(e, CE_ARG); break; }
+                    vx = mview(e, x); vy = mview(e, y);
+                    if (x->k != V_VCT || y->k != V_VCT) { fail(e, CE_ARG); break; }
+                    if (fn == T_DOTP || fn == T_ANGLEV) {
+                        num_t d;
+                        st = fn == T_DOTP ? mx_dot(&d, &vx, &vy) : mx_angle(&d, &vx, &vy, e->c->angle);
+                        if (st) { fail(e, dec_to_err(st, 1)); break; }
+                        tmp_release(e, x); tmp_release(e, y);
+                        e->sp--;
+                        set_real(&e->st[e->sp - 1], &d);
+                    } else if (fn == T_CROSSP) {
+                        if (tmp_new(e, 1, &o)) break;
+                        vo = mview(e, &o);
+                        st = mx_cross(&vo, &vx, &vy);
+                        if (st) { tmp_release(e, &o); fail(e, dec_to_err(st, 1)); break; }
+                        msync(e, &o, &vo);
+                        tmp_release(e, x); tmp_release(e, y);
+                        e->sp--;
+                        e->st[e->sp - 1] = o;
+                    } else {
+                        fail(e, CE_ARG);
+                    }
+                }
+                break;
+            }
+            if (fn == T_IDEN && argc == 1) {
+                int64_t n;
+                val_t o;
+                mv_t vo;
+                if (!is_real(&e->st[e->sp - 1]) || dec_to_i64(&e->st[e->sp - 1].re.v, &n) || n < 1 || n > MAT_MAX) { fail(e, CE_ARG); break; }
+                if (tmp_new(e, 0, &o)) break;
+                vo = mview(e, &o);
+                { dec_status st = mx_identity(&vo, (int)n); if (st) { fail(e, CE_ARG); break; } }
+                msync(e, &o, &vo);
+                e->st[e->sp - 1] = o;
+                break;
+            }
             if (argc == 1) {
                 a = &e->st[e->sp - 1];
                 if (a->k == V_CPLX) {
@@ -472,6 +782,8 @@ calc_err_t eval_prog(ctx_t *c, const prog_t *p, val_t *out)
     e->c = c; e->p = p;
     c->budget = VM_BUDGET;
     c->has_aux = 0;
+    c->tmp_used = 0;
+    c->tmp_used_v = 0;
     if (p->has_eq) return CE_SYNTAX;
     run(e, 0, p->n);
     if (e->err) return e->err;
@@ -486,7 +798,18 @@ calc_err_t calc_eval_tokens(ctx_t *c, const tok_t *t, int n, val_t *out)
     calc_err_t er = compile_tokens(t, n, &pr);
     if (er) return er;
     er = eval_prog(c, &pr, out);
-    if (!er) { c->preans = c->ans; c->ans = *out; }
+    if (!er) {
+        if (out->k == V_MAT || out->k == V_VCT) {
+            /* matrix results live in the MatAns / VctAns slots */
+            if (out->k == V_MAT) { if (out->mat != MAT_ANS) c->mats[MAT_ANS] = c->mats[out->mat]; }
+            else if (out->mat != MAT_ANS) c->vcts[MAT_ANS] = c->vcts[out->mat];
+            out->mat = MAT_ANS;
+            val_zero(&c->preans);
+        } else {
+            c->preans = c->ans;
+        }
+        c->ans = *out;
+    }
     return er;
 }
 

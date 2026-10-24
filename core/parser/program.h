@@ -15,7 +15,8 @@ enum {
     OP_UNEG,          /* unary minus                                          */
     OP_FN,            /* function: x = tok type, a = argc                     */
     OP_BLOCK_FN,      /* function with body block: x = tok, a = argc, y = body length */
-    OP_DMS            /* a = number of components given (1..3)                */
+    OP_DMS,           /* a = number of components given (1..3)                */
+    OP_MATLIT         /* matrix literal: a = rows, x = cols, elements on the stack */
 };
 
 typedef struct ins {

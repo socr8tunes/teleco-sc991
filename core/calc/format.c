@@ -452,6 +452,31 @@ size_t fmt_text(const fmt_res_t *r, int ascii, char *buf, size_t cap)
 size_t fmt_value_text(const ctx_t *c, const val_t *v, int exact, int ascii, char *buf, size_t cap)
 {
     fmt_res_t r;
+    if (v->k == V_MAT || v->k == V_VCT) {
+        const num_t *e;
+        int rows, cols, i, j;
+        size_t pos = 0;
+        char cell[64];
+        ctx_t cc = *c;
+        cc.frac_improper = 1;   /* matrix cells use improper fractions */
+        if (v->k == V_MAT) { rows = c->mats[v->mat].r; cols = c->mats[v->mat].c; e = c->mats[v->mat].e; }
+        else { rows = c->vcts[v->mat].r; cols = 1; e = c->vcts[v->mat].e; }
+        if (cap == 0) return 0;
+        buf[0] = 0;
+        pos = put(buf, cap, pos, v->k == V_VCT ? "Vct[" : "[");
+        for (i = 0; i < rows; i++) {
+            if (v->k == V_MAT) pos = put(buf, cap, pos, i ? ", [" : "[");
+            for (j = 0; j < cols; j++) {
+                fmt_real(&cc, &e[i * cols + j], exact, &r);
+                fmt_text(&r, ascii, cell, sizeof cell);
+                if (j) pos = put(buf, cap, pos, ", ");
+                else if (v->k == V_VCT && i) pos = put(buf, cap, pos, ", ");
+                pos = put(buf, cap, pos, cell);
+            }
+            if (v->k == V_MAT) pos = put(buf, cap, pos, "]");
+        }
+        return put(buf, cap, pos, "]");
+    }
     fmt_value(c, v, exact, &r);
     return fmt_text(&r, ascii, buf, cap);
 }
