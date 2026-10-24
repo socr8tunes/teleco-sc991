@@ -1,5 +1,6 @@
 #include <string.h>
 #include "parser/lexer.h"
+#include "stats/stat.h"
 
 typedef struct word {
     const char *name;
@@ -24,13 +25,14 @@ static const word_t WORDS[] = {
     {"det", T_DET, W_FN, 0}, {"trn", T_TRN, W_FN, 0}, {"iden", T_IDEN, W_FN, 0},
     {"dot", T_DOTP, W_FN, 0}, {"cross", T_CROSSP, W_FN, 0},
     {"anglev", T_ANGLEV, W_FN, 0}, {"unitv", T_UNITV, W_FN, 0},
-    {"solve", T_SOLVE, W_FN, 0}, {"vct", T_VCTLIT, W_FN, 0}, {"not", T_NOT, W_FN, 0}, {"neg", T_NEGB, W_FN, 0},
+    {"solve", T_SOLVE, W_FN, 0}, {"vct", T_VCTLIT, W_FN, 0}, {"yhat", T_YHAT, W_FN, 0}, {"xhat", T_XHAT, W_FN, 0}, {"normp", T_NORMP, W_FN, 0}, {"normq", T_NORMQ, W_FN, 0}, {"normr", T_NORMR, W_FN, 0}, {"not", T_NOT, W_FN, 0}, {"neg", T_NEGB, W_FN, 0},
     {"sqrt", T_SQRT, W_FN, 0}, {"root", T_ROOT, W_FN, 0},
     {"frac", T_FRAC, W_FN, 0}, {"mfrac", T_MFRAC, W_FN, 0},
     {"pi", T_PI, W_ATOM, 0}, {"ans", T_ANS, W_ATOM, 0}, {"preans", T_PREANS, W_ATOM, 0},
     {"ran#", T_RAN, W_ATOM, 0},
     {"mata", T_MAT, W_ATOM, 0}, {"matb", T_MAT, W_ATOM, 1}, {"matc", T_MAT, W_ATOM, 2}, {"matd", T_MAT, W_ATOM, 3}, {"matans", T_MAT, W_ATOM, 4},
     {"vcta", T_VCT, W_ATOM, 0}, {"vctb", T_VCT, W_ATOM, 1}, {"vctc", T_VCT, W_ATOM, 2}, {"vctd", T_VCT, W_ATOM, 3}, {"vctans", T_VCT, W_ATOM, 4},
+    {"n", T_STATVAR, W_ATOM, SV_N}, {"sumx", T_STATVAR, W_ATOM, SV_SUMX}, {"sumx2", T_STATVAR, W_ATOM, SV_SUMX2}, {"xbar", T_STATVAR, W_ATOM, SV_XBAR}, {"sigx", T_STATVAR, W_ATOM, SV_SIGX}, {"sx", T_STATVAR, W_ATOM, SV_SX}, {"sumy", T_STATVAR, W_ATOM, SV_SUMY}, {"sumy2", T_STATVAR, W_ATOM, SV_SUMY2}, {"ybar", T_STATVAR, W_ATOM, SV_YBAR}, {"sigy", T_STATVAR, W_ATOM, SV_SIGY}, {"sy", T_STATVAR, W_ATOM, SV_SY}, {"sumxy", T_STATVAR, W_ATOM, SV_SUMXY}, {"reg_a", T_STATVAR, W_ATOM, SV_A}, {"reg_b", T_STATVAR, W_ATOM, SV_B}, {"reg_c", T_STATVAR, W_ATOM, SV_C}, {"reg_r", T_STATVAR, W_ATOM, SV_R}, {"minx", T_STATVAR, W_ATOM, SV_MINX}, {"maxx", T_STATVAR, W_ATOM, SV_MAXX}, {"miny", T_STATVAR, W_ATOM, SV_MINY}, {"maxy", T_STATVAR, W_ATOM, SV_MAXY}, {"q1", T_STATVAR, W_ATOM, SV_Q1}, {"med", T_STATVAR, W_ATOM, SV_MED}, {"q3", T_STATVAR, W_ATOM, SV_Q3}, {"sumx3", T_STATVAR, W_ATOM, SV_SUMX3}, {"sumx4", T_STATVAR, W_ATOM, SV_SUMX4}, {"sumx2y", T_STATVAR, W_ATOM, SV_SUMX2Y},
     {"npr", T_NPR, W_INFIX, 0}, {"ncr", T_NCR, W_INFIX, 0},
     {"and", T_AND, W_INFIX, 0}, {"or", T_OR, W_INFIX, 0},
     {"xor", T_XOR, W_INFIX, 0}, {"xnor", T_XNOR, W_INFIX, 0},

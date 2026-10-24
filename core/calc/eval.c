@@ -6,6 +6,7 @@
 #include "parser/lexer.h"
 #include "calc/nummethods.h"
 #include "values/cplx.h"
+#include "functions/dist.h"
 
 typedef struct ev {
     ctx_t        *c;
@@ -531,6 +532,13 @@ static void run(ev_t *e, int pc, int end)
             *push(e) = o;
             break;
         }
+        case T_STATVAR: {
+            num_t t;
+            calc_err_t er = stat_var(&e->c->stat, in->a, e->c->angle, &t);
+            if (er) { fail(e, er); break; }
+            set_real(push(e), &t);
+            break;
+        }
         case T_ANS: *push(e) = e->c->ans; break;
         case T_PREANS: *push(e) = e->c->preans; break;
         case T_VAR: *push(e) = e->c->var[in->a]; break;
@@ -700,6 +708,27 @@ static void run(ev_t *e, int pc, int end)
                         fail(e, CE_ARG);
                     }
                 }
+                break;
+            }
+            if ((fn == T_NORMP || fn == T_NORMQ || fn == T_NORMR) && argc == 1) {
+                dec_t d;
+                num_t t;
+                a = &e->st[e->sp - 1];
+                if (!is_real(a)) { fail(e, CE_ARG); break; }
+                fail_st(e, dist_norm(fn == T_NORMP ? NORM_P : fn == T_NORMQ ? NORM_Q : NORM_R, &d, &a->re.v));
+                if (e->err) break;
+                num_from_dec(&t, &d);
+                set_real(a, &t);
+                break;
+            }
+            if ((fn == T_YHAT || fn == T_XHAT) && argc == 1) {
+                num_t t;
+                calc_err_t er;
+                a = &e->st[e->sp - 1];
+                if (!is_real(a)) { fail(e, CE_ARG); break; }
+                er = fn == T_YHAT ? stat_yhat(&e->c->stat, &a->re, &t) : stat_xhat(&e->c->stat, &a->re, &t);
+                if (er) { fail(e, er); break; }
+                set_real(a, &t);
                 break;
             }
             if (fn == T_IDEN && argc == 1) {

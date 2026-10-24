@@ -7,6 +7,7 @@
 
 #include "values/val.h"
 #include "values/matrix.h"
+#include "stats/stat.h"
 #include "parser/token.h"
 #include "calc/errors.h"
 
@@ -32,6 +33,7 @@ typedef struct ctx {
     val_t    ans, preans;
     mat_t    mats[N_MATS];     /* r == 0: undefined                          */
     vct_t    vcts[N_VCTS];
+    stat_t   stat;             /* STAT editor data and type                  */
     uint16_t tmp_used;         /* bit i: temporary slot MAT_NAMED+i in use (matrices) */
     uint16_t tmp_used_v;
     uint32_t rng;              /* xorshift state                            */

@@ -11,4 +11,5 @@ void ctx_init(ctx_t *c)
     val_zero(&c->ans);
     val_zero(&c->preans);
     c->rng = 0x2545F491u;
+    stat_init(&c->stat, ST_1VAR);
 }

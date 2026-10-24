@@ -37,11 +37,13 @@ add_library(teleco_numeric STATIC
   core/numeric/xconst.c
   core/functions/xfunc.c
   core/functions/mathfn.c
+  core/functions/dist.c
   core/values/exact.c
   core/values/num.c
   core/values/val.c
   core/values/cplx.c
   core/values/matrix.c
+  core/stats/stat.c
   core/state/ctx.c
   core/calc/errors.c
   core/calc/format.c
