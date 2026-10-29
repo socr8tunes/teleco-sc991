@@ -123,6 +123,17 @@ int script_aux(const script_t *s, char *out, size_t cap)
 {
     val_t v;
     size_t n;
+    if (s->ctx.nres > 1) {
+        int i;
+        const char *names = s->ctx.res_kind == 2 ? "xyz" : "123";
+        size_t pos = 0;
+        out[0] = 0;
+        for (i = 1; i < s->ctx.nres && pos + 8 < cap; i++) {
+            pos += (size_t)snprintf(out + pos, cap - pos, "%s%c%s = ", i > 1 ? "\n" : "", s->ctx.res_kind == 2 ? names[i] : 'x', s->ctx.res_kind == 2 ? "" : (i == 1 ? "2" : "3"));
+            pos += fmt_value_text(&s->ctx, &s->ctx.res[i], s->exact, s->ascii, out + pos, cap - pos);
+        }
+        return 1;
+    }
     if (!s->ctx.has_aux) return 0;
     val_real(&v, &s->ctx.aux);
     n = (size_t)snprintf(out, cap, s->ctx.has_aux == 1 ? "L-R = " : "(2nd) = ");

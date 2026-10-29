@@ -83,6 +83,10 @@ static void arity(int t, int *lo, int *hi)
         *lo = *hi = 2; break;
     case T_SIGMA: case T_INTEGRAL: *lo = *hi = 3; break;
     case T_VCTLIT: *lo = 2; *hi = 3; break;
+    case T_QUAD: *lo = *hi = 3; break;
+    case T_CUBIC: *lo = *hi = 4; break;
+    case T_SIMUL2: *lo = *hi = 6; break;
+    case T_SIMUL3: *lo = *hi = 12; break;
     default: break;
     }
 }

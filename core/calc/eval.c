@@ -9,6 +9,7 @@
 #include "functions/dist.h"
 #include "calc/format.h"
 #include "units/units.h"
+#include "solvers/eqn.h"
 
 typedef struct ev {
     ctx_t        *c;
@@ -781,6 +782,30 @@ static void run(ev_t *e, int pc, int end)
                 }
                 break;
             }
+            if (fn == T_QUAD || fn == T_CUBIC || fn == T_SIMUL2 || fn == T_SIMUL3) {
+                num_t coef[12], xs[3];
+                cx_t roots[3];
+                int i, nroots = 0;
+                calc_err_t er;
+                for (i = 0; i < argc; i++) {
+                    if (!is_real(&e->st[e->sp - argc + i])) { fail(e, CE_ARG); break; }
+                    coef[i] = e->st[e->sp - argc + i].re;
+                }
+                if (e->err) break;
+                if (fn == T_QUAD) { er = eqn_quad(coef, roots); nroots = 2; }
+                else if (fn == T_CUBIC) { er = eqn_cubic(coef, roots); nroots = 3; }
+                else { int n = fn == T_SIMUL2 ? 2 : 3; er = eqn_simul(n, coef, xs); nroots = n; }
+                if (er) { fail(e, er); break; }
+                e->c->nres = (uint8_t)nroots;
+                e->c->res_kind = (uint8_t)(fn == T_SIMUL2 || fn == T_SIMUL3 ? 2 : 1);
+                for (i = 0; i < nroots; i++) {
+                    if (e->c->res_kind == 2) val_real(&e->c->res[i], &xs[i]);
+                    else from_cx(&e->c->res[i], &roots[i]);
+                }
+                e->sp -= argc;
+                *push(e) = e->c->res[0];
+                break;
+            }
             if (fn == T_CONSTF && argc == 1) {
                 dec_t d; num_t t; int64_t n;
                 a = &e->st[e->sp - 1];
@@ -963,6 +988,7 @@ calc_err_t eval_prog(ctx_t *c, const prog_t *p, val_t *out)
     e->c = c; e->p = p;
     c->budget = VM_BUDGET;
     c->has_aux = 0;
+    c->nres = 0;
     c->tmp_used = 0;
     c->tmp_used_v = 0;
     if (p->has_eq) return CE_SYNTAX;

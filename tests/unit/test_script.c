@@ -35,6 +35,14 @@ int main(int argc, char **argv)
         expect = arrow + 4;
         total++;
         if (!script_line(&sc, expr, out, sizeof out)) strcpy(out, "(no output)");
+        else {
+            char aux[256], *nl;
+            if (script_aux(&sc, aux, sizeof aux)) {
+                size_t l = strlen(out);
+                while ((nl = strchr(aux, '\n')) != NULL) { memmove(nl + 3, nl + 1, strlen(nl)); memcpy(nl, " | ", 3); }
+                snprintf(out + l, sizeof out - l, " | %s", aux);
+            }
+        }
         if (strcmp(out, expect) != 0) {
             fail++;
             printf("FAIL %s:%d: %s\n   expected: %s\n   got:      %s\n", argv[1], lineno, expr, expect, out);

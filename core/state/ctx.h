@@ -38,6 +38,9 @@ typedef struct ctx {
     uint16_t tmp_used_v;
     uint32_t rng;              /* xorshift state                            */
     uint32_t budget;           /* remaining VM steps for this evaluation    */
+    val_t    res[4];           /* multi-valued results (roots x1..x3, simultaneous solutions) */
+    uint8_t  nres;
+    uint8_t  res_kind;         /* 1 = roots (x1, x2, x3), 2 = unknowns (x, y, z)                */
     num_t    aux;              /* second result of Pol( / Rec( (theta / y)  */
     uint8_t  has_aux;          /* 1 = SOLVE residual (L-R), 2 = second Pol/Rec value */
 } ctx_t;
