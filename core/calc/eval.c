@@ -7,6 +7,8 @@
 #include "calc/nummethods.h"
 #include "values/cplx.h"
 #include "functions/dist.h"
+#include "calc/format.h"
+#include "units/units.h"
 
 typedef struct ev {
     ctx_t        *c;
@@ -574,6 +576,14 @@ static void run(ev_t *e, int pc, int end)
             *push(e) = o;
             break;
         }
+        case T_CONST: {
+            dec_t d; num_t t;
+            fail_st(e, const_value(in->a, &d));
+            if (e->err) break;
+            num_from_dec(&t, &d);
+            set_real(push(e), &t);
+            break;
+        }
         case T_STATVAR: {
             num_t t;
             calc_err_t er = stat_var(&e->c->stat, in->a, e->c->angle, &t);
@@ -670,6 +680,16 @@ static void run(ev_t *e, int pc, int end)
             if (!is_real(a)) { fail(e, CE_ARG); break; }
             { num_t t; real_post(e, in->op, &a->re, &t); if (!e->err) set_real(a, &t); }
             break;
+        case T_CONV: {
+            dec_t d; num_t t;
+            a = &e->st[e->sp - 1];
+            if (!is_real(a)) { fail(e, CE_ARG); break; }
+            fail_st(e, conv_apply(in->a, &a->re.v, &d));
+            if (e->err) break;
+            num_from_dec(&t, &d);
+            set_real(a, &t);
+            break;
+        }
         case OP_DMS: {
             int k = in->a, i;
             num_t parts[3], t, sixty, v;
@@ -759,6 +779,78 @@ static void run(ev_t *e, int pc, int end)
                         fail(e, CE_ARG);
                     }
                 }
+                break;
+            }
+            if (fn == T_CONSTF && argc == 1) {
+                dec_t d; num_t t; int64_t n;
+                a = &e->st[e->sp - 1];
+                if (!is_real(a) || dec_to_i64(&a->re.v, &n) || n < 1 || n > const_count()) { fail(e, CE_ARG); break; }
+                fail_st(e, const_value((int)n - 1, &d));
+                if (e->err) break;
+                num_from_dec(&t, &d);
+                set_real(a, &t);
+                break;
+            }
+            if (fn == T_CONVF && argc == 2) {
+                dec_t d; num_t t; int64_t n;
+                a = &e->st[e->sp - 2]; b = &e->st[e->sp - 1];
+                if (!is_real(a) || !is_real(b) || dec_to_i64(&a->re.v, &n) || n < 1 || n > conv_count()) { fail(e, CE_ARG); break; }
+                fail_st(e, conv_apply((int)n - 1, &b->re.v, &d));
+                if (e->err) break;
+                num_from_dec(&t, &d);
+                e->sp--;
+                set_real(&e->st[e->sp - 1], &t);
+                break;
+            }
+            if (fn == T_DMSF && argc == 1) {
+                a = &e->st[e->sp - 1];
+                if (!is_real(a)) { fail(e, CE_ARG); break; }
+                a->disp = 1;
+                break;
+            }
+            if (fn == T_RND && argc == 1) {
+                dec_t d;
+                num_t t;
+                a = &e->st[e->sp - 1];
+                if (!is_real(a)) { fail(e, CE_ARG); break; }
+                fail_st(e, dec_round_display(e->c, &d, &a->re.v));
+                if (e->err) break;
+                num_from_dec(&t, &d);
+                set_real(a, &t);
+                break;
+            }
+            if (fn == T_RANINT && argc == 2) {
+                int64_t lo, hi, v;
+                num_t t;
+                a = &e->st[e->sp - 2]; b = &e->st[e->sp - 1];
+                if (!is_real(a) || !is_real(b) || dec_to_i64(&a->re.v, &lo) || dec_to_i64(&b->re.v, &hi) || hi < lo) { fail(e, CE_ARG); break; }
+                v = lo + (int64_t)(rng_next(e->c) % (uint32_t)(hi - lo + 1));
+                num_from_int(&t, v);
+                e->sp--;
+                set_real(&e->st[e->sp - 1], &t);
+                break;
+            }
+            if ((fn == T_POL || fn == T_REC) && argc == 2) {
+                cx_t z;
+                num_t r1, r2;
+                dec_status st;
+                a = &e->st[e->sp - 2]; b = &e->st[e->sp - 1];
+                if (!is_real(a) || !is_real(b)) { fail(e, CE_ARG); break; }
+                if (fn == T_POL) {
+                    z.re = a->re; z.im = b->re;
+                    st = cx_abs(&r1, &z);
+                    if (!st) st = cx_arg(&r2, &z, e->c->angle);
+                } else {
+                    st = cx_polar(&z, &a->re, &b->re, e->c->angle);
+                    r1 = z.re; r2 = z.im;
+                }
+                if (st) { fail_st(e, st); break; }
+                val_real(&e->c->var[VAR_X], &r1);
+                val_real(&e->c->var[VAR_Y], &r2);
+                e->c->aux = r2;
+                e->c->has_aux = 2;
+                e->sp--;
+                set_real(&e->st[e->sp - 1], &r1);
                 break;
             }
             if ((fn == T_NOT || fn == T_NEGB) && argc == 1) {

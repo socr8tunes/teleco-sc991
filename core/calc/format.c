@@ -476,10 +476,73 @@ static size_t base_text(const ctx_t *c, const val_t *v, char *buf, size_t cap)
     return (size_t)n;
 }
 
+/* d deg m min s sec, seconds rounded to 4 decimals */
+static size_t dms_text(const ctx_t *c, const val_t *v, int ascii, char *buf, size_t cap)
+{
+    dec_t x, d, m_f, m, s, k60, k, tmp;
+    ctx_t cc = *c;
+    fmt_part_t sp;
+    int64_t di, mi;
+    char ds[24], ms[24], ss[32];
+    size_t pos = 0;
+    int neg = v->re.v.neg && !dec_is_zero(&v->re.v);
+
+    dec_abs(&x, &v->re.v);
+    dec_from_i64(&k60, 60);
+    fn_trunc(&d, &x);
+    dec_sub(&tmp, &x, &d);
+    dec_mul(&m_f, &tmp, &k60);
+    fn_trunc(&m, &m_f);
+    dec_sub(&tmp, &m_f, &m);
+    dec_mul(&s, &tmp, &k60);
+    dec_from_i64(&k, 10000);
+    dec_mul(&s, &s, &k);
+    dec_from_str(&tmp, "0.5");
+    dec_add(&s, &s, &tmp);
+    fn_floor(&s, &s);
+    dec_div(&s, &s, &k);
+    if (dec_cmp(&s, &k60) >= 0) { dec_zero(&s); dec_from_i64(&tmp, 1); dec_add(&m, &m, &tmp); }
+    if (dec_cmp(&m, &k60) >= 0) { dec_zero(&m); dec_from_i64(&tmp, 1); dec_add(&d, &d, &tmp); }
+    if (dec_to_i64(&d, &di) || dec_to_i64(&m, &mi)) { if (cap) buf[0] = 0; return 0; }
+    cc.fmt = FMT_NORM1;
+    {
+        fmt_res_t r;
+        num_t sn;
+        num_from_dec(&sn, &s);
+        fmt_real(&cc, &sn, 0, &r);
+        sp = r.p;
+        fmt_text(&r, ascii, ss, sizeof ss);
+    }
+    {
+        char t[24]; int n = 0, i;
+        uint64_t u = (uint64_t)di;
+        if (!u) t[n++] = '0';
+        while (u) { t[n++] = (char)('0' + u % 10u); u /= 10u; }
+        for (i = 0; i < n; i++) ds[i] = t[n - 1 - i];
+        ds[n] = 0;
+        n = 0; u = (uint64_t)mi;
+        if (!u) t[n++] = '0';
+        while (u) { t[n++] = (char)('0' + u % 10u); u /= 10u; }
+        for (i = 0; i < n; i++) ms[i] = t[n - 1 - i];
+        ms[n] = 0;
+    }
+    (void)sp;
+    if (cap == 0) return 0;
+    buf[0] = 0;
+    if (neg) pos = put(buf, cap, pos, "-");
+    pos = put(buf, cap, pos, ds);
+    pos = put(buf, cap, pos, ascii ? "d" : "\xc2\xb0");
+    pos = put(buf, cap, pos, ms);
+    pos = put(buf, cap, pos, "'");
+    pos = put(buf, cap, pos, ss);
+    return put(buf, cap, pos, "\"");
+}
+
 size_t fmt_value_text(const ctx_t *c, const val_t *v, int exact, int ascii, char *buf, size_t cap)
 {
     fmt_res_t r;
     if (c->base) return base_text(c, v, buf, cap);
+    if (v->k == V_REAL && v->disp == 1) return dms_text(c, v, ascii, buf, cap);
     if (v->k == V_MAT || v->k == V_VCT) {
         const num_t *e;
         int rows, cols, i, j;

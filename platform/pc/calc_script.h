@@ -20,4 +20,7 @@ void script_init(script_t *s);
  */
 int script_line(script_t *s, const char *line, char *out, size_t cap);
 
+/* After a line that produced a result: second output (Pol/Rec value, SOLVE residual) or 0. */
+int script_aux(const script_t *s, char *out, size_t cap);
+
 #endif

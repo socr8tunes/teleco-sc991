@@ -77,6 +77,7 @@ static void arity(int t, int *lo, int *hi)
     *lo = *hi = 1;
     switch (t) {
     case T_LOG: *lo = 1; *hi = 2; break;
+    case T_CONVF:
     case T_RANINT: case T_POL: case T_REC: case T_DOTP: case T_CROSSP: case T_ANGLEV:
     case T_DDX: case T_SOLVE:
         *lo = *hi = 2; break;

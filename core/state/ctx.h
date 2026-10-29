@@ -39,7 +39,7 @@ typedef struct ctx {
     uint32_t rng;              /* xorshift state                            */
     uint32_t budget;           /* remaining VM steps for this evaluation    */
     num_t    aux;              /* second result of Pol( / Rec( (theta / y)  */
-    uint8_t  has_aux;
+    uint8_t  has_aux;          /* 1 = SOLVE residual (L-R), 2 = second Pol/Rec value */
 } ctx_t;
 
 void ctx_init(ctx_t *c);

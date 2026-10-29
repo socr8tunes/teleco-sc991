@@ -23,13 +23,13 @@ int main(int argc, char **argv)
     if (u && u[0] == '1') sc.ascii = 0;
     if (argc > 1) {
         for (i = 1; i < argc; i++)
-            if (script_line(&sc, argv[i], out, sizeof out)) puts(out);
+            if (script_line(&sc, argv[i], out, sizeof out)) { puts(out); if (script_aux(&sc, out, sizeof out)) puts(out); }
         return 0;
     }
     while (fgets(line, sizeof line, stdin)) {
         size_t n = strlen(line);
         while (n && (line[n - 1] == '\n' || line[n - 1] == '\r')) line[--n] = 0;
-        if (script_line(&sc, line, out, sizeof out)) puts(out);
+        if (script_line(&sc, line, out, sizeof out)) { puts(out); if (script_aux(&sc, out, sizeof out)) puts(out); }
     }
     return 0;
 }

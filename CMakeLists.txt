@@ -44,6 +44,7 @@ add_library(teleco_numeric STATIC
   core/values/cplx.c
   core/values/matrix.c
   core/stats/stat.c
+  core/units/units.c
   core/state/ctx.c
   core/calc/errors.c
   core/calc/format.c
@@ -52,6 +53,7 @@ add_library(teleco_numeric STATIC
   core/parser/lexer.c
   core/parser/expr.c)
 target_include_directories(teleco_numeric PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/core)
+target_include_directories(teleco_numeric PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/core/units)
 teleco_target_options(teleco_numeric)
 
 # ---- tests ---------------------------------------------------------------

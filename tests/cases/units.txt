@@ -1,0 +1,60 @@
+# Constants, unit conversions, DMS, Pol/Rec, Rnd. Constants are CODATA 2022 (see docs).
+:reset
+const(28) => 299792458
+const(6) => 6.62607015E-34
+const(23) => 1.602176634E-19
+const(24) => 6.02214076E23
+const(25) => 1.380649E-23
+const(35) => 9.80665
+const(37) => 376.7303134
+const(40) => 101325
+const(0) => Argument ERROR
+const(41) => Argument ERROR
+conv(1,10) => 25.4
+conv(2,25.4) => 10
+conv(3,1) => 0.3048
+conv(4,1) => 3.280839895
+conv(7,1) => 1.609344
+conv(8,100) => 62.13711922
+conv(13,1) => 3.785411784
+conv(19,36) => 10
+conv(20,10) => 36
+conv(21,1) => 28.34952313
+conv(23,1) => 0.45359237
+conv(24,10) => 22.04622622
+conv(25,1) => 101325
+conv(26,101325) => 1
+conv(37,212) => 100
+conv(37,32) => 0
+conv(38,100) => 212
+conv(38,-40) => -40
+conv(39,1) => 4.184
+conv(40,4.184) => 1
+conv(99,1) => Argument ERROR
+dms(1.5) => 1d30'0"
+dms(30.2625) => 30d15'45"
+dms(0.5) => 0d30'0"
+dms(1°30'15") => 1d30'15"
+dms(59.99999999) => 60d0'0"
+1°30'0" => 1 1/2
+:decimal
+1°30'0" => 1.5
+10°15'30" => 10.25833333
+:exact
+:deg
+pol(1,1) => sqrt(2)
+pol(3,4) => 5
+rec(2,60) => 1
+:rad
+pol(0,2) => 2
+:deg
+rnd(2/3) => 0.6666666667
+:fix 2
+rnd(2/3) => 0.67
+rnd(1.005) => 1.01
+rnd(0.004) => 0.00
+:sci 3
+rnd(123456) => 1.235E5
+:norm1
+ranint(5,5) => 5
+ranint(7,3) => Argument ERROR

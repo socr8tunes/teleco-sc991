@@ -14,6 +14,7 @@ enum { V_REAL = 0, V_CPLX = 1, V_MAT = 2, V_VCT = 3 };
 typedef struct val {
     uint8_t k;
     uint8_t mat;
+    uint8_t disp;    /* 1 = show as degrees-minutes-seconds */
     num_t re;
     num_t im;
 } val_t;

@@ -118,3 +118,14 @@ int script_line(script_t *s, const char *line, char *out, size_t cap)
     else fmt_value_text(&s->ctx, &v, s->exact, s->ascii, out, cap);
     return 1;
 }
+
+int script_aux(const script_t *s, char *out, size_t cap)
+{
+    val_t v;
+    size_t n;
+    if (!s->ctx.has_aux) return 0;
+    val_real(&v, &s->ctx.aux);
+    n = (size_t)snprintf(out, cap, s->ctx.has_aux == 1 ? "L-R = " : "(2nd) = ");
+    fmt_value_text(&s->ctx, &v, s->exact, s->ascii, out + n, cap - n);
+    return 1;
+}
