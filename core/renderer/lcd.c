@@ -3,11 +3,31 @@
 
 #include "renderer/font_data.inc"
 
-void lcd_clear(lcd_t *l) { memset(l->px, 0, sizeof l->px); }
+void lcd_unclip(lcd_t *l) { l->cx0 = 0; l->cy0 = 0; l->cx1 = LCD_W; l->cy1 = LCD_H; }
+void lcd_clip(lcd_t *l, int x, int y, int w, int h)
+{
+    l->cx0 = (int16_t)x; l->cy0 = (int16_t)y; l->cx1 = (int16_t)(x + w); l->cy1 = (int16_t)(y + h);
+}
+void lcd_clear(lcd_t *l) { memset(l->px, 0, sizeof l->px); lcd_unclip(l); }
+
+void lcd_line(lcd_t *l, int x0, int y0, int x1, int y1)
+{
+    int dx = x1 > x0 ? x1 - x0 : x0 - x1, dy = y1 > y0 ? y1 - y0 : y0 - y1;
+    int sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1, err = dx - dy;
+    for (;;) {
+        int e2;
+        lcd_pixel(l, x0, y0, 1);
+        if (x0 == x1 && y0 == y1) break;
+        e2 = 2 * err;
+        if (e2 > -dy) { err -= dy; x0 += sx; }
+        if (e2 < dx) { err += dx; y0 += sy; }
+    }
+}
 
 void lcd_pixel(lcd_t *l, int x, int y, int on)
 {
     uint8_t m;
+    if (x < l->cx0 || y < l->cy0 || x >= l->cx1 || y >= l->cy1) return;
     if (x < 0 || y < 0 || x >= LCD_W || y >= LCD_H) return;
     m = (uint8_t)(0x80u >> (x & 7));
     if (on) l->px[y * LCD_STRIDE + (x >> 3)] |= m;

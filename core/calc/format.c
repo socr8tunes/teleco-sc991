@@ -115,7 +115,7 @@ static void fmt_dec_part(const ctx_t *c, const dec_t *x, fmt_part_t *p)
             for (i = 0; i < c->fmt_digits; i++) p->num[n++] = '0';
             p->num[n] = 0;
         } else if (c->fmt == FMT_SCI || c->fmt == FMT_ENG) {
-            int i, n = 0, nd = c->fmt == FMT_SCI ? (c->fmt_digits ? c->fmt_digits : 9) : 0;
+            int i, n = 0, nd = c->fmt == FMT_SCI ? (c->fmt_digits ? c->fmt_digits - 1 : 9) : 0;
             p->num[n++] = '0';
             if (nd) { p->num[n++] = '.'; for (i = 0; i < nd; i++) p->num[n++] = '0'; }
             p->num[n] = 0;
@@ -130,7 +130,7 @@ static void fmt_dec_part(const ctx_t *c, const dec_t *x, fmt_part_t *p)
 
     switch (c->fmt) {
     case FMT_SCI: {
-        int nd = c->fmt_digits ? c->fmt_digits + 1 : 10;
+        int nd = c->fmt_digits ? c->fmt_digits : 10;   /* Sci n = n significant digits (0 = 10) */
         carry = round_digits(dg, nd);
         if (carry) e++;
         mant_text(dg, nd, 0, p->num, sizeof p->num);
@@ -139,11 +139,11 @@ static void fmt_dec_part(const ctx_t *c, const dec_t *x, fmt_part_t *p)
     }
     case FMT_ENG: {
         int m3 = ((e % 3) + 3) % 3, ee, kd;
-        carry = round_digits(dg, c->fmt_digits ? c->fmt_digits + 1 : 10);
+        carry = round_digits(dg, c->fmt_digits ? c->fmt_digits : 10);
         if (carry) e++;
         m3 = ((e % 3) + 3) % 3;
         ee = e - m3;
-        kd = c->fmt_digits ? c->fmt_digits + 1 : 10;
+        kd = c->fmt_digits ? c->fmt_digits : 10;
         /* mantissa has m3+1 integer digits */
         {
             uint8_t sh[NDIG];
@@ -592,7 +592,7 @@ dec_status dec_round_display(const ctx_t *c, dec_t *r, const dec_t *x)
         }
         return dec_round_sig(r, x, keep);
     case FMT_SCI: case FMT_ENG:
-        return dec_round_sig(r, x, c->fmt_digits ? c->fmt_digits + 1 : 10);
+        return dec_round_sig(r, x, c->fmt_digits ? c->fmt_digits : 10);
     default:
         return dec_round_sig(r, x, 10);
     }

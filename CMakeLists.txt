@@ -52,10 +52,23 @@ add_library(teleco_numeric STATIC
   core/calc/nummethods.c
   core/calc/eval.c
   core/parser/lexer.c
-  core/parser/expr.c)
+  core/parser/expr.c
+  core/parser/tokinfo.c)
 target_include_directories(teleco_numeric PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/core)
 target_include_directories(teleco_numeric PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/core/units)
 teleco_target_options(teleco_numeric)
+
+# ---- editor / renderer / UI ------------------------------------------------
+add_library(teleco_ui STATIC
+  core/renderer/lcd.c
+  core/renderer/mathlay.c
+  core/editor/editor.c
+  core/ui/app.c
+  core/ui/view.c
+  core/ui/menu.c
+  core/ui/screens.c)
+target_link_libraries(teleco_ui PUBLIC teleco_numeric)
+teleco_target_options(teleco_ui)
 
 # ---- tests ---------------------------------------------------------------
 enable_testing()
@@ -126,3 +139,26 @@ if(Python3_FOUND)
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/differential/run_expr_diff.py
             --cli $<TARGET_FILE:teleco_cli> --count 1500 --seed ${TELECO_DIFF_SEED})
 endif()
+
+add_executable(test_layout tests/unit/test_layout.c)
+target_link_libraries(test_layout PRIVATE teleco_ui)
+teleco_target_options(test_layout)
+add_test(NAME layout_unit COMMAND test_layout)
+
+add_library(pc_sim STATIC platform/pc/sim_keys.c)
+target_link_libraries(pc_sim PUBLIC teleco_ui)
+target_include_directories(pc_sim PUBLIC platform/pc)
+teleco_target_options(pc_sim)
+
+add_executable(teleco_sim platform/pc/teleco_sim.c)
+target_link_libraries(teleco_sim PRIVATE pc_sim)
+teleco_target_options(teleco_sim)
+
+add_executable(test_ui tests/unit/test_ui.c)
+target_link_libraries(test_ui PRIVATE pc_sim)
+teleco_target_options(test_ui)
+file(GLOB TELECO_UI_CASES ${CMAKE_CURRENT_SOURCE_DIR}/tests/ui/*.txt)
+foreach(case_file ${TELECO_UI_CASES})
+  get_filename_component(case_name ${case_file} NAME_WE)
+  add_test(NAME ui_${case_name} COMMAND test_ui ${case_file})
+endforeach()

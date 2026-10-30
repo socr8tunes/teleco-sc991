@@ -56,6 +56,7 @@ enum tok_type {
     T_VAR,                                        /* a = 0..8: A B C D E F X Y M */
     T_MAT,                                        /* a = 0..4: A B C D Ans */
     T_VCT,                                        /* a = 0..4 */
+    T_DANGLE,                                     /* display only: the angle sign of r<theta results */
     T_LAST
 };
 

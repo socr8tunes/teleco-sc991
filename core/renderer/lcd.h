@@ -48,7 +48,12 @@
 
 typedef struct lcd {
     uint8_t px[LCD_STRIDE * LCD_H];
+    int16_t cx0, cy0, cx1, cy1;      /* clip rectangle (x1, y1 exclusive) */
 } lcd_t;
+
+void lcd_clip(lcd_t *l, int x, int y, int w, int h);
+void lcd_unclip(lcd_t *l);
+void lcd_line(lcd_t *l, int x0, int y0, int x1, int y1);
 
 void lcd_clear(lcd_t *l);
 void lcd_pixel(lcd_t *l, int x, int y, int on);      /* clipped */

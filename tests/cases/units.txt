@@ -54,7 +54,17 @@ rnd(2/3) => 0.67
 rnd(1.005) => 1.01
 rnd(0.004) => 0.00
 :sci 3
-rnd(123456) => 1.235E5
+rnd(123456) => 1.23E5
 :norm1
 ranint(5,5) => 5
 ranint(7,3) => Argument ERROR
+# Sci n = n significant digits
+:decimal
+:sci 5
+1/7 => 1.4286E-1
+123456 => 1.2346E5
+:sci 1
+7 => 7E0
+:sci 0
+1/7 => 1.428571429E-1
+:norm1

@@ -1,0 +1,91 @@
+# key-driven end-to-end cases: keys => displayed result
+2 + 3 * 4 EXE => 14
+1 FRAC 3 RIGHT + 2 FRAC 3 RIGHT EXE => 1
+1 FRAC 4 RIGHT EXE => 1/4
+1 FRAC 3 RIGHT EXE SD => 0.3333333333
+SQRT 9 RIGHT EXE => 3
+SQRT 8 RIGHT EXE => 2sqrt(2)
+SQRT 8 RIGHT EXE SD => 2.828427125
+2 POW 10 RIGHT EXE => 1024
+2 POW 3 POW 2 RIGHT RIGHT EXE => 512
+SQ => @expr
+5 SQ EXE => 25
+2 SHIFT SQ EXE => 8
+SIN 3 0 EXE => 1/2
+SHIFT SIN 1 EXE => 90
+COS 6 0 ) EXE => 1/2
+LOG 1 0 0 EXE => 2
+LN SHIFT PI EXE => 1
+SHIFT PI SQ => @expr
+PI EXE => pi
+PI EXE SD => 3.141592654
+2 PI EXE => 2pi
+1 2 DEL 3 EXE => 13
+1 2 LEFT DEL 3 EXE => 32
+1 2 3 LEFT LEFT 9 EXE => 1923
+1 / 0 EXE => Math ERROR
+1 + EXE => Syntax ERROR
+( 1 + 2 EXE => 3
+SQRT ( 1 + 3 ) RIGHT EXE => 2
+# Ans continuation
+5 EXE + 3 EXE => 8
+5 EXE * 2 EXE => 10
+5 EXE SQ => @expr
+5 EXE SQ EXE => 25
+5 EXE ANS + 1 EXE => 6
+5 EXE 7 EXE => 7
+# variables and memory
+7 STO ALPHA NEG EXE => 7
+7 STO ALPHA NEG EXE AC ALPHA NEG * 2 EXE => 14
+5 STO ALPHA DMS EXE AC ALPHA DMS SQ EXE => 25
+3 EXE M+ AC 4 EXE M+ AC ALPHA M+ EXE => 7
+3 EXE SHIFT M+ AC ALPHA M+ EXE => -3
+# history
+1 + 1 EXE AC UP EXE => 2
+1 + 1 EXE 5 * 5 EXE AC UP UP EXE => 2
+1 + 1 EXE 5 * 5 EXE AC UP UP DOWN EXE => 25
+1 + 1 EXE UP EXE => 2
+# editing after a result
+1 + 1 EXE LEFT 1 EXE => 12
+1 + 1 EXE RIGHT 9 EXE => 92
+2 * 3 EXE EXE => 6
+AC => @expr
+# degrees minutes seconds
+1 DMS 3 0 DMS EXE => 1 1/2
+1 DMS 3 0 DMS EXE SD => 1.5
+1 DMS 3 0 DMS 3 0 DMS EXE => 1 61/120
+1 DMS 3 0 DMS 3 0 DMS EXE SD => 1.508333333
+# percent, factorial, powers
+2 0 SHIFT ( EXE => 1/5
+2 0 SHIFT ( EXE SD => 0.2
+5 FACT EXE => 120
+4 XINV EXE => 1/4
+# modes: angle radians via MODE 1 (Angle toggles)
+MODE 1 AC SIN 0 EXE => 0
+MODE 1 AC SIN PI ) EXE => 0
+MODE 1 AC SIN FRAC PI DOWN 2 RIGHT EXE => 1
+# format via mode: Fix 2
+MODE 2 3 2 PI EXE SD => 3.14
+MODE 2 4 3 PI EXE SD => 3.14E0
+MODE 2 1 PI EXE SD => 3.141592654
+# base-n: hex
+MODE 6 5 ALPHA SIN + 1 EXE => E
+MODE 6 2 1 0 1 + 1 EXE => 110
+MODE 6 3 7 + 1 EXE => 10
+# complex
+MODE 4 ( 1 + 2 ALPHA 0 => @expr
+# structure editing
+1 FRAC 2 => expr:{1|2}
+1 FRAC 2 RIGHT + 3 => expr:{1|2}+3
+SQRT 2 => expr:sqrt{2}
+1 FRAC 2 DEL DEL => expr:{1|}
+1 FRAC DEL DEL => expr:{|}
+1 FRAC DEL DEL DEL => expr:
+1 2 FRAC => expr:{12|}
+FRAC 1 DOWN 2 => expr:{1|2}
+FRAC 1 DOWN 2 UP 3 => expr:{13|2}
+FRAC 1 DOWN 2 UP 3 DOWN 4 => expr:{13|24}
+# shifted functions that exist, and missing ones
+SHIFT 7 => @expr
+# constants menu: speed of light
+SHIFT 7 DOWN DOWN EXE => @expr
