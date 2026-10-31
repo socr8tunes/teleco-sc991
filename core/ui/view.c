@@ -189,6 +189,16 @@ static int current_value(const app_t *a, val_t *v)
     return 1;
 }
 
+/* tokens of a value with the current display settings (ENG view applied) */
+static int value_tokens(const app_t *a, const val_t *v, tok_t *tk, int cap)
+{
+    fmt_res_t r;
+    ctx_fmt_saved_t sv = ctx_fmt_override(&a->ctx, a->eng_view ? FMT_ENG : -1, -1);
+    fmt_value(&a->ctx, v, a->exact, &r);
+    ctx_fmt_restore(&a->ctx, sv);
+    return ui_res_tokens(&r, tk, cap);
+}
+
 static void draw_result(const app_t *a, lcd_t *l, int top)
 {
     val_t v;
@@ -215,13 +225,9 @@ static void draw_result(const app_t *a, lcd_t *l, int top)
         lcd_text_right(l, x_right, LCD_H - 10, u, 0);
     } else {
         tok_t tk[96];
-        ctx_t cc = a->ctx;
-        fmt_res_t r;
         int n;
         box_t b;
-        if (a->eng_view) cc.fmt = FMT_ENG;
-        fmt_value(&cc, &v, a->exact, &r);
-        n = ui_res_tokens(&r, tk, 96);
+        n = value_tokens(a, &v, tk, 96);
         if (n < 0) { lcd_text_right(l, x_right, LCD_H - 10, "Display ERROR", 0); return; }
         b = lay_measure(tk, n, 0);
         lcd_clip(l, 0, top, LCD_W, LCD_H - top);
@@ -241,14 +247,11 @@ static void calc_screen(const app_t *a, lcd_t *l)
         val_t v;
         if (a->have_res && a->ctx.base == 0) {
             tok_t tk[96];
-            fmt_res_t r;
-            ctx_t cc2 = a->ctx;
             int n;
             current_value(a, &v);
             if (v.k != V_MAT && v.k != V_VCT && !(v.k == V_REAL && v.disp == 1)) {
-                fmt_value(&cc2, &v, a->exact, &r);
-                n = ui_res_tokens(&r, tk, 96);
-                if (n >= 0) rtop = LCD_H - 3 - (lay_measure(tk, n, 0).asc + lay_measure(tk, n, 0).desc);
+                n = value_tokens(a, &v, tk, 96);
+                if (n >= 0) { box_t rb = lay_measure(tk, n, 0); rtop = LCD_H - 3 - (rb.asc + rb.desc); }
             }
         }
     }

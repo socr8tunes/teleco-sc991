@@ -80,10 +80,12 @@ size_t sim_result_text(const app_t *a, char *buf, size_t cap)
     else if (a->ctx.has_aux && a->view_idx == 1) val_real(&v, &a->ctx.aux);
     else v = a->res;
     {
-        ctx_t cc = a->ctx;
-        if (a->eng_view) cc.fmt = FMT_ENG;
+        size_t n;
+        ctx_fmt_saved_t sv = ctx_fmt_override(&a->ctx, a->eng_view ? FMT_ENG : -1, -1);
         if (a->dms_view && v.k == V_REAL) v.disp = 1;
-        return fmt_value_text(&cc, &v, a->exact, 1, buf, cap);
+        n = fmt_value_text(&a->ctx, &v, a->exact, 1, buf, cap);
+        ctx_fmt_restore(&a->ctx, sv);
+        return n;
     }
 }
 

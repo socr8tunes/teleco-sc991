@@ -480,7 +480,6 @@ static size_t base_text(const ctx_t *c, const val_t *v, char *buf, size_t cap)
 static size_t dms_text(const ctx_t *c, const val_t *v, int ascii, char *buf, size_t cap)
 {
     dec_t x, d, m_f, m, s, k60, k, tmp;
-    ctx_t cc = *c;
     fmt_part_t sp;
     int64_t di, mi;
     char ds[24], ms[24], ss[32];
@@ -504,12 +503,13 @@ static size_t dms_text(const ctx_t *c, const val_t *v, int ascii, char *buf, siz
     if (dec_cmp(&s, &k60) >= 0) { dec_zero(&s); dec_from_i64(&tmp, 1); dec_add(&m, &m, &tmp); }
     if (dec_cmp(&m, &k60) >= 0) { dec_zero(&m); dec_from_i64(&tmp, 1); dec_add(&d, &d, &tmp); }
     if (dec_to_i64(&d, &di) || dec_to_i64(&m, &mi)) { if (cap) buf[0] = 0; return 0; }
-    cc.fmt = FMT_NORM1;
     {
         fmt_res_t r;
         num_t sn;
+        ctx_fmt_saved_t sv = ctx_fmt_override(c, FMT_NORM1, -1);
         num_from_dec(&sn, &s);
-        fmt_real(&cc, &sn, 0, &r);
+        fmt_real(c, &sn, 0, &r);
+        ctx_fmt_restore(c, sv);
         sp = r.p;
         fmt_text(&r, ascii, ss, sizeof ss);
     }
@@ -548,17 +548,16 @@ size_t fmt_value_text(const ctx_t *c, const val_t *v, int exact, int ascii, char
         int rows, cols, i, j;
         size_t pos = 0;
         char cell[64];
-        ctx_t cc = *c;
-        cc.frac_improper = 1;   /* matrix cells use improper fractions */
+        ctx_fmt_saved_t sv = ctx_fmt_override(c, -1, 1);   /* matrix cells use improper fractions */
         if (v->k == V_MAT) { rows = c->mats[v->mat].r; cols = c->mats[v->mat].c; e = c->mats[v->mat].e; }
         else { rows = c->vcts[v->mat].r; cols = 1; e = c->vcts[v->mat].e; }
-        if (cap == 0) return 0;
+        if (cap == 0) { ctx_fmt_restore(c, sv); return 0; }
         buf[0] = 0;
         pos = put(buf, cap, pos, v->k == V_VCT ? "Vct[" : "[");
         for (i = 0; i < rows; i++) {
             if (v->k == V_MAT) pos = put(buf, cap, pos, i ? ", [" : "[");
             for (j = 0; j < cols; j++) {
-                fmt_real(&cc, &e[i * cols + j], exact, &r);
+                fmt_real(c, &e[i * cols + j], exact, &r);
                 fmt_text(&r, ascii, cell, sizeof cell);
                 if (j) pos = put(buf, cap, pos, ", ");
                 else if (v->k == V_VCT && i) pos = put(buf, cap, pos, ", ");
@@ -566,6 +565,7 @@ size_t fmt_value_text(const ctx_t *c, const val_t *v, int exact, int ascii, char
             }
             if (v->k == V_MAT) pos = put(buf, cap, pos, "]");
         }
+        ctx_fmt_restore(c, sv);
         return put(buf, cap, pos, "]");
     }
     fmt_value(c, v, exact, &r);

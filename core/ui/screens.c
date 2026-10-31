@@ -231,10 +231,10 @@ void ui_matview_render(const app_t *a, lcd_t *l)
 {
     int rows, cols, i, j, x, y, ytop = 11, ybot = LCD_H - 2;
     const num_t *e;
-    ctx_t cc = a->ctx;
+    ctx_fmt_saved_t sv;
     char buf[24];
     if (!mv_dims(a, &rows, &cols, &e)) return;
-    cc.frac_improper = 1;
+    sv = ctx_fmt_override(&a->ctx, -1, 1);
     snprintf(buf, sizeof buf, "%s %dx%d", a->res.k == V_MAT ? "MATRIX" : "VECTOR", rows, cols);
     ui_title(l, buf, 0);
     x = 8;
@@ -244,7 +244,7 @@ void ui_matview_render(const app_t *a, lcd_t *l)
         for (j = 0; j < MAT_MAX; j++) { colw[j] = 0; rowa[j] = 0; rowd[j] = 0; }
         for (i = a->mv_r; i < rows; i++) {
             for (j = a->mv_c; j < cols; j++) {
-                int n = ui_real_tokens(&cc, &e[i * cols + j], a->exact, tk, MV_CELL_TOKS);
+                int n = ui_real_tokens(&a->ctx, &e[i * cols + j], a->exact, tk, MV_CELL_TOKS);
                 box_t b = n >= 0 ? lay_measure(tk, n, 0) : (box_t){6, 7, 0};
                 if (b.w > colw[j]) colw[j] = b.w;
                 if (b.asc > rowa[i]) rowa[i] = b.asc;
@@ -265,7 +265,7 @@ void ui_matview_render(const app_t *a, lcd_t *l)
             for (j = a->mv_c; j < cols; j++) {
                 int n;
                 if (xx + colw[j] > LCD_W - 10) break;
-                n = ui_real_tokens(&cc, &e[i * cols + j], a->exact, tk, MV_CELL_TOKS);
+                n = ui_real_tokens(&a->ctx, &e[i * cols + j], a->exact, tk, MV_CELL_TOKS);
                 if (n >= 0) {
                     box_t b = lay_measure(tk, n, 0);
                     (void)lay_draw(l, tk, n, xx + (colw[j] - b.w) / 2, y + rowa[i], 0, -1, 0);
@@ -283,6 +283,7 @@ void ui_matview_render(const app_t *a, lcd_t *l)
         if (a->mv_r > 0) lcd_text(l, LCD_W - 6, 10, S_UP, 0);
         if (a->mv_r + vis_rows < rows) lcd_text(l, LCD_W - 6, 56, S_DOWN, 0);
     }
+    ctx_fmt_restore(&a->ctx, sv);
 }
 
 /* ---- confirmation dialog ----------------------------------------------------------- */

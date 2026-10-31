@@ -47,4 +47,28 @@ typedef struct ctx {
 
 void ctx_init(ctx_t *c);
 
+/*
+ * Temporarily override display settings for one formatting call. The context is
+ * ~14 KB, so copying it just to change a field would blow the MCU stack; the
+ * override is applied in place and undone by ctx_fmt_restore (not re-entrant).
+ * fmt < 0 / improper < 0 leave that setting alone.
+ */
+typedef struct ctx_fmt_saved { uint8_t fmt, frac_improper; } ctx_fmt_saved_t;
+static inline ctx_fmt_saved_t ctx_fmt_override(const ctx_t *c, int fmt, int improper)
+{
+    ctx_t *m = (ctx_t *)c;
+    ctx_fmt_saved_t s;
+    s.fmt = m->fmt;
+    s.frac_improper = m->frac_improper;
+    if (fmt >= 0) m->fmt = (uint8_t)fmt;
+    if (improper >= 0) m->frac_improper = (uint8_t)improper;
+    return s;
+}
+static inline void ctx_fmt_restore(const ctx_t *c, ctx_fmt_saved_t s)
+{
+    ctx_t *m = (ctx_t *)c;
+    m->fmt = s.fmt;
+    m->frac_improper = s.frac_improper;
+}
+
 #endif

@@ -66,8 +66,11 @@ add_library(teleco_ui STATIC
   core/ui/app.c
   core/ui/view.c
   core/ui/menu.c
-  core/ui/screens.c)
+  core/ui/screens.c
+  core/ui/persist.c
+  core/ui/shell.c)
 target_link_libraries(teleco_ui PUBLIC teleco_numeric)
+target_include_directories(teleco_ui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 teleco_target_options(teleco_ui)
 
 # ---- tests ---------------------------------------------------------------
@@ -145,7 +148,7 @@ target_link_libraries(test_layout PRIVATE teleco_ui)
 teleco_target_options(test_layout)
 add_test(NAME layout_unit COMMAND test_layout)
 
-add_library(pc_sim STATIC platform/pc/sim_keys.c)
+add_library(pc_sim STATIC platform/pc/sim_keys.c platform/pc/hal_pc.c)
 target_link_libraries(pc_sim PUBLIC teleco_ui)
 target_include_directories(pc_sim PUBLIC platform/pc)
 teleco_target_options(pc_sim)
@@ -176,3 +179,8 @@ if(TELECO_NODE AND TELECO_WASM_LD AND TELECO_CLANG)
   add_test(NAME wasm_ui
     COMMAND sh -c "${CMAKE_CURRENT_SOURCE_DIR}/platform/web/build.sh ${CMAKE_CURRENT_BINARY_DIR}/web && ${TELECO_NODE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/web/test_wasm.mjs ${CMAKE_CURRENT_BINARY_DIR}/web/teleco.wasm")
 endif()
+
+add_executable(test_shell tests/unit/test_shell.c)
+target_link_libraries(test_shell PRIVATE pc_sim)
+teleco_target_options(test_shell)
+add_test(NAME shell_unit COMMAND test_shell)
