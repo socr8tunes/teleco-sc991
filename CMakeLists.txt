@@ -184,3 +184,7 @@ add_executable(test_shell tests/unit/test_shell.c)
 target_link_libraries(test_shell PRIVATE pc_sim)
 teleco_target_options(test_shell)
 add_test(NAME shell_unit COMMAND test_shell)
+
+add_executable(bench_calc tests/bench/bench_calc.c)
+target_link_libraries(bench_calc PRIVATE teleco_numeric)
+teleco_target_options(bench_calc)
