@@ -232,7 +232,6 @@ static void mat_binary(ev_t *e, int op, const val_t *a, const val_t *b, val_t *r
         int64_t n;
         mv_t base, acc, tmp;
         val_t t1, t2;
-        int k;
         va = mview(e, a);
         if (va.r != va.c) { fail(e, CE_DIM); return; }
         if (dec_to_i64(&b->re.v, &n) || n == 0 || n > 100 || n < -100) { fail(e, CE_ARG); return; }
@@ -245,10 +244,9 @@ static void mat_binary(ev_t *e, int op, const val_t *a, const val_t *b, val_t *r
         else { memcpy(base.e, va.e, (size_t)(va.r * va.c) * sizeof(num_t)); base.r = va.r; base.c = va.c; }
         acc = vo;
         if (!s) s = mx_identity(&acc, va.r);
-        for (k = 0; !s && n; ) {
+        while (!s && n) {
             if (n & 1) s = mx_mul(&acc, &acc, &base);
             n >>= 1;
-            k++;
             if (!s && n) s = mx_mul(&base, &base, &base);
         }
         tmp_release(e, &t1); tmp_release(e, &t2);

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teleco SC991 Simulator</title>
+<style>
+  :root { --body:#1d2b3a; --body2:#16212d; --key:#e9edf1; --keytxt:#10202e; --dark:#2c3a49; --darktxt:#f2f5f7;
+          --accent:#e7a21b; --shift:#e08a14; --alpha:#4aa3df; --lcd:#b3c1a6; --ink:#1c261c; }
+  * { box-sizing: border-box; }
+  body { margin:0; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+         background:#0d141b; font-family: system-ui, "Segoe UI", Roboto, sans-serif; color:#cfd8e0; padding:16px; gap:12px; }
+  .calc { width:min(420px,100%); background:linear-gradient(180deg,var(--body),var(--body2)); border-radius:22px 22px 34px 34px;
+          padding:16px 16px 22px; box-shadow:0 18px 40px #0009, inset 0 1px 0 #ffffff22; }
+  .brand { display:flex; justify-content:space-between; align-items:baseline; color:#dbe5ee; margin:0 6px 8px; }
+  .brand b { letter-spacing:.28em; font-size:15px; }
+  .brand span { font-size:11px; opacity:.75; letter-spacing:.1em; }
+  .solar { height:8px; margin:0 6px 10px; border-radius:2px; background:repeating-linear-gradient(90deg,#3a4a5a 0 22%,#0e1822 22% 24%); opacity:.9; }
+  .bezel { background:#0b1117; border-radius:10px; padding:10px; box-shadow:inset 0 2px 6px #000c; }
+  canvas { width:100%; display:block; image-rendering: pixelated; background:var(--lcd); border-radius:3px; aspect-ratio:3/1; }
+  .keys { display:grid; gap:7px 7px; margin-top:16px; }
+  .row { display:grid; gap:7px; }
+  .cell { position:relative; padding-top:13px; }
+  .legend { position:absolute; top:0; left:0; right:0; display:flex; justify-content:space-between; font-size:9.5px; font-weight:600; padding:0 3px; line-height:12px; pointer-events:none; }
+  .legend .s { color:var(--shift); } .legend .a { color:var(--alpha); }
+  button.k { width:100%; height:34px; border:0; border-radius:8px 8px 11px 11px; background:var(--key); color:var(--keytxt); font:600 13px/1 system-ui,sans-serif;
+             box-shadow:0 3px 0 #8a96a2, 0 4px 6px #0006; cursor:pointer; user-select:none; touch-action:manipulation; }
+  button.k:active, button.k.down { transform:translateY(2px); box-shadow:0 1px 0 #8a96a2; }
+  button.k.dark { background:var(--dark); color:var(--darktxt); box-shadow:0 3px 0 #0d151c, 0 4px 6px #0006; }
+  button.k.acc { background:var(--accent); color:#1b1405; box-shadow:0 3px 0 #96630a, 0 4px 6px #0006; }
+  button.k.mod { background:#3a4a5b; color:#fff; }
+  button.k.sh { background:var(--shift); color:#1c1002; box-shadow:0 3px 0 #8f5307; }
+  button.k.al { background:var(--alpha); color:#06202f; box-shadow:0 3px 0 #1d6590; }
+  .hint { font-size:12px; max-width:420px; line-height:1.5; opacity:.8; text-align:center; }
+  kbd { background:#1c2833; border-radius:4px; padding:1px 5px; font-size:11px; }
+  .off canvas { filter:brightness(.15); }
+</style>
+</head>
+<body>
+<div class="calc" id="calc">
+  <div class="brand"><b>TELECO</b><span>SC991 &middot; SIMULATOR</span></div>
+  <div class="solar"></div>
+  <div class="bezel"><canvas id="lcd" width="192" height="64" aria-label="calculator display"></canvas></div>
+  <div class="keys" id="keys"></div>
+</div>
+<p class="hint">Keyboard: digits and <kbd>+ - * /</kbd>, <kbd>Enter</kbd> = <b>=</b>, <kbd>Backspace</kbd> DEL, <kbd>Esc</kbd> AC,
+  arrows, <kbd>s</kbd> SHIFT, <kbd>a</kbd> ALPHA, <kbd>p</kbd> &pi;, <kbd>q</kbd> &radic;, <kbd>f</kbd> fraction, <kbd>^</kbd> power, <kbd>( )</kbd>.
+  Same portable core as the hardware build, compiled to WebAssembly.</p>
+<script type="module">
+/*KEYS_JS*/
+const WASM_B64 = "/*WASM_B64*/";
+const bin = Uint8Array.from(atob(WASM_B64), c => c.charCodeAt(0));
+const { instance } = await WebAssembly.instantiate(bin, {});
+const w = instance.exports;
+w.teleco_init();
+
+const canvas = document.getElementById("lcd"), ctx = canvas.getContext("2d");
+const img = ctx.createImageData(192, 64);
+const calc = document.getElementById("calc");
+let dirty = true;
+
+function draw() {
+  const fb = w.teleco_render(), stride = w.teleco_stride();
+  const mem = new Uint8Array(w.memory.buffer, fb, stride * 64);
+  const d = img.data;
+  const dim = 0.55 + 0.45 * (w.teleco_contrast() / 63);   // contrast: lighter or darker ink
+  const ink = [28, 38, 28], bg = [179, 193, 166];
+  for (let y = 0; y < 64; y++) for (let x = 0; x < 192; x++) {
+    const on = (mem[y * stride + (x >> 3)] >> (7 - (x & 7))) & 1, o = (y * 192 + x) * 4;
+    for (let c = 0; c < 3; c++) d[o + c] = on ? bg[c] + (ink[c] - bg[c]) * dim : bg[c];
+    d[o + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  calc.classList.toggle("off", !!w.teleco_power_off());
+}
+
+function press(i) { w.teleco_key(i); draw(); }
+
+// build keypad
+const keysEl = document.getElementById("keys");
+let idx = 0;
+const cls = { SHIFT: "sh", ALPHA: "al", EXE: "acc", AC: "acc", DEL: "acc", MENU: "mod", MODE: "mod" };
+const dark = new Set(["7","8","9","4","5","6","1","2","3","0","."]);
+const btns = [];
+for (const n of ROWS) {
+  const row = document.createElement("div"); row.className = "row"; row.style.gridTemplateColumns = `repeat(${n},1fr)`;
+  for (let c = 0; c < n; c++, idx++) {
+    const [name, lab, sh, al] = KEYS[idx], i = idx;
+    const cell = document.createElement("div"); cell.className = "cell";
+    cell.innerHTML = `<div class="legend"><span class="s">${sh}</span><span class="a">${al}</span></div>`;
+    const b = document.createElement("button"); b.className = "k " + (cls[name] || (dark.has(name) ? "dark" : "")); b.textContent = lab;
+    b.title = name; b.addEventListener("pointerdown", e => { e.preventDefault(); press(i); });
+    cell.appendChild(b); row.appendChild(cell); btns[i] = b;
+  }
+  keysEl.appendChild(row);
+}
+
+const map = { Enter:"EXE", Backspace:"DEL", Delete:"DEL", Escape:"AC", ArrowLeft:"LEFT", ArrowRight:"RIGHT", ArrowUp:"UP", ArrowDown:"DOWN",
+  "+":"+", "-":"-", "*":"*", "/":"/", ".":".", "(":"(", ")":")", "^":"POW", "!":"FACT", "%":"(", "=":"EXE", s:"SHIFT", a:"ALPHA", p:"PI", q:"SQRT", f:"FRAC", m:"MENU", e:"EE" };
+const byName = new Map(KEYS.map((k, i) => [k[0], i]));
+addEventListener("keydown", e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  let name = /^[0-9]$/.test(e.key) ? e.key : map[e.key];
+  if (name === undefined || !byName.has(name)) return;
+  e.preventDefault();
+  const i = byName.get(name);
+  if (e.key === "%") { press(byName.get("SHIFT")); }
+  press(i);
+  btns[i].classList.add("down"); setTimeout(() => btns[i].classList.remove("down"), 90);
+});
+
+const t0 = performance.now();
+let last = -1;
+function frame(t) {
+  const ms = Math.floor(t - t0);
+  w.teleco_tick(ms);
+  const phase = Math.floor(ms / 500) + (w.teleco_screen() << 8);
+  if (phase !== last) { last = phase; draw(); }
+  requestAnimationFrame(frame);
+}
+draw(); requestAnimationFrame(frame);
+window.teleco = { press, name: n => press(byName.get(n)), result: () => { const p = w.teleco_result(); const m = new Uint8Array(w.memory.buffer); let e = p; while (m[e]) e++; return new TextDecoder().decode(m.subarray(p, e)); } };
+</script>
+</body>
+</html>

@@ -167,3 +167,12 @@ add_executable(test_ui_fuzz tests/unit/test_ui_fuzz.c)
 target_link_libraries(test_ui_fuzz PRIVATE pc_sim)
 teleco_target_options(test_ui_fuzz)
 add_test(NAME ui_fuzz COMMAND test_ui_fuzz 10 10000)
+
+# ---- WebAssembly build + differential test (needs clang with the wasm32 target, wasm-ld, node) ----
+find_program(TELECO_NODE node)
+find_program(TELECO_WASM_LD wasm-ld)
+find_program(TELECO_CLANG clang)
+if(TELECO_NODE AND TELECO_WASM_LD AND TELECO_CLANG)
+  add_test(NAME wasm_ui
+    COMMAND sh -c "${CMAKE_CURRENT_SOURCE_DIR}/platform/web/build.sh ${CMAKE_CURRENT_BINARY_DIR}/web && ${TELECO_NODE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/web/test_wasm.mjs ${CMAKE_CURRENT_BINARY_DIR}/web/teleco.wasm")
+endif()
