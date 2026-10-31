@@ -22,7 +22,7 @@ static void cell_text(const app_t *a, int row, int col, char *buf, size_t cap)
     {
         num_t n;
         val_t v;
-        char t[64];
+        char t[40];
         num_from_dec(&n, f == 0 ? &s->x[row] : &s->y[row]);
         val_real(&v, &n);
         fmt_value_text(&a->ctx, &v, 0, 1, t, sizeof t);

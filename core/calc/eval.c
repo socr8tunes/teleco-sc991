@@ -936,7 +936,7 @@ static void run(ev_t *e, int pc, int end)
                 }
                 {
                     num_t t;
-                    int save = e->err;
+                    calc_err_t save = e->err;
                     real_fn1(e, fn, &a->re, &t);
                     if (e->err == CE_MATH && e->c->cplx && (fn == T_SQRT || fn == T_LN || fn == T_LOG)) {
                         val_t c;
