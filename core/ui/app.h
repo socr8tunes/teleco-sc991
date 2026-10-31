@@ -93,6 +93,7 @@ void ui_matview_key(app_t *a, int key);
 void ui_matview_render(const app_t *a, lcd_t *l);
 void ui_confirm_key(app_t *a, int key);
 void ui_confirm_render(const app_t *a, lcd_t *l);
+void ui_title(lcd_t *l, const char *left, const char *right);   /* inverted title bar */
 void ui_logo_render(const app_t *a, lcd_t *l);
 
 /* helpers shared between ui files */

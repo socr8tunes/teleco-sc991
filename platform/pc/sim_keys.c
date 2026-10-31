@@ -44,6 +44,7 @@ int sim_run_keys(app_t *a, const char *s, const char **bad)
         if (bad) *bad = s;
         s += n;
         if (strncmp(w, "wait:", 5) == 0) { app_tick(a, a->now_ms + (uint32_t)atoi(w + 5)); continue; }
+        if (w[0] == '{' && w[n - 1] == '}') { w[n - 1] = 0; if (ui_set_expr_text(a, w + 1)) return -1; continue; }   /* {expression text} loads the editor */
         allnum = 1;
         { size_t i; for (i = 0; i < n; i++) if (!isdigit((unsigned char)w[i]) && w[i] != '.') allnum = 0; }
         if (allnum && n > 1) {

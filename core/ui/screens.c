@@ -113,13 +113,12 @@ void ui_stat_render(const app_t *a, lcd_t *l)
     int nc = st_cols(a), i, c, colw = nc == 2 ? 84 : 56;
     char buf[40];
     static const char *const H1[] = {"X", "FREQ"}, *const H2[] = {"X", "Y", "FREQ"};
-    lcd_fill(l, 0, 0, LCD_W, 8, 1);
-    snprintf(buf, sizeof buf, "STAT  %s", stat_type_name(s->type));
-    lcd_text(l, 2, 0, buf, 0);
-    lcd_invert(l, 2, 0, lcd_text_w(buf, 0), 8);
-    snprintf(buf, sizeof buf, "n=%d", s->rows);
-    lcd_text_right(l, LCD_W - 2, 1, buf, 1);
-    lcd_invert(l, LCD_W - 2 - lcd_text_w(buf, 1), 1, lcd_text_w(buf, 1), 5);
+    {
+        char t[16];
+        snprintf(buf, sizeof buf, "STAT  %s", stat_type_name(s->type));
+        snprintf(t, sizeof t, "n=%d", s->rows);
+        ui_title(l, buf, t);
+    }
     for (c = 0; c < nc; c++) lcd_text(l, 18 + c * colw, 10, (nc == 2 ? H1 : H2)[c], 0);
     lcd_hline(l, 0, 18, LCD_W, 1);
     for (i = 0; i < ST_VIS; i++) {
@@ -181,9 +180,7 @@ void ui_statres_render(const app_t *a, lcd_t *l)
     uint8_t ids[SV_COUNT];
     int n = sr_list(a, ids), top, i, rows = 6;
     char buf[64], u[64];
-    lcd_fill(l, 0, 0, LCD_W, 8, 1);
-    lcd_text(l, 2, 0, "STAT RESULT", 0);
-    lcd_invert(l, 2, 0, lcd_text_w("STAT RESULT", 0), 8);
+    ui_title(l, "STAT RESULT", 0);
     if (n == 0) { lcd_text(l, 4, 24, "No data. Use MENU > Statistics", 1); return; }
     top = a->sr_page - rows / 2;
     if (top > n - rows) top = n - rows;
@@ -238,10 +235,8 @@ void ui_matview_render(const app_t *a, lcd_t *l)
     char buf[24];
     if (!mv_dims(a, &rows, &cols, &e)) return;
     cc.frac_improper = 1;
-    lcd_fill(l, 0, 0, LCD_W, 8, 1);
     snprintf(buf, sizeof buf, "%s %dx%d", a->res.k == V_MAT ? "MATRIX" : "VECTOR", rows, cols);
-    lcd_text(l, 2, 0, buf, 0);
-    lcd_invert(l, 2, 0, lcd_text_w(buf, 0), 8);
+    ui_title(l, buf, 0);
     x = 8;
     {
         int colw[MAT_MAX], rowa[MAT_MAX], rowd[MAT_MAX], vis_rows = 0, tot_h = 0, ctot = 0;
@@ -305,9 +300,7 @@ void ui_confirm_key(app_t *a, int key)
 void ui_confirm_render(const app_t *a, lcd_t *l)
 {
     (void)a;
-    lcd_fill(l, 0, 0, LCD_W, 8, 1);
-    lcd_text(l, 2, 0, "RESET", 0);
-    lcd_invert(l, 2, 0, lcd_text_w("RESET", 0), 8);
+    ui_title(l, "RESET", 0);
     lcd_text(l, 6, 16, "Clear ALL memory?", 0);
     lcd_text(l, 6, 28, "Variables, Ans, history,", 0);
     lcd_text(l, 6, 38, "statistics data, settings.", 0);

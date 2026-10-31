@@ -294,14 +294,10 @@ void ui_menu_render(const app_t *a, lcd_t *l)
     char buf[48];
     if (top > n - rows) top = n - rows;
     if (top < 0) top = 0;
-    lcd_fill(l, 0, 0, LCD_W, 8, 1);
-    lcd_text(l, 2, 0, MENUS[id].title, 0);
-    lcd_invert(l, 2, 0, lcd_text_w(MENUS[id].title, 0), 8);
     {
         char t[24];
         snprintf(t, sizeof t, "%d/%d", sel + 1, n);
-        lcd_text_right(l, LCD_W - 2, 1, t, 1);
-        lcd_invert(l, LCD_W - 2 - lcd_text_w(t, 1), 1, lcd_text_w(t, 1), 5);
+        ui_title(l, MENUS[id].title, t);
     }
     for (i = 0; i < rows && top + i < n; i++) {
         int y = 10 + i * 9, idx = top + i;

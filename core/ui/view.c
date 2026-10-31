@@ -120,6 +120,14 @@ void ui_u8lcd(const char *in, char *out, size_t cap)
     out[o] = 0;
 }
 
+void ui_title(lcd_t *l, const char *left, const char *right)
+{
+    lcd_fill(l, 0, 0, LCD_W, 8, 0);
+    lcd_text(l, 2, 0, left, 0);
+    if (right && right[0]) lcd_text_right(l, LCD_W - 2, 1, right, 1);
+    lcd_invert(l, 0, 0, LCD_W, 8);
+}
+
 /* ---- status bar ------------------------------------------------------------ */
 
 static int flag_box(lcd_t *l, int x, char ch)
