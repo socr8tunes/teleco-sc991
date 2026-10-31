@@ -162,3 +162,8 @@ foreach(case_file ${TELECO_UI_CASES})
   get_filename_component(case_name ${case_file} NAME_WE)
   add_test(NAME ui_${case_name} COMMAND test_ui ${case_file})
 endforeach()
+
+add_executable(test_ui_fuzz tests/unit/test_ui_fuzz.c)
+target_link_libraries(test_ui_fuzz PRIVATE pc_sim)
+teleco_target_options(test_ui_fuzz)
+add_test(NAME ui_fuzz COMMAND test_ui_fuzz 10 10000)

@@ -281,7 +281,7 @@ void ui_menu_key(app_t *a, int key)
             for (d = 0; d < 10; d++) if (dk[d] == key) break;
             if (d == 10) break;
             if (id == MN_DIGITS) { if (d < n) { *sel = (uint8_t)d; select_item(a); } }
-            else if (d >= 1 && d <= n && n <= 9) { *sel = (uint8_t)(d - 1); select_item(a); }
+            else if (id != MN_CONST && id != MN_CONV && id != MN_STATVARS && d >= 1 && d <= n) { *sel = (uint8_t)(d - 1); select_item(a); }
         }
         break;
     }
@@ -307,7 +307,7 @@ void ui_menu_render(const app_t *a, lcd_t *l)
         int y = 10 + i * 9, idx = top + i;
         char num[16];
         item_label(a, id, idx, buf, sizeof buf);
-        if (n <= 9 || id == MN_DIGITS) snprintf(num, sizeof num, "%d:", id == MN_DIGITS ? idx : idx + 1);
+        if ((n <= 9 || id == MN_DIGITS || (id != MN_CONST && id != MN_CONV && id != MN_STATVARS && idx < 9))) snprintf(num, sizeof num, "%d:", id == MN_DIGITS ? idx : idx + 1);
         else snprintf(num, sizeof num, "%2d", idx + 1);
         lcd_text(l, 3, y, num, 0);
         lcd_text(l, 3 + 3 * FONT_W, y, buf, 0);

@@ -89,3 +89,23 @@ FRAC 1 DOWN 2 UP 3 DOWN 4 => expr:{13|24}
 SHIFT 7 => @expr
 # constants menu: speed of light
 SHIFT 7 DOWN DOWN EXE => @expr
+# statistics: data editor then results via menus
+MODE 7 1 1 EXE 2 EXE 3 EXE AC MENU 8 3 DOWN DOWN DOWN EXE EXE => 2
+MODE 7 1 1 EXE 2 EXE 3 EXE 4 EXE AC MENU 8 3 EXE EXE => 4
+MODE 7 1 2 EXE 4 EXE 6 EXE AC MENU 8 3 DOWN DOWN DOWN EXE EXE => 4
+MODE 7 1 1 EXE 2 EXE 3 EXE 4 EXE 5 EXE AC MENU 8 3 DOWN DOWN DOWN DOWN DOWN EXE EXE SD => 1.58113883
+# stat editor frequency column
+MODE 7 1 1 EXE UP RIGHT 3 EXE AC MENU 8 3 EXE EXE => 3
+# solving
+{quad(1,-3,2)} EXE => 2
+{quad(1,-3,2)} EXE EXE => 1
+# constants menu insert
+SHIFT 7 EXE => @expr
+SHIFT 8 EXE => @expr
+# matrices via expression text
+{det([1,2;3,4])} EXE => -2
+{[1,2;3,4]*[1,0;0,1]} EXE => [[1, 2], [3, 4]]
+# toggles
+1 EXE SD => 1
+# STO into matrix
+{[1,2;3,4]} STO MENU 6 1 EXE => @expr
