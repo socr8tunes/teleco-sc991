@@ -78,10 +78,12 @@ static void arity(int t, int *lo, int *hi)
     switch (t) {
     case T_LOG: *lo = 1; *hi = 2; break;
     case T_CONVF:
+    case T_GCD: case T_LCM: case T_QUOT: case T_REM: case T_POIPD: case T_POICD:
     case T_RANINT: case T_POL: case T_REC: case T_DOTP: case T_CROSSP: case T_ANGLEV:
     case T_DDX: case T_SOLVE:
         *lo = *hi = 2; break;
-    case T_SIGMA: case T_INTEGRAL: *lo = *hi = 3; break;
+    case T_SIGMA: case T_INTEGRAL: case T_BINPD: case T_BINCD: *lo = *hi = 3; break;
+    case T_INVN: *lo = 1; *hi = 3; break;
     case T_VCTLIT: *lo = 2; *hi = 3; break;
     case T_QUAD: *lo = *hi = 3; break;
     case T_CUBIC: *lo = *hi = 4; break;

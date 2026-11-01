@@ -65,6 +65,13 @@ The **Keys** column is one way to enter the question (the answer must not depend
 | Q053 | Mensuration | Convert 72 km/h to m/s | 20 | 20 | `7 2 SHIFT 8 DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN EXE EXE` |
 | Q054 | Mensuration | Convert 5 miles to km | 8.04672 | | `5 SHIFT 8 DOWN DOWN DOWN DOWN DOWN DOWN EXE EXE` |
 | Q055 | Mensuration | Convert 98.6 degF to degC | 37.0 | | `9 8 . 6 SHIFT 8 DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN EXE EXE` |
+| Q158 | Number theory | Highest common factor of 84 and 126 | 42 | 42 | `MENU 3 DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN EXE 8 4 SHIFT ) 1 2 6 ) EXE` |
+| Q159 | Number theory | Lowest common multiple of 12, 18 (two numbers) | 36 | 36 | `MENU 3 DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN EXE 1 2 SHIFT ) 1 8 ) EXE` |
+| Q160 | Number theory | Two bells ring every 18 and 24 minutes. After how many minutes do they ring together again? | 72 | 72 | `MENU 3 DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN EXE 1 8 SHIFT ) 2 4 ) EXE` |
+| Q161 | Number theory | Prime factors of 360 | | 2^3x3^2x5 | `MENU 3 DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN EXE 3 6 0 ) EXE` |
+| Q162 | Number theory | Prime factors of 1001 | | 7x11x13 | `MENU 3 DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN EXE 1 0 0 1 ) EXE` |
+| Q163 | Number theory | Remainder when 2025 is divided by 7 | 2 | 2 | `MENU 3 DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN EXE 2 0 2 5 SHIFT ) 7 ) EXE` |
+| Q164 | Number theory | Whole-number quotient of 2025 divided by 7 | 289 | 289 | `MENU 3 DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN DOWN EXE 2 0 2 5 SHIFT ) 7 ) EXE` |
 
 ## SHS science
 
@@ -157,6 +164,13 @@ The **Keys** column is one way to enter the question (the answer must not depend
 | Q130 | Distribution | Binomial P(X=3), n=10, p=0.3 | 0.266827932 | | `1 0 SHIFT / 3 * 0 . 3 SHIFT SQ * 0 . 7 POW 7 RIGHT EXE` |
 | Q131 | Distribution | Poisson P(X=2), lambda=3.5 | 0.1849589735 | | `FRAC 3 . 5 SQ * SHIFT LN NEG 3 . 5 ) DOWN 2 FACT RIGHT EXE` |
 | Q132 | Probability | Probability of at least one six in 4 rolls | 0.5177469136 | 671/1296 | `1 - FRAC 5 DOWN 6 RIGHT POW 4 RIGHT EXE` |
+| Q165 | Distribution | X ~ Binomial(10, 0.5): P(X = 3) | 0.1171875 | | `MENU 9 5 3 SHIFT ) 1 0 SHIFT ) 0 . 5 ) EXE` |
+| Q166 | Distribution | X ~ Binomial(12, 0.35): P(X <= 7) | 0.974492543 | | `MENU 9 6 7 SHIFT ) 1 2 SHIFT ) 0 . 3 5 ) EXE` |
+| Q167 | Distribution | A fair coin is tossed 100 times: P(at most 40 heads) | 0.02844396682 | | `MENU 9 6 4 0 SHIFT ) 1 0 0 SHIFT ) 0 . 5 ) EXE` |
+| Q168 | Distribution | X ~ Poisson(2.5): P(X = 4) | 0.1336018858 | | `MENU 9 7 4 SHIFT ) 2 . 5 ) EXE` |
+| Q169 | Distribution | Calls arrive at 3 per minute (Poisson): P(at most 2 calls in a minute) | 0.4231900811 | | `MENU 9 8 2 SHIFT ) 3 ) EXE` |
+| Q170 | Distribution | z-value with 97.5% of the standard normal to its left | 1.959963985 | | `MENU 9 4 0 . 9 7 5 ) EXE` |
+| Q171 | Distribution | IQ ~ N(100, 15^2): the score exceeded by only 2.5% of people | 129.3994598 | | `MENU 9 4 0 . 9 7 5 SHIFT ) 1 5 SHIFT ) 1 0 0 ) EXE` |
 
 ## Engineering
 

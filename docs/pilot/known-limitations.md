@@ -16,4 +16,7 @@ Be honest with testers about these.
 - Exact special-angle trig can make expressions like 1/sin(pi) report Math ERROR rather than a huge number.
 - Cubic equation solver lists roots one at a time starting from the first it finds; press EXE for the next.
 - The WebAssembly demo does not keep memory/history between page loads.
+- Binomial: n <= 10 000; Poisson: lambda <= 10 000 and x <= 10^9; PFact: 2 <= n <= 9 999 999 999; GCD/LCM/Quot/Rem: integers below 10^16 (LCM errors if the result would exceed 16 digits). Quot and Rem truncate toward zero (Rem(-17,5) = -2).
+- InvN(area) is the lower-tail inverse normal; InvN(area, sigma, mu) rescales it.
+- Not provided by design (product decision): spreadsheet mode, user-programmable formulas (including TABLE and CALC), macros and scripting, ":" statement chaining.
 - Normal distribution Q(t) is the area from 0 to t (Casio convention); R(t) is the upper tail, P(t) the lower tail.

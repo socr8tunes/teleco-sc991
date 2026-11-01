@@ -14,7 +14,8 @@ MENU_FN = {  # name -> (menu number, item number) in the MENU catalogue (see cor
     "sum": (2, 1), "ddx": (2, 2), "integral": (2, 3), "solve": (2, 4),
     "abs": (3, 1), "int": (3, 2), "intg": (3, 3), "rnd": (3, 4), "cbrt": (3, 5), "arg": (5, 2), "conj": (5, 3), "re": (5, 4), "im": (5, 5),
     "det": (6, 10), "trn": (6, 11), "iden": (6, 12),
-    "normp": (9, 1), "normq": (9, 2), "normr": (9, 3),
+    "gcd": (3, 13), "lcm": (3, 14), "quot": (3, 15), "rem": (3, 16), "pfact": (3, 17),
+    "normp": (9, 1), "normq": (9, 2), "normr": (9, 3), "invn": (9, 4), "binompd": (9, 5), "binomcd": (9, 6), "poispd": (9, 7), "poiscd": (9, 8),
     "quad": (10, 1), "cubic": (10, 2), "simul2": (10, 3), "simul3": (10, 4),
 }
 

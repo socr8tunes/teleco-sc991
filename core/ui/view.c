@@ -213,7 +213,7 @@ static void draw_result(const app_t *a, lcd_t *l, int top)
     current_value(a, &v);
     result_labels(a, label);
     if (label[0]) lcd_text(l, 3, LCD_H - 10, label, 0);
-    if (a->ctx.base || v.k == V_MAT || v.k == V_VCT || (v.k == V_REAL && (v.disp == 1 || a->dms_view))) {
+    if (a->ctx.base || v.k == V_MAT || v.k == V_VCT || (v.k == V_REAL && (v.disp == 1 || v.disp == 2 || a->dms_view))) {
         char t[96], u[96];
         if (v.k == V_MAT || v.k == V_VCT) {
             lcd_text_right(l, x_right, LCD_H - 10, v.k == V_MAT ? "Matrix  [=] view" : "Vector  [=] view", 0);
@@ -249,7 +249,7 @@ static void calc_screen(const app_t *a, lcd_t *l)
             tok_t tk[96];
             int n;
             current_value(a, &v);
-            if (v.k != V_MAT && v.k != V_VCT && !(v.k == V_REAL && v.disp == 1)) {
+            if (v.k != V_MAT && v.k != V_VCT && !(v.k == V_REAL && (v.disp == 1 || v.disp == 2))) {
                 n = value_tokens(a, &v, tk, 96);
                 if (n >= 0) { box_t rb = lay_measure(tk, n, 0); rtop = LCD_H - 3 - (rb.asc + rb.desc); }
             }

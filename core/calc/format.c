@@ -543,6 +543,12 @@ size_t fmt_value_text(const ctx_t *c, const val_t *v, int exact, int ascii, char
     fmt_res_t r;
     if (c->base) return base_text(c, v, buf, cap);
     if (v->k == V_REAL && v->disp == 1) return dms_text(c, v, ascii, buf, cap);
+    if (v->k == V_REAL && v->disp == 2) {            /* prime factorisation text from PFact( */
+        size_t pos = 0;
+        const char *p;
+        for (p = c->pf; *p; p++) pos = put(buf, cap, pos, *p == 'x' ? (ascii ? "x" : "\xC3\x97") : (char[2]){*p, 0});
+        return pos;
+    }
     if (v->k == V_MAT || v->k == V_VCT) {
         const num_t *e;
         int rows, cols, i, j;

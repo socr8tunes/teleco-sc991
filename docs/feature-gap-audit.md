@@ -20,10 +20,10 @@ A regression test (`tests/unit/test_exclusions.c`) checks that no such feature i
 | # | Feature (fx-991 class) | State | Priority |
 |---|---|---|---|
 | 1 | TABLE mode: f(x) value table over a range | excluded by product decision | n/a |
-| 2 | Distributions: binomial and Poisson (pdf/cdf) and inverse normal | missing (normal P/Q/R only) | high |
+| 2 | Distributions: binomial and Poisson (pdf/cdf) and inverse normal | **done** (MENU > Distribution: InvN, BinomPD/CD, PoisPD/CD; n, lambda <= 10000) | done |
 | 3 | Polynomial equations degree 4; simultaneous equations in 4 unknowns | missing (degree <= 3, <= 3 unknowns) | medium |
 | 4 | Inequality solver (degree 2-4) | missing | medium |
-| 5 | Prime factorisation; GCD / LCM; integer quotient and remainder | missing | high (school use) |
+| 5 | Prime factorisation; GCD / LCM; integer quotient and remainder | **done** (MENU > Number: GCD, LCM, Quot, Rem, PFact; PFact up to 9 999 999 999) | done |
 | 6 | Product (Pi) operator | missing | medium |
 | 7 | Ratio solver (A:B = X:D) | missing | low |
 | 8 | CALC (re-evaluate an expression with new variable values) | excluded by product decision | n/a |
@@ -35,5 +35,5 @@ A regression test (`tests/unit/test_exclusions.c`) checks that no such feature i
 | 14 | Full 3rd-order x4 vector memory and 4x4 matrices | matrix size limit to be confirmed against MAT_MAX; 9 vector slots exist | check |
 
 ## Recommendation
-Close items 2 and 5 first (most used in school and exams), then 3, 4, 6. Items 1, 8, 9 and 10 are excluded. Each needs: spec, implementation, UI keys, tests through the key interface,
+Items 2 and 5 are closed. Next: 3, 4, 6. Items 1, 8, 9 and 10 are excluded. Each needs: spec, implementation, UI keys, tests through the key interface,
 and entries in the pilot pack with independently verified answers. Do not describe the product as covering "all functions" until the audit table is closed.

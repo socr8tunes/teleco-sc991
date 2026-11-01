@@ -1,6 +1,7 @@
 /*
  * Stack VM that executes compiled programs.
  */
+#include <stdio.h>
 #include <string.h>
 #include "calc/eval.h"
 #include "parser/lexer.h"
@@ -123,6 +124,124 @@ static int cx_function(ev_t *e, int fn, const val_t *a, val_t *r)
     return 0;
 }
 
+
+
+/* ---- integer functions (GCD, LCM, Quot, Rem, PFact) and distributions ------------ */
+
+#define INT_LIMIT 10000000000000000LL      /* results must stay below 10^16 (16 digits) */
+
+static int64_t gcd_i64(int64_t a, int64_t b)
+{
+    if (a < 0) a = -a;
+    if (b < 0) b = -b;
+    while (b) { int64_t t = a % b; a = b; b = t; }
+    return a;
+}
+
+/* prime factorisation text "2^2x3x5" (trial division with a 6k+/-1 wheel). */
+static void pfact_text(int64_t n, char *buf, size_t cap)
+{
+    size_t pos = 0;
+    int64_t d = 2;
+    int first = 1;
+    buf[0] = 0;
+    while (d * d <= n) {
+        int cnt = 0;
+        while (n % d == 0) { n /= d; cnt++; }
+        if (cnt) {
+            int w = snprintf(buf + pos, cap - pos, "%s%lld", first ? "" : "x", (long long)d);
+            if (w < 0 || (size_t)w >= cap - pos) return;
+            pos += (size_t)w; first = 0;
+            if (cnt > 1) {
+                w = snprintf(buf + pos, cap - pos, "^%d", cnt);
+                if (w < 0 || (size_t)w >= cap - pos) return;
+                pos += (size_t)w;
+            }
+        }
+        d += d == 2 ? 1 : (d == 3 ? 2 : (d % 6 == 5 ? 2 : 4));
+    }
+    if (n > 1 || first) (void)snprintf(buf + pos, cap - pos, "%s%lld", first ? "" : "x", (long long)n);
+}
+
+/* returns non-zero when an error was raised */
+static int int_function(ev_t *e, int fn, int argc)
+{
+    int64_t x, y = 0, v = 0;
+    num_t t;
+    val_t *a = &e->st[e->sp - argc], *b = &e->st[e->sp - 1];
+    int i;
+    for (i = 0; i < argc; i++)
+        if (!is_real(&e->st[e->sp - argc + i])) { fail(e, CE_ARG); return 1; }
+    if (dec_to_i64(&a->re.v, &x) || (argc == 2 && dec_to_i64(&b->re.v, &y))) { fail(e, CE_ARG); return 1; }
+    if (x >= INT_LIMIT || x <= -INT_LIMIT || y >= INT_LIMIT || y <= -INT_LIMIT) { fail(e, CE_ARG); return 1; }
+    switch (fn) {
+    case T_GCD: v = gcd_i64(x, y); break;
+    case T_LCM: {
+        int64_t g = gcd_i64(x, y), ax = x < 0 ? -x : x, ay = y < 0 ? -y : y;
+        if (g == 0) { v = 0; break; }
+        if (ax / g > INT_LIMIT / (ay ? ay : 1)) { fail(e, CE_MATH); return 1; }
+        v = ax / g * ay;
+        break;
+    }
+    case T_QUOT: if (y == 0) { fail(e, CE_MATH); return 1; } v = x / y; break;
+    case T_REM:  if (y == 0) { fail(e, CE_MATH); return 1; } v = x % y; break;
+    default: /* T_PFACT: 2 <= n <= 9 999 999 999 */
+        if (x < 2 || x > 9999999999LL) { fail(e, CE_ARG); return 1; }
+        pfact_text(x, e->c->pf, sizeof e->c->pf);
+        v = x;
+        break;
+    }
+    num_from_int(&t, v);
+    e->sp -= argc - 1;
+    set_real(&e->st[e->sp - 1], &t);
+    if (fn == T_PFACT) e->st[e->sp - 1].disp = 2;
+    return 0;
+}
+
+static void dist_function(ev_t *e, int fn, int argc)
+{
+    dec_t d;
+    num_t t;
+    int64_t x = 0, n = 0;
+    val_t *a;
+    int i;
+    dec_status st;
+    if ((fn == T_INVN && argc != 1 && argc != 3) || (fn == T_BINPD || fn == T_BINCD ? argc != 3 : (fn != T_INVN && argc != 2))) {
+        fail(e, CE_SYNTAX); return;
+    }
+    for (i = 0; i < argc; i++)
+        if (!is_real(&e->st[e->sp - argc + i])) { fail(e, CE_ARG); return; }
+    a = &e->st[e->sp - argc];
+    if (fn == T_INVN) {
+        st = dist_inv_norm(&d, &a[0].re.v);
+        if (!DEC_STATUS_IS_ERROR(st) && argc == 3) {
+            num_t z, r2;
+            if (dec_is_zero(&a[1].re.v) || a[1].re.v.neg) { fail(e, CE_ARG); return; }
+            num_from_dec(&z, &d);
+            fail_st(e, num_mul(&r2, &z, &a[1].re));
+            if (e->err) return;
+            fail_st(e, num_add(&t, &r2, &a[2].re));
+            if (e->err) return;
+            e->sp -= 2;
+            set_real(&e->st[e->sp - 1], &t);
+            return;
+        }
+    } else {
+        if (dec_to_i64(&a[0].re.v, &x)) { fail(e, CE_ARG); return; }
+        if (fn == T_BINPD || fn == T_BINCD) {
+            if (dec_to_i64(&a[1].re.v, &n)) { fail(e, CE_ARG); return; }
+            st = fn == T_BINPD ? dist_binom_pd(&d, x, n, &a[2].re.v) : dist_binom_cd(&d, x, n, &a[2].re.v);
+        } else {
+            st = fn == T_POIPD ? dist_poisson_pd(&d, x, &a[1].re.v) : dist_poisson_cd(&d, x, &a[1].re.v);
+        }
+    }
+    if (st == DEC_DOMAIN) { fail(e, CE_ARG); return; }
+    fail_st(e, st);
+    if (e->err) return;
+    num_from_dec(&t, &d);
+    e->sp -= argc - 1;
+    set_real(&e->st[e->sp - 1], &t);
+}
 
 /* ---- matrices and vectors ---------------------------------------------- */
 
@@ -884,6 +1003,14 @@ static void run(ev_t *e, int pc, int end)
                 if (!p->base || !is_real(a) || dec_to_i64(&a->re.v, &x)) { fail(e, p->base ? CE_MATH : CE_SYNTAX); break; }
                 v = fn == T_NOT ? (int64_t)(int32_t)(~(uint32_t)x) : -x;
                 if (base_result(e, v, &t) == 0) set_real(a, &t);
+                break;
+            }
+            if (fn >= T_GCD && fn <= T_PFACT) {
+                if (int_function(e, fn, argc)) break;
+                break;
+            }
+            if (fn >= T_BINPD && fn <= T_INVN) {
+                dist_function(e, fn, argc);
                 break;
             }
             if ((fn == T_NORMP || fn == T_NORMQ || fn == T_NORMR) && argc == 1) {

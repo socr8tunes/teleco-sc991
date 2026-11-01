@@ -1,7 +1,7 @@
 # Pilot pack - automated results record
 
 Run: 2026-11-01 with `teleco_sim` built from this repository (host build, not hardware).
-Result: **157 of 157 questions pass** through the calculator's key interface.
+Result: **171 of 171 questions pass** through the calculator's key interface.
 
 This is the *software* record. It does not replace the hands-on pilot with students and teachers, and it is not a hardware result.
 
@@ -164,3 +164,17 @@ This is the *software* record. It does not replace the hands-on pilot with stude
 | Q155 | Engineering | Thermal | PASS | 3543.984012 |  |
 | Q156 | Engineering | Calculus | PASS | 78 |  |
 | Q157 | Engineering | Calculus | PASS | 0.6366197724 |  |
+| Q158 | Secondary school maths | Number theory | PASS | 42 |  |
+| Q159 | Secondary school maths | Number theory | PASS | 36 |  |
+| Q160 | Secondary school maths | Number theory | PASS | 72 |  |
+| Q161 | Secondary school maths | Number theory | PASS | 2^3x3^2x5 |  |
+| Q162 | Secondary school maths | Number theory | PASS | 7x11x13 |  |
+| Q163 | Secondary school maths | Number theory | PASS | 2 |  |
+| Q164 | Secondary school maths | Number theory | PASS | 289 |  |
+| Q165 | Statistics | Distribution | PASS | 0.1171875 |  |
+| Q166 | Statistics | Distribution | PASS | 0.974492543 |  |
+| Q167 | Statistics | Distribution | PASS | 0.02844396682 |  |
+| Q168 | Statistics | Distribution | PASS | 0.1336018858 |  |
+| Q169 | Statistics | Distribution | PASS | 0.4231900811 |  |
+| Q170 | Statistics | Distribution | PASS | 1.959963985 |  |
+| Q171 | Statistics | Distribution | PASS | 129.3994598 |  |

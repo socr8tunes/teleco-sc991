@@ -42,6 +42,7 @@ typedef struct ctx {
     uint8_t  nres;
     uint8_t  res_kind;         /* 1 = roots (x1, x2, x3), 2 = unknowns (x, y, z)                */
     num_t    aux;              /* second result of Pol( / Rec( (theta / y)  */
+    char     pf[48];           /* text of the last PFact( result, e.g. "2^2x3x5" (ASCII, x = times) */
     uint8_t  has_aux;          /* 1 = SOLVE residual (L-R), 2 = second Pol/Rec value */
 } ctx_t;
 

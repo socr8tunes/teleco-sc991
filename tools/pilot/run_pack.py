@@ -32,7 +32,28 @@ def yhat(x):
     return a + b * x
 
 
-NS = dict(mp=mp, mpf=mpf, mpc=mpc, sqrt=sqrt, sin=sin, cos=cos, tan=tan, atan=atan, atan2=atan2, asin=asin, acos=acos, acosh=acosh,
+def binpd(x, n, p):
+    from mpmath import binomial
+    return binomial(n, x) * mpf(str(p)) ** x * (1 - mpf(str(p))) ** (n - x)
+
+
+def bincd(x, n, p): return fsum(binpd(k, n, p) for k in range(x + 1))
+
+
+def poipd(x, lam):
+    from mpmath import factorial
+    return exp(-mpf(str(lam))) * mpf(str(lam)) ** x / factorial(x)
+
+
+def poicd(x, lam): return fsum(poipd(k, lam) for k in range(x + 1))
+
+
+def invn(p):
+    from mpmath import erfinv
+    return sqrt(2) * erfinv(2 * mpf(str(p)) - 1)
+
+
+NS = dict(binpd=binpd, bincd=bincd, poipd=poipd, poicd=poicd, invn=invn, mp=mp, mpf=mpf, mpc=mpc, sqrt=sqrt, sin=sin, cos=cos, tan=tan, atan=atan, atan2=atan2, asin=asin, acos=acos, acosh=acosh,
           sinh=sinh, log=log, log10=log10, exp=exp, pi=pi, e=e, erf=erf, erfc=erfc, degrees=degrees, radians=radians,
           findroot=findroot, corr=corr, yhat=yhat, fsum=fsum)
 

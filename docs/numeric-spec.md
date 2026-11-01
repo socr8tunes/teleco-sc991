@@ -80,4 +80,5 @@ Each operation is range-checked on its own. An expression like `a * b / c` can t
 - Norm shows up to 10 significant digits, switching to scientific outside 1E-2..1E10. **Sci n** shows n significant digits (0 means 10). **Fix n** shows n decimals. **Eng** uses exponents that are multiples of 3.
 - Exact results (fractions, surds, multiples of pi) are shown naturally first; S<>D toggles the decimal. Results of inputs containing decimals, and of numerical methods (derivative, integral, solver), are decimal.
 - Normal distribution: P(t) lower tail, Q(t) = area 0..t, R(t) upper tail.
+- Discrete distributions and the inverse normal are computed in extended precision (log-gamma by Stirling series, term recurrences, Newton iteration on the normal CDF) and are accurate to the displayed 10 digits; verified against mpmath.
 - Constants are CODATA 2022 (scipy.constants; not cross-checked against NIST here).

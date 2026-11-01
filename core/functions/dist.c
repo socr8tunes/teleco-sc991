@@ -309,6 +309,7 @@ dec_status dist_inv_norm(dec_t *r, const dec_t *area)
     xn_from_dec(&p, area);
     xn_small(&one, 1);
     xn_small(&half, 1); xn_div_u32(&half, &half, 2);
+    if (xn_cmp(&p, &half) == 0) { dec_zero(r); return DEC_OK; }
     if (xn_cmp(&p, &half) > 0) { xn_sub(&p, &one, &p); flip = 1; }
     if (xn_is_zero(&p)) { dec_zero(r); return DEC_DOMAIN; }
     /* Abramowitz & Stegun 26.2.23 starting value for the upper-tail quantile of p <= 1/2 */

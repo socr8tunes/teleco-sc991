@@ -42,6 +42,7 @@ static const mitem_t M_NUM_[] = {
     TK_("Abs(", T_ABS), TK_("Int(", T_INT), TK_("Intg(", T_INTG), TK_("Rnd(", T_RND),
     TK_("cube root", T_CBRT), TK_("log base b", T_LOGB), TK_("Pol(", T_POL), TK_("Rec(", T_REC),
     TK_("Ran#", T_RAN), TK_("RanInt(", T_RANINT), TK_("DMS(", T_DMSF), TK_("Const(n)", T_CONSTF),
+    TK_("GCD(a,b)", T_GCD), TK_("LCM(a,b)", T_LCM), TK_("Quot(a,b)", T_QUOT), TK_("Rem(a,b)", T_REM), TK_("PFact(n)", T_PFACT),
 };
 static const mitem_t M_PROB_[] = {
     TK_("nPr", T_NPR), TK_("nCr", T_NCR), TK_("x!", T_FACT),
@@ -69,6 +70,8 @@ static const mitem_t M_STAT_[] = {
 };
 static const mitem_t M_DIST_[] = {
     TK_("NormP( x )  P(t)", T_NORMP), TK_("NormQ( x )  Q(t)", T_NORMQ), TK_("NormR( x )  R(t)", T_NORMR),
+    TK_("InvN( area,s,m )", T_INVN), TK_("BinomPD( x,n,p )", T_BINPD), TK_("BinomCD( x,n,p )", T_BINCD),
+    TK_("PoisPD( x,lambda )", T_POIPD), TK_("PoisCD( x,lambda )", T_POICD),
 };
 static const mitem_t M_EQN_[] = {
     TK_("Quad( a,b,c )", T_QUAD), TK_("Cubic( a,b,c,d )", T_CUBIC),
