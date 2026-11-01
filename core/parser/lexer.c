@@ -16,7 +16,7 @@ static const word_t WORDS[] = {
     {"asin", T_ASIN, W_FN, 0}, {"acos", T_ACOS, W_FN, 0}, {"atan", T_ATAN, W_FN, 0},
     {"sinh", T_SINH, W_FN, 0}, {"cosh", T_COSH, W_FN, 0}, {"tanh", T_TANH, W_FN, 0},
     {"asinh", T_ASINH, W_FN, 0}, {"acosh", T_ACOSH, W_FN, 0}, {"atanh", T_ATANH, W_FN, 0},
-    {"log", T_LOG, W_FN, 0}, {"ln", T_LN, W_FN, 0}, {"exp", T_EXP, W_FN, 0},
+    {"log", T_LOG, W_FN, 0}, {"ln", T_LN, W_FN, 0}, {"exp", T_EXP, W_FN, 0}, {"alog", T_EXP10, W_FN, 0},
     {"abs", T_ABS, W_FN, 0}, {"cbrt", T_CBRT, W_FN, 0},
     {"int", T_INT, W_FN, 0}, {"intg", T_INTG, W_FN, 0}, {"rnd", T_RND, W_FN, 0},
     {"ranint", T_RANINT, W_FN, 0}, {"pol", T_POL, W_FN, 0}, {"rec", T_REC, W_FN, 0},

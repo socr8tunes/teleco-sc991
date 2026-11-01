@@ -339,6 +339,7 @@ static void real_fn1(ev_t *e, int fn, const num_t *a, num_t *r)
     case T_LOG: s = fn_log10(&d, &a->v); s = num_wrap(r, &d, s); break;
     case T_LN: s = fn_ln(&d, &a->v); s = num_wrap(r, &d, s); break;
     case T_EXP: s = fn_exp(&d, &a->v); s = num_wrap(r, &d, s); break;
+    case T_EXP10: s = fn_exp10(&d, &a->v); s = num_wrap(r, &d, s); break;
     case T_ABS: s = num_abs(r, a); break;
     case T_SQRT: s = num_sqrt(r, a); break;
     case T_CBRT: {
