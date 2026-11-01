@@ -75,3 +75,9 @@ Each operation is range-checked on its own. An expression like `a * b / c` can t
 - **Transcendental functions** (exp, ln, trig, ...) need more than 16 digits internally to deliver results correct to 16. The plan is an extended-precision working type (about 24 to 32 digits, built on the same 128-bit integer helpers) used only inside those functions.
 - **Exact types** (fractions, surds, pi multiples, complex) live in `core/values` as a tagged union on top of `dec_t`.
 - **MCU benchmarking.** PC timings are only a smoke test. The cost drivers on a Cortex-M0+ will be 64-bit division (software) and the 128-bit square root loop. Measure on the STM32U0 dev board before locking the design.
+
+## User-facing display semantics
+- Norm shows up to 10 significant digits, switching to scientific outside 1E-2..1E10. **Sci n** shows n significant digits (0 means 10). **Fix n** shows n decimals. **Eng** uses exponents that are multiples of 3.
+- Exact results (fractions, surds, multiples of pi) are shown naturally first; S<>D toggles the decimal. Results of inputs containing decimals, and of numerical methods (derivative, integral, solver), are decimal.
+- Normal distribution: P(t) lower tail, Q(t) = area 0..t, R(t) upper tail.
+- Constants are CODATA 2022 (scipy.constants; not cross-checked against NIST here).
