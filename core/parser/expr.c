@@ -472,16 +472,8 @@ calc_err_t compile_tokens(const tok_t *toks, int ntok, int base, prog_t *p)
     p->base = (uint8_t)base;
     c.t = toks; c.n = ntok; c.p = 0; c.pr = p; c.base = base; c.depth = 0; c.err = CE_OK;
     if (ntok == 0) return CE_SYNTAX;
-    for (;;) {
-        parse_stmt(&c);
-        if (c.err) return c.err;
-        if (accept(&c, T_COLON)) {
-            if (c.p >= c.n) break;   /* trailing ':' */
-            emit(&c, OP_POP, 0, 0, 0);
-            continue;
-        }
-        break;
-    }
+    parse_stmt(&c);                  /* single statement only: no ':' chaining (excluded feature) */
+    if (c.err) return c.err;
     if (!c.err && c.p != c.n) c.err = CE_SYNTAX;
     return c.err;
 }

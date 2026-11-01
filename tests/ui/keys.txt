@@ -109,3 +109,5 @@ SHIFT 8 EXE => @expr
 1 EXE SD => 1
 # STO into matrix
 {[1,2;3,4]} STO MENU 6 1 EXE => @expr
+# excluded features (product decision): no statement chaining, no stored formulas
+1 + 1 ALPHA EXE => expr:1+1

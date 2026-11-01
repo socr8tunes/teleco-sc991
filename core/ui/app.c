@@ -70,7 +70,7 @@ static const keydef_t KD[K_COUNT] = {
     [K_DOT]   = {TK(T_DOT), TK(T_RAN), NO},
     [K_PI]    = {TK(T_PI), TK(T_E), NO},
     [K_ANS]   = {TK(T_ANS), TK(T_PREANS), NO},
-    [K_EXE]   = {SPC(SP_EXE), TK(T_EQ), TK(T_COLON)},
+    [K_EXE]   = {SPC(SP_EXE), TK(T_EQ), NO},
 };
 
 /* tokens that continue from Ans when typed first after a result */

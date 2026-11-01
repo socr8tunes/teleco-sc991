@@ -242,7 +242,7 @@ calc_err_t lex_text(const char *str, int base, tok_t *out, int cap, int *n)
         if (c == '\'') { emit(l, T_DMS_M, 0); l->p++; continue; }
         if (c == '"') { emit(l, T_DMS_S, 0); l->p++; continue; }
         if (c == '=') { emit(l, T_EQ, 0); l->p++; continue; }
-        if (c == ':') { emit(l, T_COLON, 0); l->p++; continue; }
+        /* ':' (statement chaining) is deliberately not supported: no scripting, see docs/feature-gap-audit.md */
         if ((k = sym(s, "\xcf\x80"))) { emit(l, T_PI, 0); l->p += k; continue; }
         if ((k = sym(s, "\xe2\x88\x9a"))) {
             l->p += k;
