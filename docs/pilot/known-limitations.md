@@ -20,3 +20,4 @@ Be honest with testers about these.
 - InvN(area) is the lower-tail inverse normal; InvN(area, sigma, mu) rescales it.
 - Not provided by design (product decision): spreadsheet mode, user-programmable formulas (including TABLE and CALC), macros and scripting, ":" statement chaining.
 - Normal distribution Q(t) is the area from 0 to t (Casio convention); R(t) is the upper tail, P(t) the lower tail.
+- **Firmware updates discard saved state.** Memory, variables, history, matrices/vectors, statistics data and settings return to defaults after an update that changes the stored format (see `docs/persistence.md`). The first such update is the one adding GCD/LCM/PFact/binomial/Poisson/InvN.

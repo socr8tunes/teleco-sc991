@@ -130,6 +130,29 @@ static void test_corruption_and_failed_save(void)
     }
 }
 
+/* A blob written by a different firmware version (state layout changed) must be discarded, and the
+ * calculator must start with clean defaults instead of misreading the old data. */
+static void test_old_version_discarded(void)
+{
+    app_t *a = &S.app;
+    hal_pc_storage_wipe(); hal_pc_reset();
+    shell_init(&S);
+    hal_pc_advance(1500); shell_step(&S);
+    taps("5 STO ALPHA DMS EXE");
+    CHECK(persist_save(a) == 0, "save current-version blob");
+    hal_pc_storage_corrupt(4);            /* the version field follows the 4-byte magic */
+    {
+        app_t b;
+        app_init(&b);
+        CHECK(persist_load(&b) != 0, "blob with a different version is rejected");
+        CHECK(b.ctx.var[VAR_B].re.v.m == 0, "rejected blob leaves defaults");
+    }
+    hal_pc_reset();
+    shell_init(&S);
+    hal_pc_advance(1500); shell_step(&S);
+    CHECK(S.app.ctx.var[VAR_B].re.v.m == 0, "shell boots with clean defaults after discarding old state");
+}
+
 static void test_auto_off_and_battery(void)
 {
     hal_pc_storage_wipe(); hal_pc_reset();
@@ -152,6 +175,7 @@ int main(void)
     test_rollover();
     test_persistence();
     test_corruption_and_failed_save();
+    test_old_version_discarded();
     test_auto_off_and_battery();
     printf("%d checks, %d failures\n", checks, fails);
     return fails != 0;
