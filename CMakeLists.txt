@@ -198,4 +198,7 @@ endif()
 add_executable(bench_stack tests/bench/bench_stack.c)
 target_link_libraries(bench_stack PRIVATE teleco_numeric)
 teleco_target_options(bench_stack)
-add_test(NAME stack_budget COMMAND bench_stack 12288)
+# stack depth is only meaningful for optimised, non-instrumented builds
+if(CMAKE_BUILD_TYPE MATCHES "Release|MinSizeRel" AND NOT TELECO_SANITIZE)
+  add_test(NAME stack_budget COMMAND bench_stack 12288)
+endif()
