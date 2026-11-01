@@ -194,3 +194,8 @@ if(Python3_FOUND)
   add_test(NAME pilot_pack COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/pilot/run_pack.py --sim $<TARGET_FILE:teleco_sim> --quiet)
   set_tests_properties(pilot_pack PROPERTIES TIMEOUT 900)
 endif()
+
+add_executable(bench_stack tests/bench/bench_stack.c)
+target_link_libraries(bench_stack PRIVATE teleco_numeric)
+teleco_target_options(bench_stack)
+add_test(NAME stack_budget COMMAND bench_stack 12288)

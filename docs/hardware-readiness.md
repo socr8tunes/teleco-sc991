@@ -15,6 +15,7 @@ done on a prototype before a pilot can rely on the hardware.
 | Main loop `shell_step` (key edge detection, 2-key rollover, render on change, sleep when idle, auto power-off, state save) | complete, tested with the PC HAL and a fake clock |
 | Persistence (`persist.c`): magic/version/size/CRC32, streamed, previous blob survives an interrupted save | complete, tested (corruption, interrupted commit) |
 | `platform/stm32/main.c` | entry point only (compiles for Cortex-M0+) |
+| `platform/stm32/board_template.c` | stub HAL satisfying the contract (links, drives no hardware); compile-checked by `tools/check_template.sh` |
 | STM32 HAL (display driver, key matrix scan, STOP-mode sleep, retained storage, RTC tick) | **not written** - needs the board and the panel datasheet |
 
 ## Measured on the host / by cross-compiling (clang, `-Os`, no linker; `tools/footprint.sh`)
@@ -81,6 +82,14 @@ power-off. The blink wake-up every 250 ms costs current; consider a blink-free c
 | HW-8 | Brown-out / battery removal: retained state and interrupted save | last good state survives pulling the battery during a save |
 | HW-9 | Battery-low threshold and behaviour | warning shown before calculation errors can occur |
 | HW-10 | Long-run soak with random key input on the device (the host fuzz test, driven over a debug UART) | no hang, no corruption for 24 h |
+
+## Host stack measurement (`bench_stack`, ctest `stack_budget`)
+
+Stack painting on a 64-bit host over the heaviest expressions (nested integral, cubic, solve, matrix inverse, deep sums):
+**worst high-water about 9 KB** (nested integral 8.9 KB, cubic 8.6 KB). 64-bit frames are usually not smaller than Cortex-M
+frames, so plan about 9-12 KB of stack plus UI render depth; the test fails above 12 KB. This is a host estimate only;
+HW-3 must repeat it on the device. With ~29.5 KB static RAM this means roughly **42 KB RAM total**, so a 64 KB part
+(STM32L4 class) fits and a 40 KB part does not.
 
 ## Bring-up plan
 
