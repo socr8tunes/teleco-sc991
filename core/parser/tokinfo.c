@@ -115,6 +115,7 @@ static const char *fn_label(uint8_t t)
     case T_GCD: return "GCD("; case T_LCM: return "LCM("; case T_QUOT: return "Quot("; case T_REM: return "Rem(";
     case T_PFACT: return "PFact("; case T_BINPD: return "BinomPD("; case T_BINCD: return "BinomCD(";
     case T_POIPD: return "PoisPD("; case T_POICD: return "PoisCD("; case T_INVN: return "InvN(";
+    case T_PROD: return "\x9C(";
     case T_NOT: return "Not("; case T_NEGB: return "Neg(";
     case T_LOGB: return "log\x01" "b\x02(";
     default: return 0;

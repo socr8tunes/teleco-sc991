@@ -3,7 +3,7 @@
 #include <string.h>
 
 #define MAGIC   0x39435354u   /* "TSC9" */
-#define VERSION 4u
+#define VERSION 5u
 
 typedef struct hdr {
     uint32_t magic, version;

@@ -224,3 +224,11 @@ Q(T, "Distribution", "X ~ Poisson(2.5): P(X = 4)", C("poispd(4,2.5)"), v="poipd(
 Q(T, "Distribution", "Calls arrive at 3 per minute (Poisson): P(at most 2 calls in a minute)", C("poiscd(2,3)"), v="poicd(2,3)", tol=1e-9)
 Q(T, "Distribution", "z-value with 97.5% of the standard normal to its left", C("invn(0.975)"), v="invn('0.975')", tol=1e-9)
 Q(T, "Distribution", "IQ ~ N(100, 15^2): the score exceeded by only 2.5% of people", C("invn(0.975,15,100)"), v="100+15*invn('0.975')", tol=1e-9)
+
+# ---------------------------------------------------------------- Product operator
+Q(U, "Series and products", "Compute 10! as a product, prod(X, 1..10)", C("prod(X,1,10)"), v="3628800", exact="3628800")
+Q(U, "Series and products", "prod(1 + 1/X) for X = 1..9 (telescoping product)", C("prod(1+1/X,1,9)"), v="10", exact="10")
+Q(U, "Series and products", "prod(1 - 1/X^2) for X = 2..10 (= 11/20)", C("prod(1-1/X^2,2,10)"), v="mpf(11)/20", exact="11/20")
+Q(U, "Series and products", "prod(2X - 1) for X = 1..5 (odd numbers, 945)", C("prod(2X-1,1,5)"), v="945", exact="945")
+Q(U, "Series and products", "Compound growth: 1000 x prod(1 + 0.05) over 10 years", C("1000*prod(1.05,1,10)"), v="1000*mpf('1.05')**10", tol=1e-9)
+Q(U, "Series and products", "Empty product: prod(X, 5..1)", C("prod(X,5,1)"), v="1", exact="1")

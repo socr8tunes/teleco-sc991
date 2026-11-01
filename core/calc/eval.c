@@ -536,7 +536,8 @@ static void block_fn(ev_t *e, const ins_t *in, int body_pc)
 
     b.e = e; b.pc = body_pc; b.len = blen;
 
-    if (in->x == T_SIGMA && argc == 3) {
+    if ((in->x == T_SIGMA || in->x == T_PROD) && argc == 3) {
+        int is_prod = in->x == T_PROD;
         val_t *vb = &e->st[e->sp - 1], *va = &e->st[e->sp - 2];
         int64_t lo, hi, i;
         num_t acc, term;
@@ -546,14 +547,14 @@ static void block_fn(ev_t *e, const ins_t *in, int body_pc)
         }
         e->sp -= 2;
         if (hi - lo > 100000) { fail(e, CE_TIME); return; }
-        num_from_int(&acc, 0);
+        num_from_int(&acc, is_prod ? 1 : 0);
         for (i = lo; i <= hi && !e->err; i++) {
             val_int(&e->c->var[VAR_X], i);
             run(e, body_pc, body_pc + blen);
             if (e->err) break;
             term = e->st[--e->sp].re;
             if (!is_real(&e->st[e->sp])) { fail(e, CE_ARG); break; }
-            fail_st(e, num_add(&acc, &acc, &term));
+            fail_st(e, is_prod ? num_mul(&acc, &acc, &term) : num_add(&acc, &acc, &term));
         }
         e->c->var[VAR_X] = save_x;
         if (!e->err) set_real(push(e), &acc);

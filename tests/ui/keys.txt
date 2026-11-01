@@ -111,3 +111,9 @@ SHIFT 8 EXE => @expr
 {[1,2;3,4]} STO MENU 6 1 EXE => @expr
 # excluded features (product decision): no statement chaining, no stored formulas
 1 + 1 ALPHA EXE => expr:1+1
+# product operator (MENU > Calculus > prod)
+MENU 2 7 ALPHA ) SHIFT ) 1 SHIFT ) 5 ) EXE => 120
+MENU 2 7 ALPHA ) + 1 SHIFT ) 1 SHIFT ) 4 ) EXE => 120
+MENU 2 7 1 / ALPHA ) SHIFT ) 1 SHIFT ) 3 ) EXE => 1/6
+MENU 2 7 ALPHA ) SHIFT ) 5 SHIFT ) 1 ) EXE => 1
+MENU 2 7 ALPHA ) SHIFT ) 1 SHIFT ) 1 0 0 ) EXE => Math ERROR

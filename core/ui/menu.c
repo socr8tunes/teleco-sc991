@@ -37,6 +37,7 @@ static const mitem_t M_CALC_[] = {
     TK_("\x87( sum f(X),a,b )", T_SIGMA), TK_("d/dx( f(X),x0 )", T_DDX),
     TK_("\x86( f(X),a,b ) integral", T_INTEGRAL), TK_("Solve( f(X)=g ,guess)", T_SOLVE),
     TKA_("X (variable)", T_VAR, VAR_X), TK_("= sign", T_EQ),
+    TK_("\x9C( prod f(X),a,b )", T_PROD),
 };
 static const mitem_t M_NUM_[] = {
     TK_("Abs(", T_ABS), TK_("Int(", T_INT), TK_("Intg(", T_INTG), TK_("Rnd(", T_RND),

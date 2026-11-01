@@ -106,6 +106,8 @@ size_t sim_expr_text(const app_t *a, char *buf, size_t cap)
             else if (c == 0x83) pos = put(buf, cap, pos, "/");
             else if (c == 0x80) pos = put(buf, cap, pos, "sqrt");
             else if (c == 0x81) pos = put(buf, cap, pos, "pi");
+            else if (c == 0x87) pos = put(buf, cap, pos, "sum");
+            else if (c == 0x9C) pos = put(buf, cap, pos, "prod");
             else if (c >= 0x80) pos = put(buf, cap, pos, "?");
             else { one[0] = (char)c; pos = put(buf, cap, pos, one); }
         }

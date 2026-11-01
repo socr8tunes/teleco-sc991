@@ -82,7 +82,7 @@ static void arity(int t, int *lo, int *hi)
     case T_RANINT: case T_POL: case T_REC: case T_DOTP: case T_CROSSP: case T_ANGLEV:
     case T_DDX: case T_SOLVE:
         *lo = *hi = 2; break;
-    case T_SIGMA: case T_INTEGRAL: case T_BINPD: case T_BINCD: *lo = *hi = 3; break;
+    case T_SIGMA: case T_PROD: case T_INTEGRAL: case T_BINPD: case T_BINCD: *lo = *hi = 3; break;
     case T_INVN: *lo = 1; *hi = 3; break;
     case T_VCTLIT: *lo = 2; *hi = 3; break;
     case T_QUAD: *lo = *hi = 3; break;
@@ -194,7 +194,7 @@ static void rotate_body(cs_t *c, int p0, int blen)
 
 static void parse_fn(cs_t *c, int ft)
 {
-    int lo, hi, argc = 0, body = (ft == T_SIGMA || ft == T_DDX || ft == T_INTEGRAL || ft == T_SOLVE);
+    int lo, hi, argc = 0, body = (ft == T_SIGMA || ft == T_PROD || ft == T_DDX || ft == T_INTEGRAL || ft == T_SOLVE);
     int p0 = c->pr->n, blen = 0;
 
     arity(ft, &lo, &hi);

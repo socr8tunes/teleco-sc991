@@ -45,6 +45,7 @@
 #define S_OMEGA  "\x99"
 #define S_LBL    "\x9A"
 #define S_CHECK  "\x9B"
+#define S_PROD   "\x9C"
 
 typedef struct lcd {
     uint8_t px[LCD_STRIDE * LCD_H];

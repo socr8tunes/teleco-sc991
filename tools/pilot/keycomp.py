@@ -11,7 +11,7 @@ FUNC = {"sin": "SIN", "cos": "COS", "tan": "TAN", "asin": "SHIFT SIN", "acos": "
         "log": "LOG", "ln": "LN", "pol": "SHIFT +", "rec": "SHIFT -", "ranint": "SHIFT 0", "exp": "SHIFT LN", "alog": "SHIFT LOG"}
 MENU_FN = {  # name -> (menu number, item number) in the MENU catalogue (see core/ui/menu.c)
     "sinh": (1, 1), "cosh": (1, 2), "tanh": (1, 3), "asinh": (1, 4), "acosh": (1, 5), "atanh": (1, 6),
-    "sum": (2, 1), "ddx": (2, 2), "integral": (2, 3), "solve": (2, 4),
+    "sum": (2, 1), "prod": (2, 7), "ddx": (2, 2), "integral": (2, 3), "solve": (2, 4),
     "abs": (3, 1), "int": (3, 2), "intg": (3, 3), "rnd": (3, 4), "cbrt": (3, 5), "arg": (5, 2), "conj": (5, 3), "re": (5, 4), "im": (5, 5),
     "det": (6, 10), "trn": (6, 11), "iden": (6, 12),
     "gcd": (3, 13), "lcm": (3, 14), "quot": (3, 15), "rem": (3, 16), "pfact": (3, 17),
