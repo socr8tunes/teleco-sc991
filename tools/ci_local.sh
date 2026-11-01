@@ -23,7 +23,8 @@ for s in $steps; do
                ./build-ci-san/test_ui_fuzz 40 20000 ;;
     wasm)      platform/web/build.sh build-web
                node tests/web/test_wasm.mjs build-web/teleco.wasm
-               python3 platform/web/make_html.py build-web/teleco-sc991.html build-web/teleco.wasm ;;
+               python3 platform/web/make_html.py build-web/teleco-sc991.html build-web/teleco.wasm
+               python3 tests/web/test_page.py "$PWD/build-web/teleco-sc991.html" ;;
     footprint) tools/footprint.sh thumbv6m-none-eabi build-fp-m0plus | tee build-fp-m0plus.txt
                tools/footprint.sh thumbv7em-none-eabi build-fp-m4 | tee build-fp-m4.txt ;;
     template)  tools/check_template.sh ;;

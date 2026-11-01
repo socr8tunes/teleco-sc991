@@ -112,7 +112,7 @@ addEventListener("keydown", e => {
 const t0 = performance.now();
 let last = -1;
 function frame(t) {
-  const ms = Math.floor(t - t0);
+  const ms = Math.max(0, Math.floor(t - t0));   // first frame timestamp can precede t0; never pass a negative time
   w.teleco_tick(ms);
   const phase = Math.floor(ms / 500) + (w.teleco_screen() << 8);
   if (phase !== last) { last = phase; draw(); }

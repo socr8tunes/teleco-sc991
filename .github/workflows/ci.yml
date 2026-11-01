@@ -28,7 +28,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install tools
-        run: sudo apt-get update && sudo apt-get install -y clang lld nodejs
+        run: |
+          sudo apt-get update && sudo apt-get install -y clang lld nodejs python3-pip
+          python3 -m pip install --user playwright && python3 -m playwright install --with-deps chromium
       - name: Build wasm and run the differential UI test
         run: tools/ci_local.sh wasm
       - uses: actions/upload-artifact@v4
@@ -44,7 +46,7 @@ jobs:
       - name: Install tools
         run: sudo apt-get update && sudo apt-get install -y clang llvm
       - name: Measure
-        run: tools/ci_local.sh footprint
+        run: tools/ci_local.sh footprint template
       - uses: actions/upload-artifact@v4
         with:
           name: footprint
