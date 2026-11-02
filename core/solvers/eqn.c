@@ -2,6 +2,7 @@
 #include "solvers/eqn.h"
 #include "values/matrix.h"
 #include "calc/nummethods.h"
+#include "numeric/xnum.h"
 
 #define CHK(x) do { dec_status _s = (x); if (DEC_STATUS_IS_ERROR(_s)) return CE_MATH; } while (0)
 
@@ -163,21 +164,97 @@ calc_err_t eqn_cubic(const num_t c[4], cx_t roots[3])
     return CE_OK;
 }
 
+/*
+ * n x n linear system (n = 2..4), a = n rows of (n coefficients + constant).
+ *
+ * Each row is first scaled by a power of ten so that decimal inputs become integers (this does not change the
+ * solution). Fraction-free Gauss-Jordan (Bareiss) elimination with partial pivoting then runs in 45+ digit
+ * extended precision: for the integer entries produced above every intermediate value is an exact minor, so
+ * rank decisions are exact (the zero test is only a relative safety net for entries beyond ~12 digits).
+ * Unique solution -> CE_OK (exact rational when numerator and denominator fit in int64, else a 16-digit
+ * decimal rounded once from the extended precision value); inconsistent -> CE_INCONS; underdetermined -> CE_INFIN.
+ */
 calc_err_t eqn_simul(int n, const num_t *a, num_t *x)
 {
-    num_t m[9], rhs[3], inv[9];
-    mv_t A, I, B, X;
-    int i, j;
-    if (n < 2 || n > 3) return CE_ARG;
+    xnum_t m[4][5], prev, tol, scale, eps, t, u, piv, zero;
+    int pcol[4] = {0, 0, 0, 0};
+    int r = 0, col, i, j, w = n + 1, exact_mode;
+    if (n < 2 || n > 4) return CE_ARG;
+    xn_zero(&zero);
     for (i = 0; i < n; i++) {
-        for (j = 0; j < n; j++) m[i * n + j] = a[i * (n + 1) + j];
-        rhs[i] = a[i * (n + 1) + n];
+        int k;
+        for (j = 0; j < w; j++) xn_from_dec(&m[i][j], &a[i * w + j].v);
+        for (k = 0; k < 40; k++) {                       /* scale the row to integers */
+            int all = 1;
+            for (j = 0; j < w && all; j++) all = xn_is_int(&m[i][j]);
+            if (all) break;
+            for (j = 0; j < w; j++) xn_mul_u32(&m[i][j], &m[i][j], 10);
+        }
     }
-    A.r = A.c = (uint8_t)n; A.e = m;
-    I.e = inv;
-    B.r = (uint8_t)n; B.c = 1; B.e = rhs;
-    X.e = x;
-    CHK(mx_inv(&I, &A));
-    CHK(mx_mul(&X, &I, &B));
+    xn_zero(&scale);
+    for (i = 0; i < n; i++)
+        for (j = 0; j < w; j++) { xn_abs(&t, &m[i][j]); if (xn_cmp(&t, &scale) > 0) scale = t; }
+    if (xn_is_zero(&scale)) return CE_INFIN;                   /* 0 = 0 */
+    /* Minors of order 4 of d-digit integers have at most 4d+2 digits; with 45+ digits of precision the
+     * elimination is exact when d <= 10, and then zero means exactly zero. Beyond that a relative test is used. */
+    exact_mode = xn_dec_exponent(&scale) + 1 <= 10;
+    xn_from_i64(&prev, 1);
+    xn_pow10(&eps, -30);
+    xn_zero(&tol);
+    for (col = 0; col < n && r < n; col++) {
+        int p = -1;
+        xnum_t best = zero;
+        if (!exact_mode) {                                     /* relative zero threshold from the current magnitudes */
+            xnum_t mx = zero;
+            for (i = r; i < n; i++) for (j = 0; j < w; j++) { xn_abs(&t, &m[i][j]); if (xn_cmp(&t, &mx) > 0) mx = t; }
+            xn_mul(&tol, &mx, &eps);
+        }
+        for (i = r; i < n; i++) {
+            xn_abs(&t, &m[i][col]);
+            if (xn_cmp(&t, &tol) > 0 && xn_cmp(&t, &best) > 0) { best = t; p = i; }
+        }
+        if (p < 0) { for (i = r; i < n; i++) xn_zero(&m[i][col]); continue; }
+        if (p != r) for (j = 0; j < w; j++) { t = m[p][j]; m[p][j] = m[r][j]; m[r][j] = t; }
+        piv = m[r][col];
+        for (i = 0; i < n; i++) {
+            if (i == r) continue;
+            for (j = 0; j < w; j++) {
+                if (j == col) continue;
+                xn_mul(&t, &piv, &m[i][j]);
+                xn_mul(&u, &m[i][col], &m[r][j]);
+                xn_sub(&t, &t, &u);
+                xn_div(&m[i][j], &t, &prev);
+            }
+            xn_zero(&m[i][col]);
+        }
+        pcol[r] = col;
+        prev = piv;
+        r++;
+    }
+    if (!exact_mode) {
+        xnum_t mx = zero;
+        for (i = r; i < n; i++) for (j = 0; j < w; j++) { xn_abs(&t, &m[i][j]); if (xn_cmp(&t, &mx) > 0) mx = t; }
+        xn_mul(&tol, &mx, &eps);
+    }
+    for (i = r; i < n; i++) {                                  /* rows without coefficients must read 0 = 0 */
+        xn_abs(&t, &m[i][n]);
+        if (xn_cmp(&t, &tol) > 0) return CE_INCONS;
+    }
+    if (r < n) return CE_INFIN;
+    for (i = 0; i < n; i++) {
+        int64_t nn, dd;
+        dec_t d;
+        num_t pn, pd;
+        xnum_t q;
+        const xnum_t *den = &m[i][pcol[i]];
+        if (xn_is_int(&m[i][n]) && xn_is_int(den) && !xn_to_i64(&m[i][n], XN_TRUNC, &nn) && !xn_to_i64(den, XN_TRUNC, &dd)) {
+            num_from_int(&pn, nn);
+            num_from_int(&pd, dd);
+            if (!DEC_STATUS_IS_ERROR(num_div(&x[i], &pn, &pd))) continue;
+        }
+        xn_div(&q, &m[i][n], den);
+        if (DEC_STATUS_IS_ERROR(xn_to_dec(&d, &q))) return CE_MATH;
+        num_from_dec(&x[i], &d);
+    }
     return CE_OK;
 }

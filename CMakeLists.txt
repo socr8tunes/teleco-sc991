@@ -66,6 +66,7 @@ add_library(teleco_ui STATIC
   core/ui/app.c
   core/ui/view.c
   core/ui/menu.c
+  core/ui/grid.c
   core/ui/screens.c
   core/ui/persist.c
   core/ui/shell.c)
@@ -202,3 +203,8 @@ teleco_target_options(bench_stack)
 if(CMAKE_BUILD_TYPE MATCHES "Release|MinSizeRel" AND NOT TELECO_SANITIZE)
   add_test(NAME stack_budget COMMAND bench_stack 12288)
 endif()
+
+add_executable(test_simul_big tests/unit/test_simul_big.c)
+target_link_libraries(test_simul_big PRIVATE teleco_numeric)
+teleco_target_options(test_simul_big)
+add_test(NAME simul_big COMMAND test_simul_big ${CMAKE_SOURCE_DIR}/tests/cases/simul_big.dat)

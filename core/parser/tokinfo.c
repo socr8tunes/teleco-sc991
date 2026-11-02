@@ -116,6 +116,7 @@ static const char *fn_label(uint8_t t)
     case T_PFACT: return "PFact("; case T_BINPD: return "BinomPD("; case T_BINCD: return "BinomCD(";
     case T_POIPD: return "PoisPD("; case T_POICD: return "PoisCD("; case T_INVN: return "InvN(";
     case T_PROD: return "\x9C(";
+    case T_SIMUL4: return "Simul4(";
     case T_NOT: return "Not("; case T_NEGB: return "Neg(";
     case T_LOGB: return "log\x01" "b\x02(";
     default: return 0;

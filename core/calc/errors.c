@@ -12,6 +12,8 @@ const char *calc_err_name(calc_err_t e)
     case CE_TIME:   return "Time Out";
     case CE_RANGE:  return "Range ERROR";
     case CE_NOSOL:  return "Can't Solve";
+    case CE_INCONS: return "No Solution";
+    case CE_INFIN:  return "Infinite Solutions";
     }
     return "ERROR";
 }

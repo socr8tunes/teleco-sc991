@@ -232,3 +232,19 @@ Q(U, "Series and products", "prod(1 - 1/X^2) for X = 2..10 (= 11/20)", C("prod(1
 Q(U, "Series and products", "prod(2X - 1) for X = 1..5 (odd numbers, 945)", C("prod(2X-1,1,5)"), v="945", exact="945")
 Q(U, "Series and products", "Compound growth: 1000 x prod(1 + 0.05) over 10 years", C("1000*prod(1.05,1,10)"), v="1000*mpf('1.05')**10", tol=1e-9)
 Q(U, "Series and products", "Empty product: prod(X, 5..1)", C("prod(X,5,1)"), v="1", exact="1")
+
+# ---------------------------------------------------------------- Four simultaneous equations (function form; the grid form is covered by tests/ui/grid.txt)
+Q(E, "Linear systems", "Mesh currents in a 4-loop circuit (ohms, volts): find I1 (first answer)",
+  C("simul4(10,-2,0,-3,12,-2,12,-4,0,0,0,-4,9,-1,-6,-3,0,-1,8,5)"), v="mpf(2377)/1520", tol=1e-9)
+Q(E, "Linear systems", "... same circuit: I3 (third answer)",
+  C("simul4(10,-2,0,-3,12,-2,12,-4,0,0,0,-4,9,-1,-6,-3,0,-1,8,5)") + " EXE EXE", v="mpf(-151)/304", tol=1e-9)
+Q(E, "Linear systems", "Alloy mixing: totals 100, 134, 150, 74. Amount of the first metal",
+  C("simul4(1,1,1,1,100,2,1,3,0,134,0,2,1,4,150,1,0,2,1,74)"), v="42", exact="42")
+Q(E, "Linear systems", "... same: amount of the fourth metal (4th answer)",
+  C("simul4(1,1,1,1,100,2,1,3,0,134,0,2,1,4,150,1,0,2,1,74)") + " EXE EXE EXE", v="20", exact="20")
+Q(E, "Linear systems", "Traffic network x1+x2=60, x2+x3=70, x3+x4=50, x1+x4=40 has no single answer",
+  C("simul4(1,1,0,0,60,0,1,1,0,70,0,0,1,1,50,1,0,0,1,40)"), exact="Infinite Solutions")
+Q(E, "Linear systems", "Inconsistent data: x+y+z+w=4, 2x+2y+2z+2w=9, x=1, y=1",
+  C("simul4(1,1,1,1,4,2,2,2,2,9,1,0,0,0,1,0,1,0,0,1)"), exact="No Solution")
+Q(S, "Linear systems", "Two parallel lines never meet: x+2y=3 and 2x+4y=7",
+  C("simul2(1,2,3,2,4,7)"), exact="No Solution")

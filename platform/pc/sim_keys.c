@@ -74,6 +74,7 @@ size_t sim_result_text(const app_t *a, char *buf, size_t cap)
 {
     val_t v;
     if (cap) buf[0] = 0;
+    if (a->screen == SCR_GRID) return a->gr_msg ? put(buf, cap, 0, calc_err_name((calc_err_t)a->gr_msg)) : 0;
     if (!a->post_eval) return 0;
     if (!a->have_res) return put(buf, cap, 0, calc_err_name((calc_err_t)a->err));
     if (a->ctx.nres > 1) v = a->ctx.res[a->view_idx < a->ctx.nres ? a->view_idx : 0];

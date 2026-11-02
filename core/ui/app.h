@@ -24,7 +24,7 @@ enum menu_id {
 #define AUTO_OFF_MS (10u * 60u * 1000u)
 
 enum screen_id {
-    SCR_LOGO = 0, SCR_CALC, SCR_MENU, SCR_STATEDIT, SCR_STATRES, SCR_MATVIEW, SCR_CONFIRM, SCR_OFF
+    SCR_LOGO = 0, SCR_CALC, SCR_MENU, SCR_STATEDIT, SCR_STATRES, SCR_MATVIEW, SCR_CONFIRM, SCR_OFF, SCR_GRID
 };
 
 typedef struct hist {
@@ -66,6 +66,10 @@ typedef struct app {
     uint8_t  sr_page;
     /* matrix viewer */
     uint8_t  mv_r, mv_c;
+    /* coefficient grid (linear systems); numbers only, never saved */
+    dec_t    gr_val[20];      /* row-major, 5 columns per row */
+    char     gr_buf[24];
+    uint8_t  gr_n, gr_row, gr_col, gr_len, gr_editing, gr_msg;
     /* confirm dialog */
     uint8_t  confirm_action;
 
@@ -91,6 +95,9 @@ void ui_statres_key(app_t *a, int key);
 void ui_statres_render(const app_t *a, lcd_t *l);
 void ui_matview_key(app_t *a, int key);
 void ui_matview_render(const app_t *a, lcd_t *l);
+void ui_grid_open(app_t *a, int n);
+void ui_grid_key(app_t *a, int key);
+void ui_grid_render(const app_t *a, lcd_t *l);
 void ui_confirm_key(app_t *a, int key);
 void ui_confirm_render(const app_t *a, lcd_t *l);
 void ui_title(lcd_t *l, const char *left, const char *right);   /* inverted title bar */

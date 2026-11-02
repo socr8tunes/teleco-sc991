@@ -901,8 +901,8 @@ static void run(ev_t *e, int pc, int end)
                 }
                 break;
             }
-            if (fn == T_QUAD || fn == T_CUBIC || fn == T_SIMUL2 || fn == T_SIMUL3) {
-                num_t coef[12], xs[3];
+            if (fn == T_QUAD || fn == T_CUBIC || fn == T_SIMUL2 || fn == T_SIMUL3 || fn == T_SIMUL4) {
+                num_t coef[20], xs[4];
                 cx_t roots[3];
                 int i, nroots = 0;
                 calc_err_t er;
@@ -913,10 +913,10 @@ static void run(ev_t *e, int pc, int end)
                 if (e->err) break;
                 if (fn == T_QUAD) { er = eqn_quad(coef, roots); nroots = 2; }
                 else if (fn == T_CUBIC) { er = eqn_cubic(coef, roots); nroots = 3; }
-                else { int n = fn == T_SIMUL2 ? 2 : 3; er = eqn_simul(n, coef, xs); nroots = n; }
+                else { int n = fn == T_SIMUL2 ? 2 : fn == T_SIMUL3 ? 3 : 4; er = eqn_simul(n, coef, xs); nroots = n; }
                 if (er) { fail(e, er); break; }
                 e->c->nres = (uint8_t)nroots;
-                e->c->res_kind = (uint8_t)(fn == T_SIMUL2 || fn == T_SIMUL3 ? 2 : 1);
+                e->c->res_kind = (uint8_t)(fn == T_SIMUL2 || fn == T_SIMUL3 || fn == T_SIMUL4 ? 2 : 1);
                 for (i = 0; i < nroots; i++) {
                     if (e->c->res_kind == 2) val_real(&e->c->res[i], &xs[i]);
                     else from_cx(&e->c->res[i], &roots[i]);
@@ -1129,7 +1129,10 @@ calc_err_t eval_prog(ctx_t *c, const prog_t *p, val_t *out)
 calc_err_t calc_eval_tokens(ctx_t *c, const tok_t *t, int n, val_t *out)
 {
     static prog_t pr;
-    calc_err_t er = compile_tokens(t, n, c->base, &pr);
+    calc_err_t er;
+    c->has_aux = 0;                  /* a failed compile must not leave the previous multi-valued result visible */
+    c->nres = 0;
+    er = compile_tokens(t, n, c->base, &pr);
     if (er) return er;
     er = eval_prog(c, &pr, out);
     if (!er) {
@@ -1151,7 +1154,10 @@ calc_err_t calc_eval_text(ctx_t *c, const char *text, val_t *out)
 {
     tok_t toks[MAX_TOKENS];
     int n = 0;
-    calc_err_t er = lex_text(text, c->base, toks, MAX_TOKENS, &n);
+    calc_err_t er;
+    c->has_aux = 0;
+    c->nres = 0;
+    er = lex_text(text, c->base, toks, MAX_TOKENS, &n);
     if (er) return er;
     return calc_eval_tokens(c, toks, n, out);
 }

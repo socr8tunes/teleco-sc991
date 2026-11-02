@@ -125,7 +125,7 @@ int script_aux(const script_t *s, char *out, size_t cap)
     size_t n;
     if (s->ctx.nres > 1) {
         int i;
-        const char *names = s->ctx.res_kind == 2 ? "xyz" : "123";
+        const char *names = s->ctx.res_kind == 2 ? "xyzw" : "123";
         size_t pos = 0;
         out[0] = 0;
         for (i = 1; i < s->ctx.nres && pos + 8 < cap; i++) {

@@ -82,6 +82,7 @@ static void arity(int t, int *lo, int *hi)
     case T_RANINT: case T_POL: case T_REC: case T_DOTP: case T_CROSSP: case T_ANGLEV:
     case T_DDX: case T_SOLVE:
         *lo = *hi = 2; break;
+    case T_SIMUL4: *lo = *hi = 20; break;
     case T_SIGMA: case T_PROD: case T_INTEGRAL: case T_BINPD: case T_BINCD: *lo = *hi = 3; break;
     case T_INVN: *lo = 1; *hi = 3; break;
     case T_VCTLIT: *lo = 2; *hi = 3; break;

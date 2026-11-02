@@ -170,8 +170,8 @@ static void result_labels(const app_t *a, char *buf)
     buf[0] = 0;
     if (c->nres > 1) {
         static const char *const K1[] = {"x1=", "x2=", "x3="};
-        static const char *const K2[] = {"x=", "y=", "z="};
-        strcpy(buf, (c->res_kind == 2 ? K2 : K1)[a->view_idx < 3 ? a->view_idx : 0]);
+        static const char *const K2[] = {"x=", "y=", "z=", "w="};
+        strcpy(buf, (c->res_kind == 2 ? K2 : K1)[a->view_idx < (c->res_kind == 2 ? 4 : 3) ? a->view_idx : 0]);
     } else if (c->has_aux == 1) {
         strcpy(buf, a->view_idx == 0 ? "X=" : "L-R=");
     } else if (c->has_aux == 2) {
@@ -317,6 +317,7 @@ void app_render(const app_t *a, lcd_t *l)
     case SCR_CALC: calc_screen(a, l); break;
     case SCR_MENU: ui_menu_render(a, l); break;
     case SCR_STATEDIT: ui_stat_render(a, l); break;
+    case SCR_GRID: ui_grid_render(a, l); break;
     case SCR_STATRES: ui_statres_render(a, l); break;
     case SCR_MATVIEW: ui_matview_render(a, l); break;
     case SCR_CONFIRM: ui_confirm_render(a, l); break;

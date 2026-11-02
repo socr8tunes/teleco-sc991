@@ -417,6 +417,7 @@ void app_key(app_t *a, int key)
     switch (a->screen) {
     case SCR_MENU: ui_menu_key(a, key); a->shift = a->alpha = 0; return;
     case SCR_STATEDIT: ui_stat_key(a, key); a->shift = a->alpha = 0; return;
+    case SCR_GRID: ui_grid_key(a, key); a->shift = a->alpha = 0; return;
     case SCR_STATRES: ui_statres_key(a, key); a->shift = a->alpha = 0; return;
     case SCR_MATVIEW: ui_matview_key(a, key); a->shift = a->alpha = 0; return;
     case SCR_CONFIRM: ui_confirm_key(a, key); a->shift = a->alpha = 0; return;

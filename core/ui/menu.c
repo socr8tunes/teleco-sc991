@@ -12,7 +12,7 @@ enum {
     ACT_FRAC, ACT_CPLX, ACT_POLAR,
     ACT_BASE0, ACT_BASE2, ACT_BASE8, ACT_BASE10, ACT_BASE16,
     ACT_ST_EDIT, ACT_ST_RES, ACT_ST_CLEAR, ACT_RESET, ACT_MEM_CLEAR_VARS,
-    ACT_BRACKETS
+    ACT_BRACKETS, ACT_GRID2, ACT_GRID3, ACT_GRID4
 };
 
 typedef struct mitem { const char *label; uint8_t kind, a, b; } mitem_t;
@@ -76,7 +76,8 @@ static const mitem_t M_DIST_[] = {
 };
 static const mitem_t M_EQN_[] = {
     TK_("Quad( a,b,c )", T_QUAD), TK_("Cubic( a,b,c,d )", T_CUBIC),
-    TK_("Simul2( a1,b1,c1,a2,b2,c2 )", T_SIMUL2), TK_("Simul3( 12 values )", T_SIMUL3), TK_("Solve(", T_SOLVE),
+    TK_("Simul2( a1,b1,c1,a2,b2,c2 )", T_SIMUL2), TK_("Simul3( 12 values )", T_SIMUL3), TK_("Simul4( 20 values )", T_SIMUL4), TK_("Solve(", T_SOLVE),
+    ACT_("Linear system: 2 unknowns", ACT_GRID2), ACT_("Linear system: 3 unknowns", ACT_GRID3), ACT_("Linear system: 4 unknowns", ACT_GRID4),
 };
 static const mitem_t M_MEM_[] = {
     TKA_("A", T_VAR, 0), TKA_("B", T_VAR, 1), TKA_("C", T_VAR, 2), TKA_("D", T_VAR, 3), TKA_("E", T_VAR, 4),
@@ -246,6 +247,9 @@ static void select_item(app_t *a)
         case ACT_ST_EDIT:
             a->menu_sp = 0; a->screen = SCR_STATEDIT; a->st_row = 0; a->st_col = 0; a->st_editing = 0; a->st_len = 0;
             return;
+        case ACT_GRID2: ui_grid_open(a, 2); return;
+        case ACT_GRID3: ui_grid_open(a, 3); return;
+        case ACT_GRID4: ui_grid_open(a, 4); return;
         case ACT_ST_RES: a->menu_sp = 0; a->screen = SCR_STATRES; a->sr_page = 0; return;
         case ACT_ST_CLEAR: stat_init(&c->stat, c->stat.type); break;
         case ACT_MEM_CLEAR_VARS: {
