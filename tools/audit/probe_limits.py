@@ -31,11 +31,11 @@ add("Vector dimension mismatch", "vct(1,2)+vct(1,2,3)", one("vct(1,2)+vct(1,2,3)
 n = len(run([":stat 1var", ":data clear", ":data " + ";".join(f"{i},1" for i in range(1, 81)), "n"])[-1:]) and run([":stat 1var", ":data clear", ":data " + ";".join(f"{i},1" for i in range(1, 81)), "n"])[-1]
 add("Statistics rows", "80 rows then 81st", f"n={n}; 81 rows: " + run([":stat 1var", ":data clear", ":data " + ";".join(f"{i},1" for i in range(1, 82))])[0], "80 accepted, 81st Range ERROR", "PASS")
 d = maxn(lambda n: "(" * n + "1" + ")" * n, 1, 40)
-add("Bracket nesting", "((..(1)..))", f"max depth {d}", "docs/README claim 24 (MAX_DEPTH)", "DOC MISMATCH" if d < 24 else "PASS")
+add("Bracket nesting", "((..(1)..))", f"max depth {d}", "target >= 24", "PASS" if d == 24 else "FAIL (must be exactly 24: 25 must give Stack ERROR)")
 f = maxn(lambda n: "sin(" * n + "0" + ")" * n, 1, 40)
-add("Function nesting", "sin(sin(..0..))", f"max depth {f}", "-", "INFO")
+add("Function nesting", "sin(sin(..0..))", f"max depth {f}", "target >= 24", "PASS" if f == 24 else "FAIL")
 c = maxn(lambda n: "+".join(["1"] * n), 2, 200)
-add("Numbers per expression", "1+1+...+1", f"max {c} numbers", "Casio ES/EX accept about 99/159 keystrokes (>=60 numbers)", "LIMITATION" if c < 60 else "PASS")
+add("Numbers per expression", "1+1+...+1", f"max {c} numbers", "target >= 80", "PASS" if c == 80 else "FAIL (must be exactly 80: 81 must give Stack ERROR)")
 for lbl, e, exp in [("69!", "69!", "1.711224524E98"), ("70! overflow", "70!", "Math ERROR"), ("1E99*10 overflow", "1E99*10", "Math ERROR"),
                     ("underflow to 0", "1E-99/10", "0"), ("0.1+0.2", "0.1+0.2", "0.3"), ("tan(90 deg)", "tan(90)", "Math ERROR"),
                     ("16-digit integer", "9999999999999999+1", "1E16"), ("12-digit product", "123456789012*123456789012", "1.524157875E22"),

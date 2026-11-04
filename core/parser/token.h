@@ -73,11 +73,18 @@ enum tok_type {
 #define N_VARS 9
 
 /* limits (all buffers are fixed size) */
-#define MAX_TOKENS 160
-#define MAX_CODE   256
-#define MAX_CONSTS 40
-#define EVAL_STACK 28
-#define MAX_DEPTH  24
+/* Entry-capacity limits (see docs/exam/03-exam-specification-proposed.md, section 3).
+ * ED_CAP (editor.h) = 256 tokens per entry line; one token is roughly one key press (80 literals of up to 2 digits fit).
+ * MAX_TOKENS = ED_CAP + room for the closers the editor adds automatically.
+ * MAX_CODE: about one instruction per token; a line of >190 consecutive implicit-multiplication atoms (pi pi pi ...) needs 2 and
+ * reaches Stack ERROR first - accepted, documented.                                               */
+#define MAX_TOKENS 288
+#define MAX_CODE   384
+#define MAX_CONSTS 80            /* number literals per expression */
+#define EVAL_STACK 48            /* 24 pending operands + a 20-argument function (Simul4) at the innermost level, with spare */
+#define MAX_NEST   24            /* nested brackets / function calls / natural-display structures */
+#define MAX_DEPTH  120           /* parser recursion guard (internal): >= 4 recursion steps per nesting level */
+#define EVAL_DEPTH 24            /* nested body functions (sum/product/integral/solve inside one another) */
 
 static inline tok_t mk_tok(uint8_t t, uint8_t a)
 {

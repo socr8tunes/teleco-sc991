@@ -26,9 +26,16 @@ typedef struct ins {
     uint16_t y;
 } ins_t;
 
+/* number literal, stored compactly (24 bytes instead of a 56-byte num_t): a literal is either an exact
+ * integer or a plain decimal, so its exact-value tracking can be rebuilt when it is pushed. */
+typedef struct lit {
+    dec_t   d;
+    uint8_t is_int;
+} lit_t;
+
 typedef struct prog {
     ins_t  code[MAX_CODE];
-    num_t  consts[MAX_CONSTS];
+    lit_t  consts[MAX_CONSTS];
     int    n;
     int    nconst;
     uint8_t has_eq;      /* contained '=' (equation) */

@@ -36,6 +36,13 @@ int main(int argc, char **argv)
         "solve(cos(X)=X,1)", "solve(X^3-2X-5=0,2)", "simul3(1,2,3,4,5,6,7,8,10,1,2,3)",
         "[1,2,3;4,5,6;7,8,10]^-1", "det([1,2,3,4;5,6,7,9;1,0,1,2;3,1,4,1])", "cubic(1,-6,11,-6)",
         "(1+2i)^10", "((((((((1+2)*3)+4)*5)+6)*7)+8)*9)", "integral(integral(X*Y,0,1),0,1)",
+        /* entry-capacity worst cases (24 nested levels, 80 literals, 192 tokens) */
+        "((((((((((((((((((((((((1))))))))))))))))))))))))",
+        "-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(1))))))))))))))))))))))))",
+        "sin(sin(sin(sin(sin(sin(sin(sin(sin(sin(sin(sin(sin(sin(sin(sin(sin(sin(sin(sin(sin(sin(sin(sin(0))))))))))))))))))))))))",
+        "1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1)))))))))))))))))))))))",
+        "1+2+3+4+5+6+7+8+9+10+11+12+13+14+15+16+17+18+19+20+21+22+23+24+25+26+27+28+29+30+31+32+33+34+35+36+37+38+39+40+41+42+43+44+45+46+47+48+49+50+51+52+53+54+55+56+57+58+59+60+61+62+63+64+65+66+67+68+69+70+71+72+73+74+75+76+77+78+79+80",
+        "sum(sum(X,1,3),1,3)", "integral(sum(X*Y,1,3),0,1)",
     };
     static ctx_t c;
     size_t i, worst = 0, base;
@@ -48,6 +55,7 @@ int main(int argc, char **argv)
         char out[96];
         paint();
         if (calc_eval_text(&c, E[i], &v) == CE_OK) (void)fmt_value_text(&c, &v, 1, 1, out, sizeof out);
+        else { printf("FAIL: %s did not evaluate\n", E[i]); return 1; }
         {
             size_t u = used();
             printf("%-44s %6zu bytes\n", E[i], u);

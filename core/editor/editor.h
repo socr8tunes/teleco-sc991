@@ -8,7 +8,7 @@
 
 #include "parser/token.h"
 
-#define ED_CAP      128
+#define ED_CAP      256
 #define ED_MAX_NEST 8
 
 typedef struct editor {

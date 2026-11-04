@@ -103,7 +103,7 @@ int ui_hist_count(const hist_t *h)
 
 static void hist_push(hist_t *h, const tok_t *t, int n)
 {
-    if (n <= 0 || n > 250) return;
+    if (n <= 0 || n > 255) return;   /* the record length marker is one byte */
     /* identical to the newest entry: skip */
     if (h->used > 0 && h->buf[h->used - 1].t == n) {
         int s = h->used - 1 - n, i, same = 1;

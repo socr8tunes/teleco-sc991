@@ -18,13 +18,13 @@ static void trim(char *s)
 int main(int argc, char **argv)
 {
     FILE *f;
-    char line[512];
+    char line[4096];
     int ln = 0;
     if (argc < 2) { fprintf(stderr, "usage: test_ui cases.txt\n"); return 2; }
     f = fopen(argv[1], "r");
     if (!f) { fprintf(stderr, "cannot open %s\n", argv[1]); return 2; }
     while (fgets(line, sizeof line, f)) {
-        char *sep, *keys = line, got[160], exp[160];
+        char *sep, *keys = line, got[1024], exp[1024];
         const char *bad = 0;
         ln++;
         trim(line);

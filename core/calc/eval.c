@@ -644,7 +644,7 @@ static void base_binary(ev_t *e, int op, const num_t *a, const num_t *b, num_t *
 static void run(ev_t *e, int pc, int end)
 {
     const prog_t *p = e->p;
-    if (++e->depth > MAX_DEPTH) { fail(e, CE_STACK); e->depth--; return; }
+    if (++e->depth > EVAL_DEPTH) { fail(e, CE_STACK); e->depth--; return; }
     while (pc < end && !e->err) {
         const ins_t *in = &p->code[pc++];
         val_t *a, *b;
@@ -652,7 +652,14 @@ static void run(ev_t *e, int pc, int end)
         e->c->budget--;
         if (p->base && !base_allowed(in->op, in->op == OP_FN ? in->x : 0)) { fail(e, CE_SYNTAX); break; }
         switch (in->op) {
-        case OP_CONST: set_real(push(e), &p->consts[in->x]); break;
+        case OP_CONST: {
+            num_t k;
+            int64_t iv;
+            const lit_t *l = &p->consts[in->x];
+            if (l->is_int && dec_to_i64(&l->d, &iv) == DEC_OK) num_from_int(&k, iv); else num_from_dec(&k, &l->d);
+            set_real(push(e), &k);
+            break;
+        }
         case OP_POP: if (e->sp > 0) e->sp--; break;
         case OP_UNEG:
             a = &e->st[e->sp - 1];

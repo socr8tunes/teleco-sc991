@@ -11,9 +11,9 @@ Probes run through `teleco_cli` on the host build. Run date and commit are recor
 | Vector 4 dim rejected | `vct(1,2,3,4)` | Argument ERROR | Argument ERROR | PASS |
 | Vector dimension mismatch | `vct(1,2)+vct(1,2,3)` | Dimension ERROR | Dimension ERROR | PASS |
 | Statistics rows | `80 rows then 81st` | n=80; 81 rows: Range ERROR | 80 accepted, 81st Range ERROR | PASS |
-| Bracket nesting | `((..(1)..))` | max depth 11 | docs/README claim 24 (MAX_DEPTH) | DOC MISMATCH |
-| Function nesting | `sin(sin(..0..))` | max depth 11 | - | INFO |
-| Numbers per expression | `1+1+...+1` | max 40 numbers | Casio ES/EX accept about 99/159 keystrokes (>=60 numbers) | LIMITATION |
+| Bracket nesting | `((..(1)..))` | max depth 24 | target >= 24 | PASS |
+| Function nesting | `sin(sin(..0..))` | max depth 24 | target >= 24 | PASS |
+| Numbers per expression | `1+1+...+1` | max 80 numbers | target >= 80 | PASS |
 | Numeric edge: 69! | `69!` | 1.711224524E98 | 1.711224524E98 | PASS |
 | Numeric edge: 70! overflow | `70!` | Math ERROR | Math ERROR | PASS |
 | Numeric edge: 1E99*10 overflow | `1E99*10` | Math ERROR | Math ERROR | PASS |

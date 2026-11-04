@@ -17,7 +17,8 @@ typedef struct cs {
     int n, p;
     prog_t *pr;
     int base;
-    int depth;
+    int depth;       /* recursion guard */
+    int nest;        /* user-visible nesting: brackets, function calls, structures */
     calc_err_t err;
 } cs_t;
 
@@ -43,7 +44,8 @@ static void emit_const(cs_t *c, const num_t *v)
 {
     if (c->err) return;
     if (c->pr->nconst >= MAX_CONSTS) { fail(c, CE_STACK); return; }
-    c->pr->consts[c->pr->nconst] = *v;
+    c->pr->consts[c->pr->nconst].d = v->v;
+    c->pr->consts[c->pr->nconst].is_int = (uint8_t)(ex_valid(&v->ex) != 0);
     emit(c, OP_CONST, 0, (uint16_t)c->pr->nconst, 0);
     c->pr->nconst++;
 }
@@ -182,15 +184,21 @@ static void parse_number_dms(cs_t *c)
     emit(c, OP_DMS, (uint8_t)parts, 0, 0);
 }
 
+static void rev_ins(ins_t *a, int n)
+{
+    int i;
+    for (i = 0; i < n / 2; i++) { ins_t t = a[i]; a[i] = a[n - 1 - i]; a[n - 1 - i] = t; }
+}
+
+/* move the first blen instructions of [p0, end) behind the rest, in place (three reversals):
+ * no temporary buffer, so nested function calls do not pay for one on the call stack */
 static void rotate_body(cs_t *c, int p0, int blen)
 {
     prog_t *pr = c->pr;
-    int total = pr->n - p0, rest = total - blen, i;
-    ins_t tmp[MAX_CODE];
-    (void)i;
-    memcpy(tmp, &pr->code[p0], (size_t)blen * sizeof(ins_t));
-    memmove(&pr->code[p0], &pr->code[p0 + blen], (size_t)rest * sizeof(ins_t));
-    memcpy(&pr->code[p0 + rest], tmp, (size_t)blen * sizeof(ins_t));
+    int total = pr->n - p0;
+    rev_ins(&pr->code[p0], blen);
+    rev_ins(&pr->code[p0 + blen], total - blen);
+    rev_ins(&pr->code[p0], total);
 }
 
 static void parse_fn(cs_t *c, int ft)
@@ -231,9 +239,12 @@ static void parse_fn(cs_t *c, int ft)
 static void parse_atom(cs_t *c)
 {
     int t = peek(c);
+    int nests;
 
     if (c->err) return;
     if (++c->depth > MAX_DEPTH) { fail(c, CE_STACK); return; }
+    nests = t == T_LP || t == T_LBRK || t == T_FRAC || t == T_MFRAC || t == T_SQRT || t == T_ROOT || t == T_LOGB || is_fn_tok(t);
+    if (nests && ++c->nest > MAX_NEST) { c->nest--; c->depth--; fail(c, CE_STACK); return; }
 
     if (is_digit_tok(t) || t == T_DOT || t == T_BASEPFX) {
         parse_number_dms(c);
@@ -309,6 +320,7 @@ static void parse_atom(cs_t *c)
         fail(c, CE_SYNTAX);
     }
 out:
+    if (nests) c->nest--;
     c->depth--;
 }
 
@@ -360,7 +372,9 @@ static void parse_power(cs_t *c)
             parse_caret_exponent(c);
         } else if (t == T_POW) {
             c->p++;
+            if (++c->nest > MAX_NEST) { c->nest--; fail(c, CE_STACK); return; }
             parse_or(c);
+            c->nest--;
             if (!accept(c, T_PEND)) { fail(c, CE_SYNTAX); return; }
         } else {
             break;
@@ -473,7 +487,7 @@ calc_err_t compile_tokens(const tok_t *toks, int ntok, int base, prog_t *p)
     cs_t c;
     memset(p, 0, sizeof *p);
     p->base = (uint8_t)base;
-    c.t = toks; c.n = ntok; c.p = 0; c.pr = p; c.base = base; c.depth = 0; c.err = CE_OK;
+    c.t = toks; c.n = ntok; c.p = 0; c.pr = p; c.base = base; c.depth = 0; c.nest = 0; c.err = CE_OK;
     if (ntok == 0) return CE_SYNTAX;
     parse_stmt(&c);                  /* single statement only: no ':' chaining (excluded feature) */
     if (c.err) return c.err;
