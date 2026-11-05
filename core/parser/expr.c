@@ -345,6 +345,9 @@ static void parse_unary(cs_t *c);
 
 /* Decimal base-n mode: -2147483648 (the 32-bit minimum) must be enterable although 2147483648 alone is out of
  * range. After a minus sign, the exact digit string 2147483648 is accepted as that one value. */
+#if defined(__GNUC__)
+__attribute__((noinline))
+#endif
 static int min32_literal(cs_t *c)
 {
     static const uint8_t D[10] = {2, 1, 4, 7, 4, 8, 3, 6, 4, 8};
