@@ -24,6 +24,22 @@ calc_err_t eqn_quad(const num_t c[3], cx_t roots[2])
         CHK(num_div(&roots[0].re, &t, &den));
         CHK(num_sub(&t, &nb, &sq));
         CHK(num_div(&roots[1].re, &t, &den));
+        /* b^2 >> 4ac: the root where -b and the square root cancel loses digits, so take it from x1*x2 = c/a. */
+        if (!num_is_zero(&b) && !num_is_zero(&cc) && (!num_is_exact(&roots[0].re) || !num_is_exact(&roots[1].re))) {
+            num_t b2, ac4, lim, k, cdiv;
+            cx_t *cr = b.v.neg ? &roots[1] : &roots[0], *ot = b.v.neg ? &roots[0] : &roots[1];
+            num_from_int(&k, 4);
+            CHK(num_mul(&b2, &b, &b));
+            CHK(num_mul(&ac4, &a, &cc));
+            CHK(num_mul(&ac4, &ac4, &k));
+            CHK(num_abs(&ac4, &ac4));
+            num_from_int(&k, 1000);
+            CHK(num_mul(&lim, &ac4, &k));
+            if (num_cmp(&lim, &b2) < 0 && !num_is_zero(&ot->re)) {
+                CHK(num_div(&cdiv, &cc, &a));
+                CHK(num_div(&cr->re, &cdiv, &ot->re));
+            }
+        }
         num_from_int(&roots[0].im, 0);
         num_from_int(&roots[1].im, 0);
     } else {
@@ -32,6 +48,8 @@ calc_err_t eqn_quad(const num_t c[3], cx_t roots[2])
         CHK(num_sqrt(&sq, &nd));
         CHK(num_div(&t, &nb, &den));
         CHK(num_div(&u, &sq, &den));
+        /* conjugate pair: the root with the positive imaginary part is listed first (whatever the sign of a) */
+        if (u.v.neg) CHK(num_neg(&u, &u));
         roots[0].re = t; roots[0].im = u;
         roots[1].re = t;
         CHK(num_neg(&roots[1].im, &u));
