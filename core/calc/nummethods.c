@@ -9,14 +9,19 @@ typedef struct nm {
 
 #define MAX_EVALS 60000u
 
-static dec_t dc(int64_t n) { dec_t r; dec_from_i64(&r, n); return r; }
-static dec_t ds(const char *s) { dec_t r; dec_from_str(&r, s); return r; }
+static dec_t dc(int64_t n) { dec_t r = {0, 0, 0}; dec_from_i64(&r, n); return r; }
+static dec_t ds(const char *s) { dec_t r = {0, 0, 0}; dec_from_str(&r, s); return r; }
 
-static dec_t add(nm_t *n, dec_t a, dec_t b) { dec_t r; dec_status s = dec_add(&r, &a, &b); if (!n->st) n->st = s; return r; }
-static dec_t sub(nm_t *n, dec_t a, dec_t b) { dec_t r; dec_status s = dec_sub(&r, &a, &b); if (!n->st) n->st = s; return r; }
-static dec_t mul(nm_t *n, dec_t a, dec_t b) { dec_t r; dec_status s = dec_mul(&r, &a, &b); if (!n->st) n->st = s; return r; }
-static dec_t dv(nm_t *n, dec_t a, dec_t b) { dec_t r; dec_status s = dec_div(&r, &a, &b); if (!n->st) n->st = s; return r; }
-static dec_t dabs(dec_t a) { dec_t r; dec_abs(&r, &a); return r; }
+/* Only fatal statuses are recorded: an underflow (result flushed to 0) is a normal outcome, e.g. the tails of
+ * e^(-X^2) in an integral, and must not abort the method. Results start as 0 so a failed operation never leaves
+ * indeterminate data behind. */
+#define NM_NOTE(n, s) do { if (!(n)->st && DEC_STATUS_IS_ERROR(s)) (n)->st = (s); } while (0)
+
+static dec_t add(nm_t *n, dec_t a, dec_t b) { dec_t r = {0, 0, 0}; dec_status s = dec_add(&r, &a, &b); NM_NOTE(n, s); return r; }
+static dec_t sub(nm_t *n, dec_t a, dec_t b) { dec_t r = {0, 0, 0}; dec_status s = dec_sub(&r, &a, &b); NM_NOTE(n, s); return r; }
+static dec_t mul(nm_t *n, dec_t a, dec_t b) { dec_t r = {0, 0, 0}; dec_status s = dec_mul(&r, &a, &b); NM_NOTE(n, s); return r; }
+static dec_t dv(nm_t *n, dec_t a, dec_t b) { dec_t r = {0, 0, 0}; dec_status s = dec_div(&r, &a, &b); NM_NOTE(n, s); return r; }
+static dec_t dabs(dec_t a) { dec_t r = {0, 0, 0}; dec_abs(&r, &a); return r; }
 static int lt(dec_t a, dec_t b) { return dec_cmp(&a, &b) < 0; }
 static int gt(dec_t a, dec_t b) { return dec_cmp(&a, &b) > 0; }
 static int le(dec_t a, dec_t b) { return dec_cmp(&a, &b) <= 0; }
@@ -167,9 +172,9 @@ static calc_err_t gk15(nm_t *n, nm_fn f, void *u, dec_t a, dec_t b, dec_t *res, 
     if (!dec_is_zero(&asc) && !dec_is_zero(err)) {
         dec_t r = dv(n, mul(n, dc(200), *err), asc);
         if (lt(r, dc(1))) {
-            dec_t sq;
+            dec_t sq = {0, 0, 0};
             dec_status st = dec_sqrt(&sq, &r);
-            if (!n->st) n->st = st;
+            NM_NOTE(n, st);
             *err = mul(n, asc, mul(n, r, sq));
         } else {
             *err = asc;

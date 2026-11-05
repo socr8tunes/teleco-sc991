@@ -1,0 +1,12 @@
+# KNOWN DEFECTS (not run by ctest): numeric-method accuracy limits vs mpmath. Do not edit by hand.
+:reset
+:decimal
+:rad
+# last digit off by 1 (oscillatory, 160 periods)
+integral(cos(X),0,1000) => 0.8268795405
+# error ~5e-10 absolute (rapid oscillation near 0.001)
+integral(sin(1/X),0.001,1) => 0.5040664979
+# step size is absolute; returns 0 for tiny arguments
+ddx(X^2,1E-50) => 2E-50
+# residual tolerance is absolute; stops at 5.07E-10
+solve(X^2=1E-20,1) => 1E-10

@@ -343,6 +343,24 @@ static void parse_postfix_ops(cs_t *c)
 
 static void parse_unary(cs_t *c);
 
+/* Decimal base-n mode: -2147483648 (the 32-bit minimum) must be enterable although 2147483648 alone is out of
+ * range. After a minus sign, the exact digit string 2147483648 is accepted as that one value. */
+static int min32_literal(cs_t *c)
+{
+    static const uint8_t D[10] = {2, 1, 4, 7, 4, 8, 3, 6, 4, 8};
+    int i;
+    if (c->p + 10 > c->n) return 0;
+    for (i = 0; i < 10; i++) if (c->t[c->p + i].t != T_D0 + D[i]) return 0;
+    if (c->p + 10 < c->n && is_digit_tok(c->t[c->p + 10].t)) return 0;
+    c->p += 10;
+    {
+        num_t v;
+        num_from_int(&v, -2147483647LL - 1);
+        emit_const(c, &v);
+    }
+    return 1;
+}
+
 /* exponent after a text '^': optional sign, then one primary (right associative) */
 static void parse_caret_exponent(cs_t *c)
 {
@@ -390,6 +408,7 @@ static void parse_unary(cs_t *c)
     if (c->err) return;
     if (t == T_SUB || t == T_NEG) {
         c->p++;
+        if (c->base == 10 && min32_literal(c)) return;
         if (++c->depth > MAX_DEPTH) { fail(c, CE_STACK); return; }
         parse_unary(c);
         c->depth--;

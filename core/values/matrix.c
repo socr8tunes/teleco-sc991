@@ -212,7 +212,7 @@ dec_status mx_angle(num_t *out, const mv_t *a, const mv_t *b, ang_t mode)
     CHK(mx_norm(&na, a));
     CHK(mx_norm(&nb, b));
     CHK(num_mul(&den, &na, &nb));
-    if (num_is_zero(&den)) return DEC_DOMAIN;
+    if (num_is_zero(&den)) return DEC_DIV_BY_ZERO;     /* angle with a zero vector: undefined (Math ERROR, not a dimension error) */
     CHK(num_div(&c, &d, &den));
     return num_acos(out, &c, mode);
 }

@@ -5,7 +5,7 @@ Columns: category, name, access path, test pattern (regex over expression text, 
 Exam decision: CORE (credible fx-991-class must have), PLUS (valuable, optional), OUT (not for the Exam model).
 Status override: None = derive from test evidence; otherwise PARTIAL / MISSING / NOTSUITABLE / RESTORE.
 Reference columns: Y = confirmed on Casio's pages/quick-start guide fetched 2026-11-02 (see 02-casio-gap-analysis.md);
-? = from general knowledge, must be checked against the official user guides before any marketing claim.
+? = not verified (low impact). Y/N were verified on 2026-11-04 against the official Casio guides listed in docs/exam/02-casio-gap-analysis.md.
 """
 F = []
 def a(cat, name, access, pat=None, es="Y", ex="Y", dec="CORE", st=None, note=""):
@@ -36,11 +36,11 @@ a(C, "Stacked fraction / mixed fraction entry", "a/b, SHIFT a/b", r"frac")
 a(C, "S<=>D exact/decimal toggle", "S<>D", None)
 a(C, "Exact results: fractions, surds, multiples of pi", "result", r"sqrt|pi|frac")
 a(C, "Engineering notation key (ENG)", "ENG", None)
-a(C, "Engineering symbols in input (k, M, m, n ...)", "SETUP", None, es="?", ex="Y", dec="PLUS", st="MISSING")
-a(C, "Digit separator display", "SETUP", None, es="?", ex="Y", dec="PLUS", st="MISSING")
-a(C, "Multi-statement entry (':')", "ALPHA =", None, dec="OUT", st="NOTSUITABLE",
-  note="removed by product decision; the Exam model keeps one expression per entry. Revisit only with WAEC input")
-a(C, "UNDO", "-", None, es="N", ex="?", dec="PLUS", st="MISSING", note="Casio ES PLUS has no UNDO; one-level undo of the last edit is a usability option")
+a(C, "Engineering symbols in input (k, M, m, n ...)", "SETUP", None, es="N", ex="Y", dec="PLUS", st="MISSING")
+a(C, "Digit separator display", "SETUP", None, es="N", ex="Y", dec="PLUS", st="MISSING")
+a(C, "Multi-statement entry (':')", "ALPHA =", None, es="Y", ex="Y", dec="OUT", st="NOTSUITABLE",
+  note="in both Casio guides; removed by product decision (decision D3 asks whether to keep it removed)")
+a(C, "UNDO", "-", None, es="N", ex="Y", dec="PLUS", st="MISSING", note="EX guide: cancels the last key operation, MathI modes only; not in ES PLUS guide")
 # ---- scientific functions
 C = "Scientific functions"
 for n, p in [("sin", "sin"), ("cos", "cos"), ("tan", "tan"), ("sin^-1", "asin"), ("cos^-1", "acos"), ("tan^-1", "atan")]:
@@ -68,11 +68,11 @@ a(C, "Scientific constants (40, CODATA 2022)", "SHIFT 7", r"const\(")
 a(C, "Unit conversions (20 pairs, both directions)", "SHIFT 8", r"conv\(")
 # ---- number theory
 C = "Number theory"
-a(C, "Prime factorisation", "MENU>Number>PFact", r"pfact\(", dec="CORE")
-a(C, "GCD", "MENU>Number", r"(?<![a-z])gcd\(", es="?", ex="?", dec="PLUS")
-a(C, "LCM", "MENU>Number", r"(?<![a-z])lcm\(", es="?", ex="?", dec="PLUS")
-a(C, "Integer quotient Quot", "MENU>Number", r"quot\(", es="?", ex="?", dec="PLUS")
-a(C, "Remainder Rem", "MENU>Number", r"(?<![a-z])rem\(", es="?", ex="?", dec="PLUS")
+a(C, "Prime factorisation", "MENU>Number>PFact", r"pfact\(", es="N", ex="Y", dec="CORE", note="EX guide: positive integers up to 10 digits (SC991: up to 9 999 999 999, same); no section in the ES PLUS guide")
+a(C, "GCD", "MENU>Number", r"(?<![a-z])gcd\(", es="N", ex="N", dec="PLUS", note="not in either Casio guide: an SC991 extra")
+a(C, "LCM", "MENU>Number", r"(?<![a-z])lcm\(", es="N", ex="N", dec="PLUS", note="not in either Casio guide: an SC991 extra")
+a(C, "Integer quotient Quot", "MENU>Number", r"quot\(", es="N", ex="N", dec="PLUS", note="not in either Casio guide: an SC991 extra")
+a(C, "Remainder Rem", "MENU>Number", r"(?<![a-z])rem\(", es="N", ex="N", dec="PLUS", note="not in either Casio guide: an SC991 extra")
 # ---- calculus
 C = "Calculus and sums"
 a(C, "Summation", "MENU>Calculus", r"(?<![a-z])sum\(")
@@ -80,10 +80,10 @@ a(C, "Product operator", "MENU>Calculus", r"prod\(", es="N", ex="Y", dec="PLUS")
 a(C, "Derivative d/dx", "MENU>Calculus", r"ddx\(")
 a(C, "Definite integral", "MENU>Calculus", r"integral\(")
 a(C, "Solve (Newton)", "MENU>Calculus", r"solve\(")
-a(C, "CALC (re-evaluate with variable prompts)", "CALC key", None, ex="?", dec="CORE", st="RESTORE",
+a(C, "CALC (re-evaluate with variable prompts)", "CALC key", None, es="Y", ex="Y", dec="CORE", st="RESTORE",
   note="approved for restoration as a session-only, single-expression tool; not yet built")
 a(C, "TABLE f(x) (one function)", "TABLE", None, dec="CORE", st="RESTORE",
-  note="approved for restoration; fx-991EX offers f(x) and g(x), the Exam model uses one f(X)")
+  note="approved; ES PLUS: one f(x), 30 rows; EX: f(x) 45 rows or f,g 30 rows; Exam model: one f(X)")
 # ---- equations
 C = "Equations"
 a(C, "Quadratic", "MENU>Equations", r"quad\(")
@@ -106,7 +106,7 @@ a(C, "Complex asin/acos/atan, 10^z", "-", None, es="?", ex="?", dec="PLUS", st="
 # ---- matrices, vectors
 C = "Matrix and vector"
 a(C, "Matrix storage A-D + Ans, up to 4x4", "MENU>Matrix", r"\[|mat[a-d]|matans", es="Y", ex="Y",
-  note="ES PLUS: 3 matrices 3x3 (from memory); EX: 4x4 (confirmed by QSG)")
+  note="ES PLUS: 3 matrices up to 3x3; EX: 4 matrices + MatAns up to 4x4 (guides)")
 a(C, "Matrix + - x, scalar", "expression", r"\[.*\]\s*[*+-]")
 a(C, "Det", "MENU>Matrix", r"det\(")
 a(C, "Trn", "MENU>Matrix", r"trn\(")
@@ -129,11 +129,11 @@ a(C, "Statistical variables: n, sums, means, deviations (Σx, x̄, σx, sx, ...)
 a(C, "Regression coefficients and correlation (a, b, c, r)", "MENU>Statistics>Variables", r"reg_[abcr]", None)
 a(C, "Minimum, maximum, quartiles, median", "MENU>Statistics>Variables", r"(?<![a-z_0-9])(minx|maxx|miny|maxy|q1|med|q3)(?![a-z_0-9(])", None)
 a(C, "Frequency column", "editor", None)
-a(C, "Statistic editor 80 rows", "SHIFT MENU", None, note="ES/EX 1-var 80 rows; paired 40 on ES (from memory)")
+a(C, "Statistic editor 80 rows", "SHIFT MENU", None, note="guides: ES PLUS 80 rows (1-var), 40 (paired), 26 (with freq); EX 160 / 80 / 53")
 # ---- distributions
 C = "Distributions"
 a(C, "Normal P(t), Q(t), R(t)", "MENU>Distribution", r"norm[pqr]\(")
-a(C, "Normal density PD and general normal CD (lower, upper, sigma, mu)", "-", None, es="?", ex="Y", dec="PLUS", st="MISSING",
+a(C, "Normal density PD and general normal CD (lower, upper, sigma, mu)", "-", None, es="N", ex="Y", dec="PLUS", st="MISSING",
   note="EX Distribution mode; SC991 has standard-normal P/Q/R and InvN(area, sigma, mu) only")
 a(C, "Inverse normal", "MENU>Distribution", r"invn\(", es="N", ex="Y")
 a(C, "Binomial PD / CD", "MENU>Distribution", r"binom[pc]d\(", es="N", ex="Y")

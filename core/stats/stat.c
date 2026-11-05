@@ -196,7 +196,7 @@ static calc_err_t order_stat(const stat_t *s, int id, num_t *out)
 
 /* ---- regression ----------------------------------------------------------- */
 
-typedef struct reg { num_t a, b, c, r; } reg_t;
+typedef struct reg { num_t a, b, c, r; int r_undef; } reg_t;
 
 static calc_err_t regress(const stat_t *s, reg_t *g)
 {
@@ -208,6 +208,7 @@ static calc_err_t regress(const stat_t *s, reg_t *g)
     e = accumulate(s, &m, 0);
     if (e) return e;
     num_from_int(&g->c, 0);
+    g->r_undef = 0;
     if (s->type == ST_QUAD) {
         /* normal equations for a + b x + c x^2 solved with the exact matrix inverse */
         mv_t A, inv, rhs, sol;
@@ -229,8 +230,8 @@ static calc_err_t regress(const stat_t *s, reg_t *g)
     CHK(num_mul(&t, &g->b, &m.xbar));
     CHK(num_sub(&g->a, &m.ybar, &t));
     if (num_is_zero(&m.Syy)) {
-        num_from_int(&g->r, 1);          /* constant y: Casio gives r = 1 here only if slope zero; keep defined */
-        num_from_int(&g->r, 0);
+        num_from_int(&g->r, 0);          /* constant y: slope 0 is valid, but the correlation coefficient is 0/0 */
+        g->r_undef = 1;
     } else {
         CHK(num_mul(&t, &m.Sxx, &m.Syy));
         CHK(num_sqrt(&u, &t));
@@ -261,6 +262,7 @@ calc_err_t stat_var(const stat_t *s, int id, ang_t unused, num_t *out)
         reg_t g;
         e = regress(s, &g);
         if (e) return e;
+        if (id == SV_R && g.r_undef) return CE_MATH;
         *out = id == SV_A ? g.a : id == SV_B ? g.b : id == SV_C ? g.c : g.r;
         return CE_OK;
     }
