@@ -39,10 +39,10 @@ Status vocabulary: **Implemented and tested**; **Implemented, insufficiently tes
 | F007 | Square x^2 / cube (SHIFT) | x^2 | Implemented and tested |
 | F008 | Reciprocal x^-1 | x^-1 | Implemented and tested |
 | F009 | Square root | sqrt | Implemented and tested |
-| F010 | n-th root | SHIFT sqrt | Implemented, insufficiently tested |
+| F010 | n-th root | SHIFT sqrt | Implemented and tested |
 | F011 | Cube root | MENU>Number | Implemented, insufficiently tested |
 | F012 | Factorial x! | x! | Implemented and tested |
-| F013 | Percent % | SHIFT ( | Implemented, insufficiently tested |
+| F013 | Percent % | SHIFT ( | Implemented and tested |
 | F014 | EXP entry x10^x | x10^x | Implemented and tested |
 | F015 | Ans / PreAns | Ans | Implemented, insufficiently tested |
 | F016 | Replay / history recall and edit | up/down, left/right | Implemented, insufficiently tested |
@@ -75,13 +75,13 @@ Status vocabulary: **Implemented and tested**; **Implemented, insufficiently tes
 | F038 | tanh^-1 | MENU>Hyperbolic / hyp | Implemented and tested |
 | F039 | log10 | log | Implemented and tested |
 | F040 | ln | ln | Implemented and tested |
-| F041 | log base b | MENU>Number | Implemented, insufficiently tested |
+| F041 | log base b | MENU>Number | Implemented and tested |
 | F042 | e^x | SHIFT ln | Implemented, insufficiently tested |
 | F043 | 10^x | SHIFT log | Implemented and tested |
 | F044 | Angle units deg/rad/grad and DMS | SETUP, DMS | Implemented, insufficiently tested |
 | F045 | DMS entry and DMS result | DMS, SHIFT DMS | Implemented, insufficiently tested |
 | F046 | Abs | MENU>Number | Implemented and tested |
-| F047 | Int / Intg | MENU>Number | Implemented, insufficiently tested |
+| F047 | Int / Intg | MENU>Number | Implemented and tested |
 | F048 | Rnd | MENU>Number | Implemented, insufficiently tested |
 | F049 | Pol( | SHIFT + | Implemented, insufficiently tested |
 | F050 | Rec( | SHIFT - | Implemented, insufficiently tested |

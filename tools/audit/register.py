@@ -24,7 +24,7 @@ from catalogue import F  # noqa: E402
 
 import glob  # noqa
 ORACLE_FILES = {"calculus", "stats", "distribution", "product", "simul"} | {pathlib.Path(p).stem for p in glob.glob(str(ROOT / "tests/cases/oracle_*.txt"))}   # generated with mpmath / Fractions
-BOUNDARY_FILES = {"oracle_domain", "oracle_stats_errors", "capacity"}          # every line is a limit / domain-edge case by construction
+BOUNDARY_FILES = {"oracle_domain", "oracle_functions", "oracle_stats_errors", "capacity"}          # every line is a limit / domain-edge case by construction
 PARTIAL_ORACLE = {"complex"}                                                  # transcendental values from mpmath
 DIFF_FUNCS = r"(?<![a-z])(sin|cos|tan|asin|acos|atan|sinh|cosh|tanh|asinh|acosh|atanh|ln|log|exp|alog|sqrt|cbrt|abs|root|npr|ncr)\b|\^|!"
 
