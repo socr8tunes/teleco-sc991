@@ -66,7 +66,7 @@ Targets set by the product owner on 2026-11-05: **at least 24 usable nested brac
 |---|---|
 | Internal arithmetic | 16-digit decimal, exponent +-99 (results below 1E-99 flush to 0; results at or above 1E100 are Math ERROR), exact rational/surd tracking, 45-54 digit extended path |
 | Display | 10 significant digits (Norm), Fix/Sci/Eng |
-| Accuracy | functions correctly rounded vs mpmath (differential tests); expression differential; ~3,300 independent-oracle cases (matrix, vector, complex, base-n, domain, statistics errors, calculus, equations, scientific edges) |
+| Accuracy | functions correctly rounded vs mpmath (differential tests); expression differential; ~2,800 independent-oracle cases (matrix, vector, complex, base-n, domain, statistics errors, calculus, equations, scientific edges) |
 | Calculus accuracy | numerical methods, about 9-10 digits typical; singular integrals and extreme-scale arguments can lose digits (known defects below) |
 | Complex roots order | a conjugate pair is always listed with the positive imaginary part first |
 | Run-time | not measured on target; each CORE operation must return within 2 s on the chosen MCU; sums, products, integrals, Solve bounded by Time Out |
