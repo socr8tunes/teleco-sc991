@@ -177,6 +177,9 @@ static void item_label(const app_t *a, int id, int i, char *buf, size_t cap)
     }
 }
 
+int ui_menu_item_count(const app_t *a, int id) { return (id >= 0 && id < MN_COUNT) ? menu_count(a, id) : 0; }
+void ui_menu_item_label(const app_t *a, int id, int i, char *buf, size_t cap) { item_label(a, id, i, buf, cap); }
+
 void ui_menu_open(app_t *a, int id)
 {
     if (a->screen != SCR_MENU) { a->menu_sp = 0; a->menu_prev_screen = a->screen; }

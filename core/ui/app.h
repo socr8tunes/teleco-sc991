@@ -87,6 +87,8 @@ void app_render(const app_t *a, lcd_t *l);
 
 /* screens implemented in other files */
 void ui_menu_open(app_t *a, int id);
+int ui_menu_item_count(const app_t *a, int id);                  /* test / audit hooks */
+void ui_menu_item_label(const app_t *a, int id, int i, char *buf, size_t cap);
 void ui_menu_key(app_t *a, int key);
 void ui_menu_render(const app_t *a, lcd_t *l);
 void ui_stat_key(app_t *a, int key);

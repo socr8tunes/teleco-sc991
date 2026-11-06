@@ -167,6 +167,11 @@ foreach(case_file ${TELECO_UI_CASES})
   add_test(NAME ui_${case_name} COMMAND test_ui ${case_file})
 endforeach()
 
+add_executable(test_exclusions tests/unit/test_exclusions.c)
+target_link_libraries(test_exclusions PRIVATE pc_sim)
+teleco_target_options(test_exclusions)
+add_test(NAME exclusions COMMAND test_exclusions ${CMAKE_SOURCE_DIR}/tests/exam/approved_tokens.txt)
+
 add_executable(test_ui_fuzz tests/unit/test_ui_fuzz.c)
 target_link_libraries(test_ui_fuzz PRIVATE pc_sim)
 teleco_target_options(test_ui_fuzz)
