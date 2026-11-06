@@ -43,5 +43,5 @@ docs/       specifications
 - Any bug found by a test gets a pinned vector in `tests/regression/`.
 
 ## Status and pilot
-Software-complete for a controlled academic pilot on the host/simulator builds; **not hardware-verified** and **exam approval is unverified**. See `docs/pilot/` (test pack, results record, user guide, known limitations, feedback form, defect process) and `docs/hardware-readiness.md`.
+Software-complete for a controlled academic pilot on the host/simulator builds; **not hardware-verified** and **no exam-body approval or compliance is claimed**. See `docs/pilot/` (test pack, results record, user guide, known limitations, feedback form, defect process) and `docs/hardware-readiness.md`.
 Run everything with `tools/ci_local.sh`; the pilot question bank runs as ctest `pilot_pack`.

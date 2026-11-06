@@ -22,7 +22,7 @@ Switch on with **ON/AC**. A short TELECO logo shows, then the calculation screen
 ## Errors
 - **Syntax ERROR**: the expression is incomplete or malformed; the cursor is placed where the problem is.
 - **Math ERROR**: the operation is undefined (divide by zero, log of 0, ...).
-- **Stack ERROR**: expression too deep. **Overflow**: result too large.
+- **Stack ERROR**: expression too long or too deep. Limits: 24 nested bracket or function levels, 80 number literals, 256 keystrokes (tokens) per line. **Overflow**: result too large.
 Press **AC** to clear an error, or an arrow key to go back and edit.
 
 ## Tip for testers

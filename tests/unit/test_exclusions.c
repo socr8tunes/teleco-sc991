@@ -81,6 +81,35 @@ int main(int argc, char **argv)
         if (!found) { printf("approved label '%s' no longer exists (remove it from the list)\n", approved[i]); fails++; }
     }
 
+    if (argc > 2 && !strcmp(argv[2], "--paths")) {   /* tab separated: key path, inserted token label (for tests/tools/make_menu_paths.py) */
+        int j, nm = ui_menu_item_count(&A, MN_MAIN);
+        for (j = 0; j < nm; j++) {
+            int sub, n2;
+            fresh(); ui_menu_open(&A, MN_MAIN);
+            for (i = 0; i < j; i++) app_key(&A, K_DOWN);
+            app_key(&A, K_EXE);
+            if (A.screen != SCR_MENU) continue;
+            sub = A.menu_id[A.menu_sp - 1];
+            if (sub == MN_MAIN || sub == MN_CONST || sub == MN_CONV || sub == MN_STATVARS) continue;
+            n2 = ui_menu_item_count(&A, sub);
+            for (i = 0; i < n2; i++) {
+                int before;
+                fresh(); ui_menu_open(&A, MN_MAIN);
+                for (k = 0; k < j; k++) app_key(&A, K_DOWN);
+                app_key(&A, K_EXE);
+                for (k = 0; k < i; k++) app_key(&A, K_DOWN);
+                before = A.ed.n;
+                app_key(&A, K_EXE);
+                if (A.screen == SCR_CALC && A.ed.n == before + 1) {
+                    tok_t tk = A.ed.t[before]; const char *lb; tk.a = 0;
+                    lb = norm(tok_label(tk, lab, sizeof lab));
+                    printf("MENU%.*s EXE%.*s EXE\t%s\n", 0, "", 0, "", lb);   /* placeholder, replaced below */
+                    printf("PATH %d %d %s\n", j, i, lb);
+                }
+            }
+        }
+        return 0;
+    }
     /* 2 + 3. menu paths */
     for (id = 0; id < MN_COUNT; id++) {
         int n;

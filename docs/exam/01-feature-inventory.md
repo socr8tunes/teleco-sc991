@@ -34,7 +34,7 @@ Status vocabulary: **Implemented and tested**; **Implemented, insufficiently tes
 | F002 | Operator precedence and implied multiplication | entry | Implemented, insufficiently tested |
 | F003 | Unary minus (-) | (-) | Implemented and tested |
 | F004 | Brackets | ( ) | Implemented and tested |
-| F005 | Entry limits: bracket depth, number literals and tokens per line | entry | Partially implemented |
+| F005 | Entry limits: bracket depth, number literals and tokens per line | entry | Implemented and tested |
 | F006 | Power x^n (any expression exponent) | x^n | Implemented and tested |
 | F007 | Square x^2 / cube (SHIFT) | x^2 | Implemented and tested |
 | F008 | Reciprocal x^-1 | x^-1 | Implemented and tested |
@@ -62,33 +62,33 @@ Status vocabulary: **Implemented and tested**; **Implemented, insufficiently tes
 | ID | Capability | How it is reached | Status |
 |---|---|---|---|
 | F027 | sin | key | Implemented and tested |
-| F028 | cos | key | Implemented, insufficiently tested |
-| F029 | tan | key | Implemented, insufficiently tested |
-| F030 | sin^-1 | SHIFT key | Implemented, insufficiently tested |
+| F028 | cos | key | Implemented and tested |
+| F029 | tan | key | Implemented and tested |
+| F030 | sin^-1 | SHIFT key | Implemented and tested |
 | F031 | cos^-1 | SHIFT key | Implemented, insufficiently tested |
-| F032 | tan^-1 | SHIFT key | Implemented, insufficiently tested |
-| F033 | sinh | MENU>Hyperbolic / hyp | Implemented, insufficiently tested |
-| F034 | cosh | MENU>Hyperbolic / hyp | Implemented, insufficiently tested |
-| F035 | tanh | MENU>Hyperbolic / hyp | Implemented, insufficiently tested |
-| F036 | sinh^-1 | MENU>Hyperbolic / hyp | Implemented, insufficiently tested |
-| F037 | cosh^-1 | MENU>Hyperbolic / hyp | Implemented, insufficiently tested |
-| F038 | tanh^-1 | MENU>Hyperbolic / hyp | Implemented, insufficiently tested |
-| F039 | log10 | log | Implemented, insufficiently tested |
-| F040 | ln | ln | Implemented, insufficiently tested |
+| F032 | tan^-1 | SHIFT key | Implemented and tested |
+| F033 | sinh | MENU>Hyperbolic / hyp | Implemented and tested |
+| F034 | cosh | MENU>Hyperbolic / hyp | Implemented and tested |
+| F035 | tanh | MENU>Hyperbolic / hyp | Implemented and tested |
+| F036 | sinh^-1 | MENU>Hyperbolic / hyp | Implemented and tested |
+| F037 | cosh^-1 | MENU>Hyperbolic / hyp | Implemented and tested |
+| F038 | tanh^-1 | MENU>Hyperbolic / hyp | Implemented and tested |
+| F039 | log10 | log | Implemented and tested |
+| F040 | ln | ln | Implemented and tested |
 | F041 | log base b | MENU>Number | Implemented, insufficiently tested |
 | F042 | e^x | SHIFT ln | Implemented, insufficiently tested |
 | F043 | 10^x | SHIFT log | Implemented and tested |
 | F044 | Angle units deg/rad/grad and DMS | SETUP, DMS | Implemented, insufficiently tested |
 | F045 | DMS entry and DMS result | DMS, SHIFT DMS | Implemented, insufficiently tested |
-| F046 | Abs | MENU>Number | Implemented, insufficiently tested |
+| F046 | Abs | MENU>Number | Implemented and tested |
 | F047 | Int / Intg | MENU>Number | Implemented, insufficiently tested |
 | F048 | Rnd | MENU>Number | Implemented, insufficiently tested |
 | F049 | Pol( | SHIFT + | Implemented, insufficiently tested |
 | F050 | Rec( | SHIFT - | Implemented, insufficiently tested |
 | F051 | Ran# | SHIFT . | Implemented, insufficiently tested |
 | F052 | RanInt( | SHIFT 0 | Implemented, insufficiently tested |
-| F053 | nPr | SHIFT x | Implemented, insufficiently tested |
-| F054 | nCr | SHIFT x | Implemented, insufficiently tested |
+| F053 | nPr | SHIFT x | Implemented and tested |
+| F054 | nCr | SHIFT x | Implemented and tested |
 | F055 | Pi and e | pi, SHIFT pi | Implemented, insufficiently tested |
 | F056 | Scientific constants (40, CODATA 2022) | SHIFT 7 | Implemented and tested |
 | F057 | Unit conversions (20 pairs, both directions) | SHIFT 8 | Implemented, insufficiently tested |
@@ -107,10 +107,10 @@ Status vocabulary: **Implemented and tested**; **Implemented, insufficiently tes
 
 | ID | Capability | How it is reached | Status |
 |---|---|---|---|
-| F063 | Summation | MENU>Calculus | Implemented, insufficiently tested |
+| F063 | Summation | MENU>Calculus | Implemented and tested |
 | F064 | Product operator | MENU>Calculus | Implemented and tested |
-| F065 | Derivative d/dx | MENU>Calculus | Implemented, insufficiently tested |
-| F066 | Definite integral | MENU>Calculus | Implemented, insufficiently tested |
+| F065 | Derivative d/dx | MENU>Calculus | Implemented and tested |
+| F066 | Definite integral | MENU>Calculus | Implemented and tested |
 | F067 | Solve (Newton) | MENU>Calculus | Implemented, insufficiently tested |
 | F068 | CALC (re-evaluate with variable prompts) | CALC key | Missing (approved for restoration) |
 | F069 | TABLE f(x) (one function) | TABLE | Missing (approved for restoration) |
@@ -134,7 +134,7 @@ Status vocabulary: **Implemented and tested**; **Implemented, insufficiently tes
 | ID | Capability | How it is reached | Status |
 |---|---|---|---|
 | F079 | i (imaginary unit) | MENU>Complex | Implemented and tested |
-| F080 | Arg | MENU>Complex | Implemented, insufficiently tested |
+| F080 | Arg | MENU>Complex | Implemented and tested |
 | F081 | Conjg | MENU>Complex | Implemented, insufficiently tested |
 | F082 | Re | MENU>Complex | Implemented, insufficiently tested |
 | F083 | Im | MENU>Complex | Implemented, insufficiently tested |
@@ -146,9 +146,9 @@ Status vocabulary: **Implemented and tested**; **Implemented, insufficiently tes
 
 | ID | Capability | How it is reached | Status |
 |---|---|---|---|
-| F087 | Matrix storage A-D + Ans, up to 4x4 | MENU>Matrix | Implemented, insufficiently tested |
-| F088 | Matrix + - x, scalar | expression | Implemented, insufficiently tested |
-| F089 | Det | MENU>Matrix | Implemented, insufficiently tested |
+| F087 | Matrix storage A-D + Ans, up to 4x4 | MENU>Matrix | Implemented and tested |
+| F088 | Matrix + - x, scalar | expression | Implemented and tested |
+| F089 | Det | MENU>Matrix | Implemented and tested |
 | F090 | Trn | MENU>Matrix | Implemented, insufficiently tested |
 | F091 | Iden | MENU>Matrix | Implemented, insufficiently tested |
 | F092 | Matrix inverse x^-1 and integer powers | x^-1 | Implemented, insufficiently tested |
@@ -164,13 +164,13 @@ Status vocabulary: **Implemented and tested**; **Implemented, insufficiently tes
 | ID | Capability | How it is reached | Status |
 |---|---|---|---|
 | F099 | 1-variable statistics (n, sum, mean, sigma, s, min, max, Q1, med, Q3) | MENU>Statistics | Implemented, insufficiently tested |
-| F100 | Paired statistics and regression: linear | SETUP/MENU | Implemented, insufficiently tested |
+| F100 | Paired statistics and regression: linear | SETUP/MENU | Implemented and tested |
 | F101 | Regression: quadratic | SETUP | Implemented and tested |
 | F102 | Regression: ln, e^, a*b^x, power, inverse | SETUP | Implemented, insufficiently tested |
 | F103 | Estimates y^ and x^ | MENU>Statistics | Implemented, insufficiently tested |
-| F104 | Statistical variables: n, sums, means, deviations (Σx, x̄, σx, sx, ...) | MENU>Statistics>Variables | Implemented, insufficiently tested |
-| F105 | Regression coefficients and correlation (a, b, c, r) | MENU>Statistics>Variables | Implemented, insufficiently tested |
-| F106 | Minimum, maximum, quartiles, median | MENU>Statistics>Variables | Implemented, insufficiently tested |
+| F104 | Statistical variables: n, sums, means, deviations (Σx, x̄, σx, sx, ...) | MENU>Statistics>Variables | Implemented and tested |
+| F105 | Regression coefficients and correlation (a, b, c, r) | MENU>Statistics>Variables | Implemented and tested |
+| F106 | Minimum, maximum, quartiles, median | MENU>Statistics>Variables | Implemented and tested |
 | F107 | Frequency column | editor | Implemented, insufficiently tested |
 | F108 | Statistic editor 80 rows | SHIFT MENU | Implemented, insufficiently tested |
 

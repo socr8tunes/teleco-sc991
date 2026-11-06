@@ -22,8 +22,8 @@ done on a prototype before a pilot can rely on the hardware.
 
 | Item | Cortex-M0+ | Cortex-M4 |
 |---|---|---|
-| Code + constants (flash) | 117 KB | 117 KB |
-| Static RAM (`.bss`/`.data`: VM and solver state) | 12.3 KB | 12.3 KB |
+| Code + constants (flash) | 122.3 KB (125,226 B) | not re-measured since the capacity work (was 117 KB) |
+| Static RAM in core (`.bss`/`.data`: VM and solver state) | 14.8 KB (15,152 B) | not re-measured |
 
 Not included in those numbers: compiler runtime helpers (64-bit division etc., a few KB), the startup code, a flash
 driver, and the HAL.
@@ -32,18 +32,18 @@ Other RAM, from `sizeof`:
 
 | Object | Size |
 |---|---|
-| `app_t` (calculator state incl. 14.3 KB `ctx_t`, history 1 KB, editor 0.3 KB) | 15.7 KB |
+| `app_t` (calculator state incl. `ctx_t`, history 1 KB, editor 0.5 KB) | 16.0 KB (16,368 B) |
 | `lcd_t` framebuffer 192x64 | 1.5 KB |
-| **Static total** | **about 29.5 KB** |
+| **Static total** (core bss + `app_t` + framebuffer) | **about 33 KB** |
 | Largest stack frames: `nm_derivative` 2.3 KB, `stat_var` 2.2 KB, `mx_inv` 2.1 KB, `nm_solve` 1.7 KB, `parse_fn` 1.6 KB, `ui_logo_render` 1.6 KB | stack depth is **not** yet measured |
 
 Consequences:
 
-* **RAM**: static state plus stack is close to 40 KB. A 12 KB part (STM32U031-class) cannot hold it; a 40 KB part
+* **RAM**: static state plus stack is about 43 KB. A 12 KB part (STM32U031-class) cannot hold it; a 40 KB part
   (STM32U073/U083-class) is marginal; a 64 KB part (STM32L4 family, for example L432) fits. Confirm RAM sizes against
   the datasheets before choosing. Reduction levers, largest first: fewer temporary matrices (4 -> 2, about -3.6 KB),
   smaller matrix element type, a narrower `val_t`, sharing the VM/solver scratch.
-* **Flash**: 117 KB plus runtime fits a 256 KB part with room for a second retained-state page.
+* **Flash**: 123 KB plus runtime fits a 256 KB part with room for a second retained-state page.
 * **Speed**: host timings (`tests/bench/bench_calc.c`, desktop CPU): typical expression 1-15 us; `ddx` 56 us;
   `solve` 54-84 us; 3x3 inverse 43 us; `integral(e^(-X^2),0,3)` 1.4 ms; a 1000-term `sum` 2.9 ms. A 48 MHz Cortex-M0+
   without 64-bit hardware multiply/divide is plausibly 200-1000x slower per operation (rough guess, **to be measured**):
@@ -86,10 +86,10 @@ power-off. The blink wake-up every 250 ms costs current; consider a blink-free c
 ## Host stack measurement (`bench_stack`, ctest `stack_budget`)
 
 Stack painting on a 64-bit host over the heaviest expressions (nested integral, cubic, solve, matrix inverse, deep sums):
-**worst high-water about 9 KB** (nested integral 8.9 KB, cubic 8.6 KB). 64-bit frames are usually not smaller than Cortex-M
-frames, so plan about 9-12 KB of stack plus UI render depth; the test fails above 12 KB. This is a host estimate only;
-HW-3 must repeat it on the device. With ~29.5 KB static RAM this means roughly **42 KB RAM total**, so a 64 KB part
-(STM32L4 class) fits and a 40 KB part does not.
+**worst high-water 10.7 KB** (nested integral 10.7 KB; 24-level nested brackets 10.7 KB). 64-bit frames are usually not smaller than Cortex-M
+frames, so plan about 11-12 KB of stack plus UI render depth; the test fails above 12 KB. This is a host estimate only;
+HW-3 must repeat it on the device. With ~33 KB static RAM this means **about 42.7 KB RAM total** (`tools/check_budget.sh`: 43,748 B against a 48 KB ceiling), so a 64 KB part
+(STM32L4 class) fits and a 40 KB part does not. These are cross-compile and host-painting figures, not hardware measurements.
 
 ## Bring-up plan
 
@@ -101,6 +101,6 @@ HW-3 must repeat it on the device. With ~29.5 KB static RAM this means roughly *
 
 ## Exam approval
 
-Approval by an examinations body (WASSCE-type) is **not verified**. It typically concerns non-programmable, non-graphing,
+No approval by, or compliance claim towards, WAEC or any examinations body exists. None may be made without written confirmation from that body. It typically concerns non-programmable, non-graphing,
 no text storage/communication and an approved model list; confirm the current rules with the examining body and
 record the answer here before the pilot is described as exam-ready.

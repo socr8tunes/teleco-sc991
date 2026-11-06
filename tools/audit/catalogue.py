@@ -17,8 +17,8 @@ a(C, "Four operations + - x /", "+ - x /", r"[0-9)]\s*[-+*/]\s*[0-9(]")
 a(C, "Operator precedence and implied multiplication", "entry", r"2\*3\^2|1/2pi|2pi")
 a(C, "Unary minus (-)", "(-)", r"\(-|^-")
 a(C, "Brackets", "( )", r"\(")
-a(C, "Entry limits: bracket depth, number literals and tokens per line", "entry", r"stack error", st="PARTIAL",
-  note="measured: 11 bracket levels (docs claim 24), 40 number literals per expression; see limits-probe.md")
+a(C, "Entry limits: bracket depth, number literals and tokens per line", "entry", r"stack error",
+  note="24 nested levels, 80 literals, 256 tokens; boundary-tested (tests/cases/capacity.txt, tests/ui/capacity.txt, bench_stack)")
 a(C, "Power x^n (any expression exponent)", "x^n", r"\^")
 a(C, "Square x^2 / cube (SHIFT)", "x^2", r"\^2|sq")
 a(C, "Reciprocal x^-1", "x^-1", r"\^-1|recip")

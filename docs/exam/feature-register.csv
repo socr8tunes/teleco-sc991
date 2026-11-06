@@ -1,120 +1,120 @@
 id,category,feature,access,casio_es_plus,casio_ex,exam_decision,status,normal,error,boundary,oracle,key_path,regression,test_files,gaps,note
-F001,Arithmetic and entry,Four operations + - x /,+ - x /,Y,Y,CORE,TESTED,69,5,0,75,161,1,basen+basic+calculus+complex+product+units,boundary,
+F001,Arithmetic and entry,Four operations + - x /,+ - x /,Y,Y,CORE,TESTED,654,176,20,818,168,1,basen+basic+calculus+capacity+complex+oracle_basen_bin+oracle_basen_dec+oracle_basen_hex+oracle_basen_oct+oracle_calculus+oracle_complex+oracle_domain+product+units,,
 F002,Arithmetic and entry,Operator precedence and implied multiplication,entry,Y,Y,CORE,INSUFFICIENT,3,0,0,2,2,1,basic,invalid/error; boundary,basic + expression differential
-F003,Arithmetic and entry,Unary minus (-),(-),Y,Y,CORE,TESTED,129,16,4,126,44,1,basen+basic+calculus+complex+distribution+matrix+simul,,
-F004,Arithmetic and entry,Brackets,( ),Y,Y,CORE,TESTED,607,95,48,595,114,1,basen+basic+calculus+complex+distribution+equations+matrix+product+simul+stats+units,,
-F005,Arithmetic and entry,"Entry limits: bracket depth, number literals and tokens per line",entry,Y,Y,CORE,PARTIAL,0,0,0,0,0,0,,,"measured: 11 bracket levels (docs claim 24), 40 number literals per expression; see limits-probe.md"
-F006,Arithmetic and entry,Power x^n (any expression exponent),x^n,Y,Y,CORE,TESTED,75,6,0,91,50,1,basen+basic+calculus+complex+matrix+product,boundary,
-F007,Arithmetic and entry,Square x^2 / cube (SHIFT),x^2,Y,Y,CORE,TESTED,55,2,0,64,47,1,basic+calculus+complex+matrix+product,boundary,
-F008,Arithmetic and entry,Reciprocal x^-1,x^-1,Y,Y,CORE,TESTED,4,1,0,2,1,1,matrix,boundary,
-F009,Arithmetic and entry,Square root,sqrt,Y,Y,CORE,TESTED,26,2,0,21,16,1,basic+calculus+complex,boundary,
+F003,Arithmetic and entry,Unary minus (-),(-),Y,Y,CORE,TESTED,571,87,65,637,49,1,basen+basic+calculus+capacity+complex+distribution+matrix+oracle_basen_dec+oracle_calculus+oracle_complex+oracle_domain+oracle_equations+oracle_matrix+oracle_vector+simul,,
+F004,Arithmetic and entry,Brackets,( ),Y,Y,CORE,TESTED,1628,240,274,1742,152,1,basen+basic+calculus+capacity+complex+distribution+equations+matrix+oracle_basen_bin+oracle_basen_dec+oracle_basen_hex+oracle_basen_oct+oracle_calculus+oracle_complex+oracle_domain+oracle_equations+oracle_matrix+oracle_stats_errors+oracle_vector+product+simul+stats+units,,
+F005,Arithmetic and entry,"Entry limits: bracket depth, number literals and tokens per line",entry,Y,Y,CORE,TESTED,1,1,1,1,2,1,,,"24 nested levels, 80 literals, 256 tokens; boundary-tested (tests/cases/capacity.txt, tests/ui/capacity.txt, bench_stack)"
+F006,Arithmetic and entry,Power x^n (any expression exponent),x^n,Y,Y,CORE,TESTED,204,23,32,237,54,1,basen+basic+calculus+complex+matrix+oracle_calculus+oracle_complex+oracle_domain+oracle_matrix+product,,
+F007,Arithmetic and entry,Square x^2 / cube (SHIFT),x^2,Y,Y,CORE,TESTED,111,8,8,126,51,1,basic+calculus+complex+matrix+oracle_calculus+oracle_complex+oracle_domain+oracle_matrix+product,,
+F008,Arithmetic and entry,Reciprocal x^-1,x^-1,Y,Y,CORE,TESTED,24,5,0,26,1,1,matrix+oracle_matrix,boundary,
+F009,Arithmetic and entry,Square root,sqrt,Y,Y,CORE,TESTED,50,6,8,49,16,1,basic+calculus+complex+oracle_calculus+oracle_complex+oracle_domain,,
 F010,Arithmetic and entry,n-th root,SHIFT sqrt,Y,Y,CORE,INSUFFICIENT,2,0,0,3,2,1,basic,invalid/error; boundary,
-F011,Arithmetic and entry,Cube root,MENU>Number,Y,Y,CORE,INSUFFICIENT,2,0,0,1,0,1,basic,key-path; invalid/error; boundary,
-F012,Arithmetic and entry,Factorial x!,x!,Y,Y,CORE,TESTED,3,3,0,4,3,1,basic,boundary,
+F011,Arithmetic and entry,Cube root,MENU>Number,Y,Y,CORE,INSUFFICIENT,11,0,9,10,0,1,basic+oracle_domain,key-path; invalid/error,
+F012,Arithmetic and entry,Factorial x!,x!,Y,Y,CORE,TESTED,73,7,74,78,4,1,basic+oracle_domain,,
 F013,Arithmetic and entry,Percent %,SHIFT (,Y,Y,CORE,INSUFFICIENT,2,0,0,1,1,1,basic,invalid/error; boundary,
-F014,Arithmetic and entry,EXP entry x10^x,x10^x,Y,Y,CORE,TESTED,6,0,3,15,12,1,basic+distribution,,
+F014,Arithmetic and entry,EXP entry x10^x,x10^x,Y,Y,CORE,TESTED,44,22,45,75,12,1,basic+distribution+oracle_basen_hex+oracle_calculus+oracle_complex+oracle_domain+oracle_equations,,
 F015,Arithmetic and entry,Ans / PreAns,Ans,Y,Y,CORE,INSUFFICIENT,1,0,0,0,1,1,basic,invalid/error; boundary; independent oracle,
 F016,Arithmetic and entry,Replay / history recall and edit,"up/down, left/right",Y,Y,CORE,INSUFFICIENT,1,0,0,0,1,1,,invalid/error; boundary; independent oracle,"tests/ui/keys.txt, test_shell history persistence"
 F017,Arithmetic and entry,"Cursor edit: insert, DEL, home/end",keys,Y,Y,CORE,INSUFFICIENT,1,0,0,0,1,1,,invalid/error; boundary; independent oracle,"tests/ui/keys.txt edit cases, ui_fuzz"
 F018,Arithmetic and entry,"Natural (textbook) display of fractions, roots, powers","a/b, sqrt, x^n",Y,Y,CORE,INSUFFICIENT,1,0,0,0,1,1,,invalid/error; boundary; independent oracle,"test_layout, ui expr: cases"
 F019,Arithmetic and entry,Stacked fraction / mixed fraction entry,"a/b, SHIFT a/b",Y,Y,CORE,INSUFFICIENT,0,0,0,31,44,1,,normal; invalid/error; boundary,
 F020,Arithmetic and entry,S<=>D exact/decimal toggle,S<>D,Y,Y,CORE,INSUFFICIENT,1,0,0,0,1,1,,invalid/error; boundary; independent oracle,tests/ui/keys.txt SD cases
-F021,Arithmetic and entry,"Exact results: fractions, surds, multiples of pi",result,Y,Y,CORE,TESTED,33,2,0,57,72,1,basic+calculus+complex,boundary,
+F021,Arithmetic and entry,"Exact results: fractions, surds, multiples of pi",result,Y,Y,CORE,TESTED,58,6,8,86,72,1,basic+calculus+complex+oracle_calculus+oracle_complex+oracle_domain,,
 F022,Arithmetic and entry,Engineering notation key (ENG),ENG,Y,Y,CORE,INSUFFICIENT,0,0,0,0,0,0,,normal; key-path; invalid/error; boundary; independent oracle,no dedicated test found
-F023,Arithmetic and entry,"Engineering symbols in input (k, M, m, n ...)",SETUP,?,Y,PLUS,MISSING,0,0,0,0,0,0,,,
-F024,Arithmetic and entry,Digit separator display,SETUP,?,Y,PLUS,MISSING,0,0,0,0,0,0,,,
-F025,Arithmetic and entry,Multi-statement entry (':'),ALPHA =,Y,Y,OUT,NOTSUITABLE,0,0,0,0,0,0,,,removed by product decision; the Exam model keeps one expression per entry. Revisit only with WAEC input
-F026,Arithmetic and entry,UNDO,-,N,?,PLUS,MISSING,0,0,0,0,0,0,,,Casio ES PLUS has no UNDO; one-level undo of the last edit is a usability option
-F027,Scientific functions,sin,key,Y,Y,CORE,TESTED,11,1,0,20,9,1,basen+calculus+complex,boundary,
-F028,Scientific functions,cos,key,Y,Y,CORE,INSUFFICIENT,4,0,0,9,5,1,calculus+complex,invalid/error; boundary,
-F029,Scientific functions,tan,key,Y,Y,CORE,INSUFFICIENT,3,0,0,4,1,1,calculus+complex,invalid/error; boundary,
-F030,Scientific functions,sin^-1,SHIFT key,Y,Y,CORE,INSUFFICIENT,0,0,0,4,3,1,,normal; invalid/error; boundary,
-F031,Scientific functions,cos^-1,SHIFT key,Y,Y,CORE,INSUFFICIENT,0,0,0,1,0,0,,normal; key-path; invalid/error; boundary,
-F032,Scientific functions,tan^-1,SHIFT key,Y,Y,CORE,INSUFFICIENT,1,0,0,3,1,1,calculus,invalid/error; boundary,
-F033,Scientific functions,sinh,MENU>Hyperbolic / hyp,Y,Y,CORE,INSUFFICIENT,2,0,0,3,1,1,calculus+complex,invalid/error; boundary,
-F034,Scientific functions,cosh,MENU>Hyperbolic / hyp,Y,Y,CORE,INSUFFICIENT,0,0,0,1,0,0,,normal; key-path; invalid/error; boundary,
-F035,Scientific functions,tanh,MENU>Hyperbolic / hyp,Y,Y,CORE,INSUFFICIENT,1,0,0,2,0,1,calculus,key-path; invalid/error; boundary,
-F036,Scientific functions,sinh^-1,MENU>Hyperbolic / hyp,Y,Y,CORE,INSUFFICIENT,0,0,0,1,0,0,,normal; key-path; invalid/error; boundary,
-F037,Scientific functions,cosh^-1,MENU>Hyperbolic / hyp,Y,Y,CORE,INSUFFICIENT,0,0,0,2,1,1,,normal; invalid/error; boundary,
-F038,Scientific functions,tanh^-1,MENU>Hyperbolic / hyp,Y,Y,CORE,INSUFFICIENT,0,0,0,1,0,0,,normal; key-path; invalid/error; boundary,
-F039,Scientific functions,log10,log,Y,Y,CORE,INSUFFICIENT,0,0,0,5,4,1,,normal; invalid/error; boundary,
-F040,Scientific functions,ln,ln,Y,Y,CORE,INSUFFICIENT,7,0,0,10,3,1,calculus+complex,invalid/error; boundary,
-F041,Scientific functions,log base b,MENU>Number,Y,Y,CORE,INSUFFICIENT,0,0,0,1,0,0,,normal; key-path; invalid/error; boundary,
+F023,Arithmetic and entry,"Engineering symbols in input (k, M, m, n ...)",SETUP,N,Y,PLUS,MISSING,0,0,0,0,0,0,,,
+F024,Arithmetic and entry,Digit separator display,SETUP,N,Y,PLUS,MISSING,0,0,0,0,0,0,,,
+F025,Arithmetic and entry,Multi-statement entry (':'),ALPHA =,Y,Y,OUT,NOTSUITABLE,0,0,0,0,0,0,,,in both Casio guides; removed by product decision (decision D3 asks whether to keep it removed)
+F026,Arithmetic and entry,UNDO,-,N,Y,PLUS,MISSING,0,0,0,0,0,0,,,"EX guide: cancels the last key operation, MathI modes only; not in ES PLUS guide"
+F027,Scientific functions,sin,key,Y,Y,CORE,TESTED,29,6,19,41,9,1,basen+calculus+capacity+complex+oracle_calculus+oracle_domain,,
+F028,Scientific functions,cos,key,Y,Y,CORE,TESTED,19,4,17,28,5,1,calculus+complex+oracle_calculus+oracle_domain,,
+F029,Scientific functions,tan,key,Y,Y,CORE,TESTED,13,6,15,20,1,1,calculus+complex+oracle_calculus+oracle_domain,,
+F030,Scientific functions,sin^-1,SHIFT key,Y,Y,CORE,TESTED,7,5,12,16,3,1,oracle_domain,,
+F031,Scientific functions,cos^-1,SHIFT key,Y,Y,CORE,INSUFFICIENT,7,5,12,13,0,1,oracle_domain,key-path,
+F032,Scientific functions,tan^-1,SHIFT key,Y,Y,CORE,TESTED,10,0,8,12,1,1,calculus+oracle_calculus+oracle_domain,,
+F033,Scientific functions,sinh,MENU>Hyperbolic / hyp,Y,Y,CORE,TESTED,10,2,10,13,3,1,calculus+complex+oracle_domain,,
+F034,Scientific functions,cosh,MENU>Hyperbolic / hyp,Y,Y,CORE,TESTED,8,1,9,10,1,1,oracle_domain,,
+F035,Scientific functions,tanh,MENU>Hyperbolic / hyp,Y,Y,CORE,TESTED,10,0,9,11,1,1,calculus+oracle_domain,,
+F036,Scientific functions,sinh^-1,MENU>Hyperbolic / hyp,Y,Y,CORE,TESTED,6,0,6,7,1,1,oracle_domain,,
+F037,Scientific functions,cosh^-1,MENU>Hyperbolic / hyp,Y,Y,CORE,TESTED,5,3,8,10,3,1,oracle_domain,,
+F038,Scientific functions,tanh^-1,MENU>Hyperbolic / hyp,Y,Y,CORE,TESTED,5,3,8,9,2,1,oracle_domain,,
+F039,Scientific functions,log10,log,Y,Y,CORE,TESTED,8,4,12,17,6,1,oracle_domain,,
+F040,Scientific functions,ln,ln,Y,Y,CORE,TESTED,32,8,12,43,3,1,calculus+complex+oracle_calculus+oracle_complex+oracle_domain,,
+F041,Scientific functions,log base b,MENU>Number,Y,Y,CORE,INSUFFICIENT,0,0,0,1,2,1,,normal; invalid/error; boundary,
 F042,Scientific functions,e^x,SHIFT ln,Y,Y,CORE,INSUFFICIENT,0,0,0,7,6,1,,normal; invalid/error; boundary,
-F043,Scientific functions,10^x,SHIFT log,Y,Y,CORE,TESTED,4,1,0,2,1,1,basic,boundary,
+F043,Scientific functions,10^x,SHIFT log,Y,Y,CORE,TESTED,12,2,9,11,1,1,basic+oracle_domain,,
 F044,Scientific functions,Angle units deg/rad/grad and DMS,"SETUP, DMS",Y,Y,CORE,INSUFFICIENT,5,0,0,0,5,1,units,invalid/error; boundary; independent oracle,ui + basic
 F045,Scientific functions,DMS entry and DMS result,"DMS, SHIFT DMS",Y,Y,CORE,INSUFFICIENT,5,0,0,0,5,1,units,invalid/error; boundary; independent oracle,
-F046,Scientific functions,Abs,MENU>Number,Y,Y,CORE,INSUFFICIENT,8,0,0,6,3,1,basic+calculus+complex+matrix,invalid/error; boundary,
-F047,Scientific functions,Int / Intg,MENU>Number,Y,Y,CORE,INSUFFICIENT,2,0,0,1,0,1,basic,key-path; invalid/error; boundary,
-F048,Scientific functions,Rnd,MENU>Number,Y,Y,CORE,INSUFFICIENT,5,0,0,1,0,1,units,key-path; invalid/error; boundary,
-F049,Scientific functions,Pol(,SHIFT +,Y,Y,CORE,INSUFFICIENT,3,0,0,2,2,1,units,invalid/error; boundary,
-F050,Scientific functions,Rec(,SHIFT -,Y,Y,CORE,INSUFFICIENT,1,0,0,2,2,1,units,invalid/error; boundary,
+F046,Scientific functions,Abs,MENU>Number,Y,Y,CORE,TESTED,49,2,5,44,6,1,basic+calculus+capacity+complex+matrix+oracle_calculus+oracle_complex+oracle_vector,,
+F047,Scientific functions,Int / Intg,MENU>Number,Y,Y,CORE,INSUFFICIENT,2,0,0,1,2,1,basic,invalid/error; boundary,
+F048,Scientific functions,Rnd,MENU>Number,Y,Y,CORE,INSUFFICIENT,5,0,0,1,1,1,units,invalid/error; boundary,
+F049,Scientific functions,Pol(,SHIFT +,Y,Y,CORE,INSUFFICIENT,3,0,0,2,3,1,units,invalid/error; boundary,
+F050,Scientific functions,Rec(,SHIFT -,Y,Y,CORE,INSUFFICIENT,1,0,0,2,3,1,units,invalid/error; boundary,
 F051,Scientific functions,Ran#,SHIFT .,Y,Y,CORE,INSUFFICIENT,0,0,0,0,0,0,,normal; key-path; invalid/error; boundary; independent oracle,
 F052,Scientific functions,RanInt(,SHIFT 0,Y,Y,CORE,INSUFFICIENT,1,1,0,0,0,1,units,key-path; boundary; independent oracle,
-F053,Scientific functions,nPr,SHIFT x,Y,Y,CORE,INSUFFICIENT,1,0,0,2,1,1,basic,invalid/error; boundary,
-F054,Scientific functions,nCr,SHIFT x,Y,Y,CORE,INSUFFICIENT,1,0,0,4,3,1,basic,invalid/error; boundary,
-F055,Scientific functions,Pi and e,"pi, SHIFT pi",Y,Y,CORE,INSUFFICIENT,5,0,0,15,23,1,basic+calculus+complex,invalid/error; boundary,ui + basic
+F053,Scientific functions,nPr,SHIFT x,Y,Y,CORE,TESTED,9,1,9,11,2,1,basic+oracle_domain,,
+F054,Scientific functions,nCr,SHIFT x,Y,Y,CORE,TESTED,10,4,13,17,4,1,basic+oracle_domain,,
+F055,Scientific functions,Pi and e,"pi, SHIFT pi",Y,Y,CORE,INSUFFICIENT,6,0,0,16,23,1,basic+calculus+complex+oracle_calculus,invalid/error; boundary,ui + basic
 F056,Scientific functions,"Scientific constants (40, CODATA 2022)",SHIFT 7,Y,Y,CORE,TESTED,8,2,0,1,1,1,units,boundary,"units.txt + pilot (values from scipy.constants, NIST not reachable)"
 F057,Scientific functions,"Unit conversions (20 pairs, both directions)",SHIFT 8,Y,Y,CORE,INSUFFICIENT,20,1,0,0,1,1,units,boundary; independent oracle,units.txt + pilot; hand-computed
-F058,Number theory,Prime factorisation,MENU>Number>PFact,Y,Y,CORE,TESTED,10,5,6,2,2,1,basic,,
-F059,Number theory,GCD,MENU>Number,?,?,PLUS,TESTED,6,2,3,1,1,1,basic,,
-F060,Number theory,LCM,MENU>Number,?,?,PLUS,TESTED,6,2,4,2,2,1,basic,,
-F061,Number theory,Integer quotient Quot,MENU>Number,?,?,PLUS,TESTED,5,1,3,1,1,1,basic,,
-F062,Number theory,Remainder Rem,MENU>Number,?,?,PLUS,TESTED,4,1,2,1,1,1,basic,,
-F063,Calculus and sums,Summation,MENU>Calculus,Y,Y,CORE,INSUFFICIENT,2,0,0,5,3,1,product,invalid/error; boundary,
-F064,Calculus and sums,Product operator,MENU>Calculus,N,Y,PLUS,TESTED,25,8,0,39,6,1,product,boundary,
-F065,Calculus and sums,Derivative d/dx,MENU>Calculus,Y,Y,CORE,INSUFFICIENT,21,0,0,25,4,1,calculus,invalid/error; boundary,
-F066,Calculus and sums,Definite integral,MENU>Calculus,Y,Y,CORE,INSUFFICIENT,24,0,0,32,8,1,calculus,invalid/error; boundary,
-F067,Calculus and sums,Solve (Newton),MENU>Calculus,Y,Y,CORE,INSUFFICIENT,20,0,0,24,4,1,calculus,invalid/error; boundary,
-F068,Calculus and sums,CALC (re-evaluate with variable prompts),CALC key,Y,?,CORE,RESTORE,0,0,0,0,0,0,,,"approved for restoration as a session-only, single-expression tool; not yet built"
-F069,Calculus and sums,TABLE f(x) (one function),TABLE,Y,Y,CORE,RESTORE,0,0,0,0,0,0,,,"approved for restoration; fx-991EX offers f(x) and g(x), the Exam model uses one f(X)"
-F070,Equations,Quadratic,MENU>Equations,Y,Y,CORE,TESTED,8,1,0,5,7,1,equations,boundary,
-F071,Equations,Cubic,MENU>Equations,Y,Y,CORE,TESTED,6,1,0,1,1,1,equations,boundary,
+F058,Number theory,Prime factorisation,MENU>Number>PFact,N,Y,CORE,TESTED,10,5,6,2,3,1,basic,,"EX guide: positive integers up to 10 digits (SC991: up to 9 999 999 999, same); no section in the ES PLUS guide"
+F059,Number theory,GCD,MENU>Number,N,N,PLUS,TESTED,6,2,3,1,2,1,basic,,not in either Casio guide: an SC991 extra
+F060,Number theory,LCM,MENU>Number,N,N,PLUS,TESTED,6,2,4,2,3,1,basic,,not in either Casio guide: an SC991 extra
+F061,Number theory,Integer quotient Quot,MENU>Number,N,N,PLUS,TESTED,5,1,3,1,2,1,basic,,not in either Casio guide: an SC991 extra
+F062,Number theory,Remainder Rem,MENU>Number,N,N,PLUS,TESTED,4,1,2,1,2,1,basic,,not in either Casio guide: an SC991 extra
+F063,Calculus and sums,Summation,MENU>Calculus,Y,Y,CORE,TESTED,21,4,1,27,4,1,capacity+oracle_calculus+product,,
+F064,Calculus and sums,Product operator,MENU>Calculus,N,Y,PLUS,TESTED,35,9,1,49,7,1,capacity+oracle_calculus+product,,
+F065,Calculus and sums,Derivative d/dx,MENU>Calculus,Y,Y,CORE,TESTED,38,4,0,46,5,1,calculus+oracle_calculus,boundary,
+F066,Calculus and sums,Definite integral,MENU>Calculus,Y,Y,CORE,TESTED,41,6,0,55,9,1,calculus+oracle_calculus,boundary,
+F067,Calculus and sums,Solve (Newton),MENU>Calculus,Y,Y,CORE,INSUFFICIENT,34,0,0,38,4,1,calculus+oracle_calculus,invalid/error; boundary,
+F068,Calculus and sums,CALC (re-evaluate with variable prompts),CALC key,Y,Y,CORE,RESTORE,0,0,0,0,0,0,,,"approved for restoration as a session-only, single-expression tool; not yet built"
+F069,Calculus and sums,TABLE f(x) (one function),TABLE,Y,Y,CORE,RESTORE,0,0,0,0,0,0,,,"approved; ES PLUS: one f(x), 30 rows; EX: f(x) 45 rows or f,g 30 rows; Exam model: one f(X)"
+F070,Equations,Quadratic,MENU>Equations,Y,Y,CORE,TESTED,52,4,0,52,7,1,equations+oracle_equations,boundary,
+F071,Equations,Cubic,MENU>Equations,Y,Y,CORE,TESTED,26,2,0,22,1,1,equations+oracle_equations,boundary,
 F072,Equations,Quartic (degree 4),MENU>Equations,N,Y,CORE,PARTIAL,0,0,0,0,0,0,,,"engine written, parked on branch wip/quartic-parked, untested, not on main"
 F073,Equations,"Simultaneous equations, 2 unknowns",MENU>Equations,Y,Y,CORE,TESTED,64,15,0,79,3,1,equations+simul,boundary,
 F074,Equations,"Simultaneous equations, 3 unknowns",MENU>Equations,Y,Y,CORE,TESTED,70,15,0,86,3,1,equations+simul,boundary,
-F075,Equations,"Simultaneous equations, 4 unknowns",MENU>Equations,N,Y,CORE,TESTED,61,13,0,80,6,1,simul,boundary,
+F075,Equations,"Simultaneous equations, 4 unknowns",MENU>Equations,N,Y,CORE,TESTED,62,13,1,80,6,1,capacity+simul,,
 F076,Equations,Linear-system coefficient grid editor (2-4 unknowns),MENU>Equations,Y,Y,CORE,TESTED,1,0,1,1,1,1,,,tests/ui/grid.txt generated against exact Fractions
 F077,Equations,"Inequality solver, degree 2-4",-,N,Y,CORE,MISSING,0,0,0,0,0,0,,,
 F078,Equations,Ratio solver A:B=X:D,-,N,Y,PLUS,MISSING,0,0,0,0,0,0,,,
-F079,Complex numbers,i (imaginary unit),MENU>Complex,Y,Y,CORE,TESTED,31,2,0,10,4,1,complex,boundary,
-F080,Complex numbers,Arg,MENU>Complex,Y,Y,CORE,INSUFFICIENT,5,0,0,3,2,1,complex,invalid/error; boundary,
-F081,Complex numbers,Conjg,MENU>Complex,Y,Y,CORE,INSUFFICIENT,1,0,0,1,1,1,complex,invalid/error; boundary,
-F082,Complex numbers,Re,MENU>Complex,Y,Y,CORE,INSUFFICIENT,1,0,0,0,0,1,complex,key-path; invalid/error; boundary; independent oracle,
-F083,Complex numbers,Im,MENU>Complex,Y,Y,CORE,INSUFFICIENT,1,0,0,0,0,1,complex,key-path; invalid/error; boundary; independent oracle,
-F084,Complex numbers,"Complex arithmetic, powers, roots",SETUP complex on,Y,Y,CORE,TESTED,31,2,0,10,4,1,complex,boundary,
+F079,Complex numbers,i (imaginary unit),MENU>Complex,Y,Y,CORE,TESTED,43,2,0,22,4,1,complex+oracle_complex,boundary,
+F080,Complex numbers,Arg,MENU>Complex,Y,Y,CORE,TESTED,21,1,0,20,2,1,complex+oracle_complex,boundary,
+F081,Complex numbers,Conjg,MENU>Complex,Y,Y,CORE,INSUFFICIENT,15,0,0,15,1,1,complex+oracle_complex,invalid/error; boundary,
+F082,Complex numbers,Re,MENU>Complex,Y,Y,CORE,INSUFFICIENT,15,0,0,14,0,1,complex+oracle_complex,key-path; invalid/error; boundary,
+F083,Complex numbers,Im,MENU>Complex,Y,Y,CORE,INSUFFICIENT,15,0,0,14,0,1,complex+oracle_complex,key-path; invalid/error; boundary,
+F084,Complex numbers,"Complex arithmetic, powers, roots",SETUP complex on,Y,Y,CORE,TESTED,43,2,0,22,4,1,complex+oracle_complex,boundary,
 F085,Complex numbers,Rectangular <-> polar display,SETUP,Y,Y,CORE,INSUFFICIENT,1,0,0,0,0,1,,key-path; invalid/error; boundary; independent oracle,complex.txt
 F086,Complex numbers,"Complex asin/acos/atan, 10^z",-,?,?,PLUS,PARTIAL,0,0,0,0,0,0,,,not supported; e^ and ^ work
-F087,Matrix and vector,"Matrix storage A-D + Ans, up to 4x4",MENU>Matrix,Y,Y,CORE,INSUFFICIENT,24,6,0,0,3,1,matrix,boundary; independent oracle,ES PLUS: 3 matrices 3x3 (from memory); EX: 4x4 (confirmed by QSG)
-F088,Matrix and vector,"Matrix + - x, scalar",expression,Y,Y,CORE,INSUFFICIENT,3,1,0,0,1,1,matrix,boundary; independent oracle,
-F089,Matrix and vector,Det,MENU>Matrix,Y,Y,CORE,INSUFFICIENT,5,0,0,0,1,1,matrix,invalid/error; boundary; independent oracle,
-F090,Matrix and vector,Trn,MENU>Matrix,Y,Y,CORE,INSUFFICIENT,1,0,0,0,0,1,matrix,key-path; invalid/error; boundary; independent oracle,
-F091,Matrix and vector,Iden,MENU>Matrix,Y,Y,CORE,INSUFFICIENT,1,0,0,0,0,1,matrix,key-path; invalid/error; boundary; independent oracle,
-F092,Matrix and vector,Matrix inverse x^-1 and integer powers,x^-1,Y,Y,CORE,INSUFFICIENT,3,1,0,0,0,1,matrix,key-path; boundary; independent oracle,
-F093,Matrix and vector,"Vector storage A-D + Ans, 2/3 dimensions",MENU>Vector,Y,Y,CORE,INSUFFICIENT,13,3,0,0,0,1,matrix,key-path; boundary; independent oracle,
-F094,Matrix and vector,Dot,MENU>Vector,Y,Y,CORE,INSUFFICIENT,1,1,0,0,0,1,matrix,key-path; boundary; independent oracle,
-F095,Matrix and vector,Cross,MENU>Vector,Y,Y,CORE,INSUFFICIENT,1,1,0,0,0,1,matrix,key-path; boundary; independent oracle,
-F096,Matrix and vector,Angle between vectors,MENU>Vector,Y,Y,CORE,INSUFFICIENT,2,0,0,0,0,1,matrix,key-path; invalid/error; boundary; independent oracle,
-F097,Matrix and vector,Unit vector,MENU>Vector,Y,Y,CORE,INSUFFICIENT,1,0,0,0,0,1,matrix,key-path; invalid/error; boundary; independent oracle,
-F098,Matrix and vector,Abs of vector,MENU>Vector,Y,Y,CORE,INSUFFICIENT,2,0,0,0,0,1,matrix,key-path; invalid/error; boundary; independent oracle,
+F087,Matrix and vector,"Matrix storage A-D + Ans, up to 4x4",MENU>Matrix,Y,Y,CORE,TESTED,108,18,0,96,3,1,matrix+oracle_matrix,boundary,ES PLUS: 3 matrices up to 3x3; EX: 4 matrices + MatAns up to 4x4 (guides)
+F088,Matrix and vector,"Matrix + - x, scalar",expression,Y,Y,CORE,TESTED,23,3,0,22,1,1,matrix+oracle_matrix,boundary,
+F089,Matrix and vector,Det,MENU>Matrix,Y,Y,CORE,TESTED,35,1,0,31,1,1,matrix+oracle_matrix,boundary,
+F090,Matrix and vector,Trn,MENU>Matrix,Y,Y,CORE,INSUFFICIENT,5,0,0,4,0,1,matrix+oracle_matrix,key-path; invalid/error; boundary,
+F091,Matrix and vector,Iden,MENU>Matrix,Y,Y,CORE,INSUFFICIENT,4,3,0,6,0,1,matrix+oracle_matrix,key-path; boundary,
+F092,Matrix and vector,Matrix inverse x^-1 and integer powers,x^-1,Y,Y,CORE,INSUFFICIENT,26,6,0,28,0,1,matrix+oracle_matrix,key-path; boundary,
+F093,Matrix and vector,"Vector storage A-D + Ans, 2/3 dimensions",MENU>Vector,Y,Y,CORE,INSUFFICIENT,139,13,0,136,0,1,matrix+oracle_vector,key-path; boundary,
+F094,Matrix and vector,Dot,MENU>Vector,Y,Y,CORE,INSUFFICIENT,17,2,0,17,0,1,matrix+oracle_vector,key-path; boundary,
+F095,Matrix and vector,Cross,MENU>Vector,Y,Y,CORE,INSUFFICIENT,11,2,0,11,0,1,matrix+oracle_vector,key-path; boundary,
+F096,Matrix and vector,Angle between vectors,MENU>Vector,Y,Y,CORE,INSUFFICIENT,21,2,0,21,0,1,matrix+oracle_vector,key-path; boundary,
+F097,Matrix and vector,Unit vector,MENU>Vector,Y,Y,CORE,INSUFFICIENT,17,2,0,18,0,1,matrix+oracle_vector,key-path; boundary,
+F098,Matrix and vector,Abs of vector,MENU>Vector,Y,Y,CORE,INSUFFICIENT,19,0,0,17,0,1,matrix+oracle_vector,key-path; invalid/error; boundary,
 F099,Statistics,"1-variable statistics (n, sum, mean, sigma, s, min, max, Q1, med, Q3)",MENU>Statistics,,Y,CORE,INSUFFICIENT,1,0,0,1,1,1,,invalid/error; boundary,stats.txt (mpmath) + pilot
-F100,Statistics,Paired statistics and regression: linear,SETUP/MENU,,Y,CORE,INSUFFICIENT,10,0,0,10,1,1,stats,invalid/error; boundary,stats.txt + pilot regression
-F101,Statistics,Regression: quadratic,SETUP,,Y,CORE,TESTED,8,1,0,5,7,1,equations,boundary,stats.txt + pilot
+F100,Statistics,Paired statistics and regression: linear,SETUP/MENU,,Y,CORE,TESTED,13,8,11,21,1,1,oracle_stats_errors+stats,,stats.txt + pilot regression
+F101,Statistics,Regression: quadratic,SETUP,,Y,CORE,TESTED,52,4,0,52,7,1,equations+oracle_equations,boundary,stats.txt + pilot
 F102,Statistics,"Regression: ln, e^, a*b^x, power, inverse",SETUP,,Y,CORE,INSUFFICIENT,1,0,0,1,0,1,,key-path; invalid/error; boundary,stats.txt; pilot covers linear/quadratic only
-F103,Statistics,Estimates y^ and x^,MENU>Statistics,Y,Y,CORE,INSUFFICIENT,15,0,0,15,0,1,stats,key-path; invalid/error; boundary,
-F104,Statistics,"Statistical variables: n, sums, means, deviations (Σx, x̄, σx, sx, ...)",MENU>Statistics>Variables,,Y,CORE,INSUFFICIENT,50,0,0,50,1,1,stats,invalid/error; boundary,"stats.txt (mpmath), pilot stat_var keys"
-F105,Statistics,"Regression coefficients and correlation (a, b, c, r)",MENU>Statistics>Variables,,Y,CORE,INSUFFICIENT,30,0,0,30,1,1,stats,invalid/error; boundary,"stats.txt, pilot"
-F106,Statistics,"Minimum, maximum, quartiles, median",MENU>Statistics>Variables,,Y,CORE,INSUFFICIENT,25,0,0,25,1,1,stats,invalid/error; boundary,"stats.txt, pilot"
+F103,Statistics,Estimates y^ and x^,MENU>Statistics,Y,Y,CORE,INSUFFICIENT,19,1,5,20,0,1,oracle_stats_errors+stats,key-path,
+F104,Statistics,"Statistical variables: n, sums, means, deviations (Σx, x̄, σx, sx, ...)",MENU>Statistics>Variables,,Y,CORE,TESTED,59,6,15,65,1,1,oracle_stats_errors+stats,,"stats.txt (mpmath), pilot stat_var keys"
+F105,Statistics,"Regression coefficients and correlation (a, b, c, r)",MENU>Statistics>Variables,,Y,CORE,TESTED,39,12,21,51,1,1,oracle_stats_errors+stats,,"stats.txt, pilot"
+F106,Statistics,"Minimum, maximum, quartiles, median",MENU>Statistics>Variables,,Y,CORE,TESTED,26,0,1,26,1,1,oracle_stats_errors+stats,,"stats.txt, pilot"
 F107,Statistics,Frequency column,editor,Y,Y,CORE,INSUFFICIENT,1,0,0,1,1,1,,invalid/error; boundary,stats.txt generated with frequencies
-F108,Statistics,Statistic editor 80 rows,SHIFT MENU,Y,Y,CORE,INSUFFICIENT,1,0,0,0,1,1,,invalid/error; boundary; independent oracle,ES/EX 1-var 80 rows; paired 40 on ES (from memory)
-F109,Distributions,"Normal P(t), Q(t), R(t)",MENU>Distribution,Y,Y,CORE,INSUFFICIENT,73,0,0,77,4,1,distribution,invalid/error; boundary,
-F110,Distributions,"Normal density PD and general normal CD (lower, upper, sigma, mu)",-,?,Y,PLUS,MISSING,0,0,0,0,0,0,,,"EX Distribution mode; SC991 has standard-normal P/Q/R and InvN(area, sigma, mu) only"
-F111,Distributions,Inverse normal,MENU>Distribution,N,Y,CORE,TESTED,13,5,6,20,2,1,distribution,,
-F112,Distributions,Binomial PD / CD,MENU>Distribution,N,Y,CORE,TESTED,21,8,14,32,3,1,distribution,,
-F113,Distributions,Poisson PD / CD,MENU>Distribution,N,Y,CORE,TESTED,15,3,10,20,2,1,distribution,,
+F108,Statistics,Statistic editor 80 rows,SHIFT MENU,Y,Y,CORE,INSUFFICIENT,1,0,0,0,1,1,,invalid/error; boundary; independent oracle,"guides: ES PLUS 80 rows (1-var), 40 (paired), 26 (with freq); EX 160 / 80 / 53"
+F109,Distributions,"Normal P(t), Q(t), R(t)",MENU>Distribution,Y,Y,CORE,INSUFFICIENT,73,0,0,77,7,1,distribution,invalid/error; boundary,
+F110,Distributions,"Normal density PD and general normal CD (lower, upper, sigma, mu)",-,N,Y,PLUS,MISSING,0,0,0,0,0,0,,,"EX Distribution mode; SC991 has standard-normal P/Q/R and InvN(area, sigma, mu) only"
+F111,Distributions,Inverse normal,MENU>Distribution,N,Y,CORE,TESTED,13,5,6,20,3,1,distribution,,
+F112,Distributions,Binomial PD / CD,MENU>Distribution,N,Y,CORE,TESTED,21,8,14,32,5,1,distribution,,
+F113,Distributions,Poisson PD / CD,MENU>Distribution,N,Y,CORE,TESTED,15,3,10,20,4,1,distribution,,
 F114,Base-n and logic,Bin / Oct / Dec / Hex conversion and arithmetic,SETUP,Y,Y,CORE,INSUFFICIENT,1,1,0,0,0,1,,key-path; boundary; independent oracle,basen.txt (58 hand-verified lines); no key-path test found
-F115,Base-n and logic,"and, or, xor, xnor",MENU>Prob,Y,Y,CORE,INSUFFICIENT,9,0,0,0,0,1,basen,key-path; invalid/error; boundary; independent oracle,
-F116,Base-n and logic,"Not, Neg",MENU>Prob,Y,Y,CORE,INSUFFICIENT,6,0,0,0,0,1,basen,key-path; invalid/error; boundary; independent oracle,
+F115,Base-n and logic,"and, or, xor, xnor",MENU>Prob,Y,Y,CORE,INSUFFICIENT,821,0,0,812,0,1,basen+oracle_basen_bin+oracle_basen_dec+oracle_basen_hex+oracle_basen_oct,key-path; invalid/error; boundary,
+F116,Base-n and logic,"Not, Neg",MENU>Prob,Y,Y,CORE,INSUFFICIENT,154,4,0,152,0,1,basen+oracle_basen_bin+oracle_basen_dec+oracle_basen_hex+oracle_basen_oct,key-path; boundary,
 F117,"Memory, display and settings","Variables A B C D E F X Y M, STO","STO, ALPHA",Y,Y,CORE,INSUFFICIENT,1,0,0,0,1,1,,invalid/error; boundary; independent oracle,ui keys + pilot
 F118,"Memory, display and settings",M+ / M-,"M+, SHIFT M+",Y,Y,CORE,INSUFFICIENT,1,0,0,0,1,1,,invalid/error; boundary; independent oracle,ui keys
 F119,"Memory, display and settings",Fix / Sci / Norm 1 / Norm 2,SETUP,Y,Y,CORE,INSUFFICIENT,1,0,0,0,1,1,,invalid/error; boundary; independent oracle,basic cases (:decimal etc.) and ui
