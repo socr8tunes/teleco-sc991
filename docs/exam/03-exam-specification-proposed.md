@@ -1,6 +1,6 @@
-# 03 - Proposed final SC991 Exam feature specification (DRAFT for approval)
+# 03 - Proposed final SC991 Exam feature specification (revised 2026-11-06, DRAFT for approval)
 
-Product: SC991 Exam - non-programmable, non-graphing, silent, cordless, self-contained scientific calculator for Ghanaian SHS and university students and general users. Benchmark: Casio fx-991ES PLUS / fx-991EX capabilities (not their branding or interface). Subject to WAEC review; **no approval is claimed**.
+Product: SC991 Exam - non-programmable, non-graphing, silent, cordless, self-contained scientific calculator for Ghanaian SHS and university students and general users. Benchmark: Casio fx-991ES PLUS / fx-991EX capabilities (not their branding or interface). Subject to WAEC review; **no approval or compliance is claimed, and none may be claimed without written confirmation from WAEC**.
 
 ## 1. Product boundaries (hard rules, enforced by tests)
 
@@ -9,7 +9,7 @@ Product: SC991 Exam - non-programmable, non-graphing, silent, cordless, self-con
 3. No spreadsheet, no external data import/export, no QR, no radio/IO of any kind in firmware. (Firmware programming port is a manufacturing feature, disabled or locked in shipped units - hardware decision, see risks.)
 4. No symbolic algebra: results are numeric, exact rational, surd, pi-multiple or complex-rectangular/polar only. No expression simplification, no factoring of user expressions, no differentiation or integration to a symbolic form.
 5. No AI. No multi-statement chaining. Session-only helpers (CALC, TABLE) keep exactly one expression and are cleared by AC, leaving the mode and power-off; never written to non-volatile storage.
-6. Guard test (to be written, see register): static scan of token enum and menu for storage/branch/loop operators, plus a behavioural test that the persisted blob contains no expression other than replay history entries, and that CALC/TABLE content is absent after a save/load cycle.
+6. Guard test (**implemented**, ctest `exclusions`, `tests/unit/test_exclusions.c`): the set of token labels must equal the reviewed list `tests/exam/approved_tokens.txt` (adding any token fails the test until the list is edited on purpose); every item of every menu is visited by key presses and may insert only approved tokens; no menu label may name a forbidden capability (program, macro, script, sheet, graph, plot, table while on hold, wireless, import/export, AI ...); `1:2` and `table(`, `calc(`, `prog(`, `spreadsheet(` are Syntax ERROR (`tests/cases/basic.txt`). Still to write when CALC/TABLE are implemented: a save/load test that their content is absent from the persisted blob (the blob today is header + settings/memory + replay history + CRC only).
 
 ## 2. Functional scope
 
@@ -37,37 +37,64 @@ Product: SC991 Exam - non-programmable, non-graphing, silent, cordless, self-con
 
 **Out for the Exam model**: spreadsheet, QR, multi-statement, programming, graphing, AI, CAS.
 
-## 3. Numerical and capacity requirements (proposed targets)
+## 3. Numerical and capacity requirements
 
-| Item | Measured today | Proposed Exam target |
-|---|---|---|
-| Internal arithmetic | 16-digit decimal, exponent +-99, exact rational/surd tracking, 45-54-digit extended path | keep |
-| Display | 10 significant digits (Norm), Fix/Sci/Eng | keep |
-| Matrix / vector / stat rows | 4x4 / 3-dim / 80 | keep (boundary tests committed) |
-| Bracket nesting | **11** (docs say 24) | at least 24 usable levels |
-| Number literals per expression | **40** | at least 80; target equivalent to Casio EX's 159-key entry |
-| Tokens per line / compiled | 128 / 160 | at least 160 / 240 (RAM budget permitting) |
-| History | 480 tokens | keep; document |
-| Accuracy | functions correctly rounded vs mpmath on difftests; expression differential | keep; extend to all CORE functions |
-| Run-time | not measured on target | each CORE operation returns within 2 s on the chosen MCU; sums, products, integrals, Solve bounded by Time Out |
+Targets set by the product owner on 2026-11-05: **at least 24 usable nested bracket levels and 80 number literals per expression**. Both are implemented and boundary-tested.
 
-## 4. Resource budget (measured on host/cross-compile, 2026-11-02)
+### 3.1 Entry-capacity table (implemented and tested)
 
-| Resource | Now | Proposed ceiling |
-|---|---|---|
-| Flash (core only, -Os Cortex-M0+) | 124,556 B | 192 KB (so a 256 KB part has margin for HAL, boot, font, options) |
-| RAM: app state | 16,112 B | 20 KB |
-| RAM: core static buffers | 12,304 B | 12 KB |
-| RAM: worst-case stack (host-measured) | 10,468 B | 12 KB (verify on target) |
-| LCD buffer (192x64, 1 bit) | 1,536 B (assumed) | - |
-| Total RAM | **about 40.4 KB** | 48 KB; MCU with at least 64 KB RAM |
+| Item | Limit | Behaviour at the limit | Evidence |
+|---|---|---|---|
+| Nested levels (brackets, function openers, fractions, roots, powers, mixed numbers) | **24** usable (`MAX_NEST`); separate internal recursion guard 120 | Level 24 evaluates. Level 25 gives **Stack ERROR** on EXE; the line stays editable (DEL back to 24 and EXE again, tested) | `cases/capacity.txt`, `ui/capacity.txt`, `bench_stack` |
+| Number literals per expression | **80** (`MAX_CONSTS`) | 80th evaluates; 81st gives **Stack ERROR** on EXE | same |
+| Tokens (keystrokes) per entry line | **256** (`ED_CAP`) | Further keys are **ignored** (no error, no change); content intact | `ui/capacity.txt` |
+| Total expression length | 256 tokens as typed. A digit, operator, variable or function opener (`sin(`) is 1 token; a fraction, root, power, mixed number is a begin and an end token (2+); `0.5` is 3 tokens, so the token limit is reached before 80 literals when literals are not integers | as above | same |
+| Token capacity after auto-closing brackets | 288 (`MAX_TOKENS`) = 256 + 32 closers | cannot be exceeded from the editor | design |
+| Compiled instructions | 384 (`MAX_CODE`) | **Stack ERROR** on EXE | `capacity.txt` |
+| Evaluation stack | 48 values (`EVAL_STACK`) | **Stack ERROR** | `bench_stack` |
+| Nested Sigma / Pi / integral / d/dx / Solve bodies at run time | 23 inside one another (`EVAL_DEPTH` 24 counts the top level; 23 nested sums evaluate, 24 give Stack ERROR) | **Stack ERROR** | `capacity.txt` |
+| Sigma / Pi terms | 100001 (hi - lo <= 100000) | **Time Out** beyond; non-integer bounds Argument ERROR | `oracle_calculus.txt` |
+| VM work budget per EXE | 4,000,000 steps | **Time Out** | design (to be re-set by time on hardware, risk R4) |
+| Replay history | 480 tokens in total; records over 255 tokens are executed but not stored | oldest entries are dropped | `test_shell`, `app.c` guard |
+| Statistics rows | 80 in every mode (Casio ES PLUS 80 / 40 paired / 26 with frequency; EX 160 / 80 / 53) | 81st row: Range ERROR | `limits-probe.md` |
+| Matrix / vector | 4x4 (4 stored + Ans) / 2-3 dimensions | 5x5: Dimension ERROR; 4-vector: Argument ERROR | `limits-probe.md` |
+| Casio EX comparison | EX accepts 159 bytes of entry; the SC991 accepts 256 tokens (a byte-per-key comparison depends on token weights and is only indicative) | - | Casio guide |
+
+### 3.2 Other numerical requirements
+
+| Item | Value |
+|---|---|
+| Internal arithmetic | 16-digit decimal, exponent +-99 (results below 1E-99 flush to 0; results at or above 1E100 are Math ERROR), exact rational/surd tracking, 45-54 digit extended path |
+| Display | 10 significant digits (Norm), Fix/Sci/Eng |
+| Accuracy | functions correctly rounded vs mpmath (differential tests); expression differential; ~3,300 independent-oracle cases (matrix, vector, complex, base-n, domain, statistics errors, calculus, equations, scientific edges) |
+| Calculus accuracy | numerical methods, about 9-10 digits typical; singular integrals and extreme-scale arguments can lose digits (known defects below) |
+| Complex roots order | a conjugate pair is always listed with the positive imaginary part first |
+| Run-time | not measured on target; each CORE operation must return within 2 s on the chosen MCU; sums, products, integrals, Solve bounded by Time Out |
+
+### 3.3 Known numerical defects (documented, not fixed; decisions D4 and D5 in 07)
+
+`tests/known_defects/calculus.txt` (not run by ctest): `integral(cos(X),0,1000)` and `integral(sin(1/X),0.001,1)` lose the last 1-2 digits; `ddx(X^2,1E-50)` returns 0 (absolute step); `solve(X^2=1E-20,1)` stops at 5.07E-10 (absolute tolerance). Singular or non-convergent integrals (for example `integral(1/X^2,1,1E50)`, `X^-0.9` near 0) have no clean convergence test: the error-estimate ratio does not separate good from bad results. Also `solve(e^X=0)` can return a bogus root.
+
+## 4. Resource budget (re-measured 2026-11-06 with the capacity limits in place; `tools/check_budget.sh`, run in CI)
+
+| Resource | Now | Ceiling | Headroom |
+|---|---|---|---|
+| Flash (core only, -Os Cortex-M0+) | 125,226 B | 192 KB (196,608) | 36% |
+| RAM: `app_t` (state, history, editor) | 16,368 B | 20 KB | - |
+| RAM: `prog_t` compile buffer (inside the static buffers) | 4,240 B | - | - |
+| RAM: core static buffers | 15,152 B | - | - |
+| RAM: worst-case stack (host-painted, 24-level nesting, nested integral) | 10,692 B | 12,288 B | **13%** |
+| LCD buffer (192x64, 1 bit) | 1,536 B | - | - |
+| **Total RAM** | **43,748 B (42.7 KB)** | 48 KB (49,152) | 11% (5,404 B) |
+
+Cost of the capacity targets: about +2.4 KB RAM compared with the 11-bracket / 40-literal build (40.4 KB -> 42.7 KB): literal pool 80 x compact `lit_t`, 256-token editor, 384-instruction code buffer. The parser's former 1.5 KB frame was removed by in-place rotation, which kept the worst stack from growing. Conclusions: the targets fit the 48 KB ceiling, so an MCU with at least 64 KB RAM and 256 KB flash remains the minimum. **Stack headroom (13%) is below the 25% goal in hardware plan HW-3**; all stack figures are host-painted estimates and must be repeated on the device (risk R4/R5).
 
 ## 5. Release gates (all required)
 
 1. Every CORE capability TESTED in the register: normal, boundary, invalid input, accuracy (independent oracle), key-sequence, regression.
 2. Boundary tests committed for every documented limit.
-3. Guard tests for product boundaries (section 1.6).
+3. Guard tests for product boundaries (section 1.6) - implemented.
 4. Pilot pack all pass; independent second review of expected answers on a sample.
 5. Target-hardware run of the full suite, with measured timing and stack high-water mark.
-6. Casio reference items marked "?" verified against the official user guides.
-7. WAEC enquiry made and answered in writing before any "approved" statement.
+6. Casio reference items verified against the official user guides (**done 2026-11-04**, `02-casio-gap-analysis.md`).
+7. WAEC enquiry made and answered in writing before any "approved" or "compliant" statement.
