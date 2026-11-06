@@ -6,11 +6,11 @@ ctx                 104        0        0
 decimal            1468        0        0
 dist               3962        0        0
 editor             1318        0        0
-eqn                2986        0        0
+eqn                3228        0        0
 errors              216        0        0
 eval              15484        0    10024
 exact              7788        0        0
-expr               5496        0        0
+expr               5664        0        0
 format             5591        0        0
 grid               1713        0        0
 lcd                2190        0        0
@@ -18,13 +18,13 @@ lexer              5830        0        0
 mathfn             4444        0        0
 mathlay            2342        0        0
 matrix             2756        0        0
-menu               5307        0        0
+menu               5357        0        0
 num                3014        0        0
-nummethods        16095        0     5120
+nummethods        15067        0     5120
 persist             644        0        0
 screens            3706        0        0
 shell               540        0        0
-stat               4464        0        0
+stat               4488        0        0
 tokinfo            2644        0        0
 units              4095        0        8
 val                 154        0        0
@@ -33,5 +33,5 @@ wide               1070        0        0
 xconst              440        0        0
 xfunc              4328        0        0
 xnum               3728        0        0
-TOTAL            125770        0    15152
-flash (text+data) = 125770 bytes, static RAM (data+bss) = 15152 bytes (excludes compiler-rt helpers and the call stack)
+TOTAL            125226        0    15152
+flash (text+data) = 125226 bytes, static RAM (data+bss) = 15152 bytes (excludes compiler-rt helpers and the call stack)

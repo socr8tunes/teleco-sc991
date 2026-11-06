@@ -61,7 +61,8 @@ int main(int argc, char **argv)
         size_t n = strlen(line);
         while (n && (line[n - 1] == '\n' || line[n - 1] == '\r')) line[--n] = 0;
         if (!n || line[0] == '#') continue;
-        snprintf(approved[n_approved], sizeof approved[0], "%s", line); n_approved++;
+        if (n >= sizeof approved[0]) { printf("approved label too long: %s\n", line); fails++; continue; }
+        memcpy(approved[n_approved], line, n + 1); n_approved++;
     }
     fclose(f);
 
@@ -72,7 +73,7 @@ int main(int argc, char **argv)
         s = norm(tok_label(tk, lab, sizeof lab));
         if (!s || !s[0]) { printf("token %d has no label\n", t); fails++; continue; }
         for (i = 0; i < n_seen; i++) if (!strcmp(seen[i], s)) dup = 1;
-        if (!dup && n_seen < 512) { snprintf(seen[n_seen], sizeof seen[0], "%s", s); n_seen++; }
+        if (!dup && n_seen < 512) { { size_t sl = strlen(s); if (sl >= sizeof seen[0]) sl = sizeof seen[0] - 1; memcpy(seen[n_seen], s, sl); seen[n_seen][sl] = 0; } n_seen++; }
         if (!is_approved(s)) { printf("UNAPPROVED token %d label '%s' (add to tests/exam/approved_tokens.txt after review)\n", t, s); fails++; }
     }
     for (i = 0; i < n_approved; i++) {
