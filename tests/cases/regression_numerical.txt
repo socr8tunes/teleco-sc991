@@ -1,0 +1,47 @@
+# Named regression cases: one line per defect found by the audit (P0, P1). Each failed on an earlier build.
+:decimal
+:rad
+# R-Q1 quadratic: the small root cancelled to 0 when b^2 >> 4ac
+quad(1,1E10,1) ~> -1E-10
+quad(1,-1E10,1) ~> 1E10
+quad(1E-40,1,1) ~> -1
+# R-Q2 complex pair: positive imaginary part first whatever the sign of a
+quad(-1,2,-5) => 1+2i | x2 = 1-2i
+quad(1,2,5) => -1+2i | x2 = -1-2i
+# R-B1 -2147483648 could not be entered in decimal base-n
+:reset
+:dec
+-2147483648 => -2147483648
+:reset
+:decimal
+:rad
+# R-V1 angle between vectors with a zero vector
+# (see oracle_vector.txt)
+# R-S1 Solve: bogus roots where f underflows to 0 or is flat
+solve(e^X=0,1) => Can't Solve
+solve(e^X=0,-300) => Can't Solve
+solve(X=X+1E-20,1) => Can't Solve
+solve(X^2+1E-30=0,1) => Can't Solve
+# R-S2 Solve: absolute residual tolerance stopped at the wrong root
+solve(X^2=1E-20,1) ~> 1E-10
+solve(X^2=1E-40,1) ~> 1E-20
+solve(X^2=0,1) ~> 0
+# R-S3 Solve: roots beyond the old search range (1E15)
+solve(X^3=1E60,1) ~> 1E20
+# R-D1 derivative: absolute step returned 0 or lost digits at small arguments
+ddx(X^2,1E-40) ~> 2E-40
+ddx(X^2,1E-10) ~> 2E-10
+ddx(X^3,1E-30) ~> 3E-60
+# R-D2 derivative at a pole or jump was a number
+ddx(1/X,0) => Math ERROR
+ddx(1/(X-1),1.001) => Math ERROR
+ddx(Int(X),1) => Math ERROR
+ddx(sqrt(X),1E-20) ~> 5E9
+# R-I1 integral: divergent and unverifiable results were shown as numbers
+integral(1/X,0,1) => Math ERROR
+integral(1/X^2,-1,1) => Math ERROR
+integral(X^-0.9,0,1) => Math ERROR
+integral(1/X^2,1,1E50) => Math ERROR
+integral(1/(X-0.3),0,1) => Math ERROR
+# R-I2 integral: uninitialised output on underflow (valgrind); must stay a clean value
+integral(e^(-X^2),-100,100) ~> 1.772453851
