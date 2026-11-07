@@ -1,18 +1,18 @@
 id,category,feature,access,casio_es_plus,casio_ex,exam_decision,status,normal,error,boundary,oracle,key_path,regression,test_files,gaps,note
-F001,Arithmetic and entry,Four operations + - x /,+ - x /,Y,Y,CORE,TESTED,660,183,24,822,191,1,basen+basic+calculus+capacity+complex+numerical_integrals+numerical_solve+oracle_basen_bin+oracle_basen_dec+oracle_basen_hex+oracle_basen_oct+oracle_calculus+oracle_complex+oracle_domain+oracle_functions+product+units,,
+F001,Arithmetic and entry,Four operations + - x /,+ - x /,Y,Y,CORE,TESTED,661,185,24,822,191,1,basen+basic+calculus+capacity+complex+numerical_integrals+numerical_solve+oracle_basen_bin+oracle_basen_dec+oracle_basen_hex+oracle_basen_oct+oracle_calculus+oracle_complex+oracle_domain+oracle_functions+product+regression_numerical+units,,
 F002,Arithmetic and entry,Operator precedence and implied multiplication,entry,Y,Y,CORE,INSUFFICIENT,3,0,0,2,2,1,basic,invalid/error; boundary,basic + expression differential
-F003,Arithmetic and entry,Unary minus (-),(-),Y,Y,CORE,TESTED,593,100,99,671,50,1,basen+basic+calculus+capacity+complex+distribution+matrix+numerical_solve+oracle_basen_dec+oracle_calculus+oracle_complex+oracle_domain+oracle_equations+oracle_functions+oracle_matrix+oracle_vector+simul,,
-F004,Arithmetic and entry,Brackets,( ),Y,Y,CORE,TESTED,1759,311,420,1888,157,1,basen+basic+calculus+capacity+complex+distribution+equations+matrix+numerical_derivatives+numerical_integrals+numerical_solve+oracle_basen_bin+oracle_basen_dec+oracle_basen_hex+oracle_basen_oct+oracle_calculus+oracle_complex+oracle_domain+oracle_equations+oracle_functions+oracle_matrix+oracle_stats_errors+oracle_vector+product+simul+stats+units,,
+F003,Arithmetic and entry,Unary minus (-),(-),Y,Y,CORE,TESTED,595,100,99,671,50,1,basen+basic+calculus+capacity+complex+distribution+matrix+numerical_solve+oracle_basen_dec+oracle_calculus+oracle_complex+oracle_domain+oracle_equations+oracle_functions+oracle_matrix+oracle_vector+regression_numerical+simul,,
+F004,Arithmetic and entry,Brackets,( ),Y,Y,CORE,TESTED,1765,319,420,1888,157,1,basen+basic+calculus+capacity+complex+distribution+equations+matrix+numerical_derivatives+numerical_integrals+numerical_solve+oracle_basen_bin+oracle_basen_dec+oracle_basen_hex+oracle_basen_oct+oracle_calculus+oracle_complex+oracle_domain+oracle_equations+oracle_functions+oracle_matrix+oracle_stats_errors+oracle_vector+product+regression_numerical+simul+stats+units,,
 F005,Arithmetic and entry,"Entry limits: bracket depth, number literals and tokens per line",entry,Y,Y,CORE,TESTED,1,1,1,1,3,1,,,"24 nested levels, 80 literals, 256 tokens; boundary-tested (tests/cases/capacity.txt, tests/ui/capacity.txt, bench_stack)"
-F006,Arithmetic and entry,Power x^n (any expression exponent),x^n,Y,Y,CORE,TESTED,224,38,46,251,54,1,basen+basic+calculus+complex+matrix+numerical_derivatives+numerical_integrals+numerical_solve+oracle_calculus+oracle_complex+oracle_domain+oracle_functions+oracle_matrix+product,,
-F007,Arithmetic and entry,Square x^2 / cube (SHIFT),x^2,Y,Y,CORE,TESTED,121,16,14,132,55,1,basic+calculus+complex+matrix+numerical_derivatives+numerical_integrals+numerical_solve+oracle_calculus+oracle_complex+oracle_domain+oracle_functions+oracle_matrix+product,,
+F006,Arithmetic and entry,Power x^n (any expression exponent),x^n,Y,Y,CORE,TESTED,227,41,46,251,54,1,basen+basic+calculus+complex+matrix+numerical_derivatives+numerical_integrals+numerical_solve+oracle_calculus+oracle_complex+oracle_domain+oracle_functions+oracle_matrix+product+regression_numerical,,
+F007,Arithmetic and entry,Square x^2 / cube (SHIFT),x^2,Y,Y,CORE,TESTED,122,18,14,132,55,1,basic+calculus+complex+matrix+numerical_derivatives+numerical_integrals+numerical_solve+oracle_calculus+oracle_complex+oracle_domain+oracle_functions+oracle_matrix+product+regression_numerical,,
 F008,Arithmetic and entry,Reciprocal x^-1,x^-1,Y,Y,CORE,TESTED,24,6,0,26,1,1,matrix+numerical_integrals+oracle_matrix,boundary,
 F009,Arithmetic and entry,Square root,sqrt,Y,Y,CORE,TESTED,56,9,14,55,20,1,basic+calculus+complex+numerical_derivatives+numerical_integrals+oracle_calculus+oracle_complex+oracle_domain+oracle_functions,,
 F010,Arithmetic and entry,n-th root,SHIFT sqrt,Y,Y,CORE,TESTED,4,3,5,8,2,1,basic+oracle_functions,,
 F011,Arithmetic and entry,Cube root,MENU>Number,Y,Y,CORE,INSUFFICIENT,18,0,16,17,0,1,basic+oracle_domain+oracle_functions,key-path; invalid/error,
 F012,Arithmetic and entry,Factorial x!,x!,Y,Y,CORE,TESTED,73,7,74,78,4,1,basic+oracle_domain,,
 F013,Arithmetic and entry,Percent %,SHIFT (,Y,Y,CORE,TESTED,8,0,6,7,1,1,basic+oracle_functions,,
-F014,Arithmetic and entry,EXP entry x10^x,x10^x,Y,Y,CORE,TESTED,72,30,73,103,18,1,basic+distribution+numerical_derivatives+numerical_integrals+numerical_solve+oracle_basen_hex+oracle_calculus+oracle_complex+oracle_domain+oracle_equations+oracle_functions,,
+F014,Arithmetic and entry,EXP entry x10^x,x10^x,Y,Y,CORE,TESTED,74,31,73,103,18,1,basic+distribution+numerical_derivatives+numerical_integrals+numerical_solve+oracle_basen_hex+oracle_calculus+oracle_complex+oracle_domain+oracle_equations+oracle_functions+regression_numerical,,
 F015,Arithmetic and entry,Ans / PreAns,Ans,Y,Y,CORE,TESTED,5,2,1,5,8,1,basic+ui/state,,
 F016,Arithmetic and entry,Replay / history recall and edit,"up/down, left/right",Y,Y,CORE,TESTED,6,2,3,8,3,1,ui/state,,"tests/ui/keys.txt, test_shell history persistence"
 F017,Arithmetic and entry,"Cursor edit: insert, DEL, home/end",keys,Y,Y,CORE,TESTED,8,2,2,8,4,1,ui/state,,"tests/ui/keys.txt edit cases, ui_fuzz"
@@ -45,7 +45,7 @@ F043,Scientific functions,10^x,SHIFT log,Y,Y,CORE,TESTED,13,2,9,11,1,1,basic+num
 F044,Scientific functions,Angle units deg/rad/grad and DMS,"SETUP, DMS",Y,Y,CORE,INSUFFICIENT,5,0,0,0,11,1,units,invalid/error; boundary; independent oracle,ui + basic
 F045,Scientific functions,DMS entry and DMS result,"DMS, SHIFT DMS",Y,Y,CORE,INSUFFICIENT,5,0,0,0,11,1,units,invalid/error; boundary; independent oracle,
 F046,Scientific functions,Abs,MENU>Number,Y,Y,CORE,TESTED,53,3,5,44,6,1,basic+calculus+capacity+complex+matrix+numerical_derivatives+numerical_integrals+numerical_solve+oracle_calculus+oracle_complex+oracle_vector,,
-F047,Scientific functions,Int / Intg,MENU>Number,Y,Y,CORE,TESTED,17,0,15,16,2,1,basic+oracle_functions,,
+F047,Scientific functions,Int / Intg,MENU>Number,Y,Y,CORE,TESTED,17,1,15,16,2,1,basic+oracle_functions+regression_numerical,,
 F048,Scientific functions,Rnd,MENU>Number,Y,Y,CORE,INSUFFICIENT,5,0,0,1,1,1,units,invalid/error; boundary,
 F049,Scientific functions,Pol(,SHIFT +,Y,Y,CORE,INSUFFICIENT,3,0,0,2,3,1,units,invalid/error; boundary,
 F050,Scientific functions,Rec(,SHIFT -,Y,Y,CORE,INSUFFICIENT,1,0,0,2,3,1,units,invalid/error; boundary,
@@ -63,12 +63,12 @@ F061,Number theory,Integer quotient Quot,MENU>Number,N,N,PLUS,TESTED,5,1,3,1,2,1
 F062,Number theory,Remainder Rem,MENU>Number,N,N,PLUS,TESTED,4,1,2,1,2,1,basic,,not in either Casio guide: an SC991 extra
 F063,Calculus and sums,Summation,MENU>Calculus,Y,Y,CORE,TESTED,21,4,1,27,4,1,capacity+oracle_calculus+product,,
 F064,Calculus and sums,Product operator,MENU>Calculus,N,Y,PLUS,TESTED,35,9,1,49,7,1,capacity+oracle_calculus+product,,
-F065,Calculus and sums,Derivative d/dx,MENU>Calculus,Y,Y,CORE,TESTED,43,9,0,46,5,1,calculus+numerical_derivatives+oracle_calculus,boundary,
-F066,Calculus and sums,Definite integral,MENU>Calculus,Y,Y,CORE,TESTED,41,40,0,55,9,1,calculus+numerical_integrals+oracle_calculus,boundary,
-F067,Calculus and sums,Solve (Newton),MENU>Calculus,Y,Y,CORE,INSUFFICIENT,46,0,0,38,4,1,calculus+numerical_solve+oracle_calculus,invalid/error; boundary,
+F065,Calculus and sums,Derivative d/dx,MENU>Calculus,Y,Y,CORE,TESTED,43,12,0,46,5,1,calculus+numerical_derivatives+oracle_calculus+regression_numerical,boundary,
+F066,Calculus and sums,Definite integral,MENU>Calculus,Y,Y,CORE,TESTED,41,45,0,55,9,1,calculus+numerical_integrals+oracle_calculus+regression_numerical,boundary,
+F067,Calculus and sums,Solve (Newton),MENU>Calculus,Y,Y,CORE,INSUFFICIENT,50,0,0,38,4,1,calculus+numerical_solve+oracle_calculus+regression_numerical,invalid/error; boundary,
 F068,Calculus and sums,CALC (re-evaluate with variable prompts),CALC key,Y,Y,CORE,RESTORE,0,0,0,0,0,0,,,"approved for restoration as a session-only, single-expression tool; not yet built"
 F069,Calculus and sums,TABLE f(x) (one function),TABLE,Y,Y,CORE,RESTORE,0,0,0,0,0,0,,,"approved; ES PLUS: one f(x), 30 rows; EX: f(x) 45 rows or f,g 30 rows; Exam model: one f(X)"
-F070,Equations,Quadratic,MENU>Equations,Y,Y,CORE,TESTED,52,4,0,52,7,1,equations+oracle_equations,boundary,
+F070,Equations,Quadratic,MENU>Equations,Y,Y,CORE,TESTED,54,4,0,52,7,1,equations+oracle_equations+regression_numerical,boundary,
 F071,Equations,Cubic,MENU>Equations,Y,Y,CORE,TESTED,26,2,0,22,1,1,equations+oracle_equations,boundary,
 F072,Equations,Quartic (degree 4),MENU>Equations,N,Y,CORE,PARTIAL,0,0,0,0,0,0,,,"engine written, parked on branch wip/quartic-parked, untested, not on main"
 F073,Equations,"Simultaneous equations, 2 unknowns",MENU>Equations,Y,Y,CORE,TESTED,64,15,0,79,3,1,equations+simul,boundary,
@@ -99,7 +99,7 @@ F097,Matrix and vector,Unit vector,MENU>Vector,Y,Y,CORE,INSUFFICIENT,17,2,0,18,0
 F098,Matrix and vector,Abs of vector,MENU>Vector,Y,Y,CORE,INSUFFICIENT,19,0,0,17,0,1,matrix+oracle_vector,key-path; invalid/error; boundary,
 F099,Statistics,"1-variable statistics (n, sum, mean, sigma, s, min, max, Q1, med, Q3)",MENU>Statistics,,Y,CORE,INSUFFICIENT,1,0,0,1,1,1,,invalid/error; boundary,stats.txt (mpmath) + pilot
 F100,Statistics,Paired statistics and regression: linear,SETUP/MENU,,Y,CORE,TESTED,13,8,11,21,1,1,oracle_stats_errors+stats,,stats.txt + pilot regression
-F101,Statistics,Regression: quadratic,SETUP,,Y,CORE,TESTED,52,4,0,52,7,1,equations+oracle_equations,boundary,stats.txt + pilot
+F101,Statistics,Regression: quadratic,SETUP,,Y,CORE,TESTED,54,4,0,52,7,1,equations+oracle_equations+regression_numerical,boundary,stats.txt + pilot
 F102,Statistics,"Regression: ln, e^, a*b^x, power, inverse",SETUP,,Y,CORE,INSUFFICIENT,1,0,0,1,0,1,,key-path; invalid/error; boundary,stats.txt; pilot covers linear/quadratic only
 F103,Statistics,Estimates y^ and x^,MENU>Statistics,Y,Y,CORE,INSUFFICIENT,19,1,5,20,0,1,oracle_stats_errors+stats,key-path,
 F104,Statistics,"Statistical variables: n, sums, means, deviations (Σx, x̄, σx, sx, ...)",MENU>Statistics>Variables,,Y,CORE,TESTED,59,6,15,65,1,1,oracle_stats_errors+stats,,"stats.txt (mpmath), pilot stat_var keys"
