@@ -51,7 +51,7 @@ static calc_err_t call(nm_t *n, nm_fn f, void *u, dec_t x, dec_t *y)
 #define NTAB 10
 
 /* Ridders extrapolation with a first step of 0.05 * scale. *zero is set when the result is indistinguishable from 0. */
-static calc_err_t ridders(nm_t *np, nm_fn f, void *user, dec_t x, dec_t scale, dec_t *out, dec_t *cond, int *zero)
+static calc_err_t ridders(nm_t *np, nm_fn f, void *user, dec_t x, dec_t scale, dec_t *out, dec_t *errout, int *zero)
 {
     nm_t n = *np;
     dec_t a[NTAB][NTAB], h, hh, con, con2, fac, err, ans, safe, two;
@@ -73,11 +73,6 @@ static calc_err_t ridders(nm_t *np, nm_fn f, void *user, dec_t x, dec_t scale, d
         e = call(&n, f, user, add(&n, x, hh), &fp); if (e) return e;
         e = call(&n, f, user, sub(&n, x, hh), &fm); if (e) return e;
         a[0][0] = dv(&n, sub(&n, fp, fm), mul(&n, two, hh));
-        /* conditioning of the first difference: |fp - fm| / max(|fp|, |fm|); its log10 + 16 is the number of digits kept */
-        {
-            dec_t big = gt(dabs(fp), dabs(fm)) ? dabs(fp) : dabs(fm);
-            *cond = dec_is_zero(&big) ? dc(0) : dv(&n, dabs(sub(&n, fp, fm)), big);
-        }
     }
     err = ds("1E90");
     ans = a[0][0];
@@ -102,36 +97,51 @@ static calc_err_t ridders(nm_t *np, nm_fn f, void *user, dec_t x, dec_t scale, d
     if (status_err(n.st)) return CE_MATH;
     {
         dec_t ref = dabs(a[0][0]);
-        *zero = lt(dabs(ans), err) || lt(dabs(ans), mul(&n, ref, ds("1E-12")));   /* indistinguishable from zero */
+        *zero = dec_is_zero(&ans) || lt(dabs(ans), err) || lt(dabs(ans), mul(&n, ref, ds("1E-12")));   /* indistinguishable from zero */
         if (*zero) dec_zero(&ans);
     }
     *out = ans;
+    *errout = err;
     return CE_OK;
 }
 
 /* Step sizes are relative to the point. At |x| >= 1 the step is 0.05 |x|. Below 1 two passes are made, one with a step
  * of 0.05 (full precision for functions of size ~1 such as e^X near 0) and one with a step of 0.05 |x| (X^2 at 1E-10:
- * the large step loses 8 digits to cancellation; at 1E-40 it cannot even tell the result from zero). The pass whose
- * first difference |f(x+h) - f(x-h)| / |f| is larger keeps more digits and wins; ties keep the first pass. */
+ * the large step loses 8 digits to cancellation; at 1E-40 it cannot even tell the result from zero). The pass with the
+ * smaller relative error estimate (Ridders' own estimate) wins; a result that cannot be told from zero loses to one
+ * that can; ties keep the first pass. */
 calc_err_t nm_derivative(nm_fn f, void *user, const dec_t *x0, dec_t *out)
 {
     nm_t n;
     dec_t x = *x0, ax = dabs(x), r1, e1;
-    int zero1 = 0;
+    int zero1 = 0, zero_c;
     calc_err_t e;
 
     memset(&n, 0, sizeof n);
+    {   /* f must be defined at the point itself: 1/X at 0 is a pole, not a slope */
+        dec_t f0;
+        e = call(&n, f, user, x, &f0);
+        if (e) return e;
+    }
     if (!lt(ax, dc(1))) e = ridders(&n, f, user, x, ax, &r1, &e1, &zero1);
     else e = ridders(&n, f, user, x, dc(1), &r1, &e1, &zero1);
-    if (e) return e;
     if (!dec_is_zero(&ax) && lt(ax, dc(1))) {
         dec_t r2, e2;
         int zero2 = 0;
-        e = ridders(&n, f, user, x, ax, &r2, &e2, &zero2);
-        if (!e) {
-            if (gt(e2, e1)) r1 = r2;
+        calc_err_t e_2 = ridders(&n, f, user, x, ax, &r2, &e2, &zero2);
+        if (e && !e_2) { r1 = r2; e1 = e2; zero1 = zero2; e = CE_OK; }               /* the wide step left f's domain (sqrt(X) at 1E-20) */
+        else if (!e && !e_2) {
+            int take2 = 0;
+            if (zero1 && !zero2) take2 = 1;
+            else if (!zero1 && !zero2) take2 = lt(mul(&n, e2, dabs(r1)), mul(&n, e1, dabs(r2)));
+            if (take2) { r1 = r2; e1 = e2; zero1 = zero2; }
         }
     }
+    if (e) return e;
+    /* Reliability: Ridders' error estimate must be small against the result. A pole or jump within reach of the step
+     * (1/(X-1) at 1.001, Int(X) at 1) gives a large estimate; such results are refused rather than shown. */
+    zero_c = zero1;
+    if (!zero_c && gt(e1, mul(&n, dabs(r1), ds("1E-3")))) return CE_MATH;
     *out = r1;
     return CE_OK;
 }
@@ -426,7 +436,7 @@ static calc_err_t nm_solve_raw(nm_fn f, void *user, const dec_t *guess, dec_t *r
     {
         dec_t best_r = dc(0), best_f = dc(0), best_d = dc(0);
         int have = 0;
-        for (k = 0; k < 220; k++) {
+        for (k = 0; k < 520; k++) {
             for (side = 0; side < 2; side++) {
                 dec_t x, fx;
                 x = side == 0 ? add(&n, x0, h) : sub(&n, x0, h);
@@ -456,7 +466,7 @@ static calc_err_t nm_solve_raw(nm_fn f, void *user, const dec_t *guess, dec_t *r
             if (have) break;      /* both sides of this step are done: nearest candidate wins */
             h = mul(&n, h, ds("1.3"));
             if (n.st) break;
-            if (gt(h, ds("1E15"))) break;
+            if (gt(h, ds("1E50"))) break;
         }
         if (have) { *root = best_r; *resid = best_f; return CE_OK; }
     }
@@ -472,7 +482,7 @@ static calc_err_t nm_solve_raw(nm_fn f, void *user, const dec_t *guess, dec_t *r
             dec_t x = x0, fx = f0;
             int it, conv = 0;
             n.st = DEC_OK;
-            for (it = 0; it < 100; it++) {
+            for (it = 0; it < 400; it++) {
                 dec_t df, step, ref = dabs(x), hh2, f2, f3, xn, fxn;
                 if (lt(ref, mul(&n, scale, ds("1E-30")))) ref = mul(&n, scale, ds("1E-30"));
                 hh2 = mul(&n, ref, ds("1E-7"));
