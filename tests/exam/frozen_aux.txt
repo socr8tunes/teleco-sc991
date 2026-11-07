@@ -1,0 +1,116 @@
+# FROZEN auxiliary tables (token a byte). Entries may be appended; existing entries must not change or move (tests/unit/test_token_ids.c). Display glyphs are shown as ?.
+CONST 0 proton mass
+CONST 1 neutron mass
+CONST 2 electron mass
+CONST 3 muon mass
+CONST 4 Bohr radius
+CONST 5 Planck constant
+CONST 6 nuclear magneton
+CONST 7 Bohr magneton
+CONST 8 reduced Planck constant
+CONST 9 fine-structure constant
+CONST 10 classical electron radius
+CONST 11 Compton wavelength
+CONST 12 proton gyromagnetic ratio
+CONST 13 proton Compton wavelength
+CONST 14 neutron Compton wavelength
+CONST 15 Rydberg constant
+CONST 16 atomic mass constant
+CONST 17 proton magnetic moment
+CONST 18 electron magnetic moment
+CONST 19 neutron magnetic moment
+CONST 20 muon magnetic moment
+CONST 21 Faraday constant
+CONST 22 elementary charge
+CONST 23 Avogadro constant
+CONST 24 Boltzmann constant
+CONST 25 molar volume of ideal gas
+CONST 26 molar gas constant
+CONST 27 speed of light in vacuum
+CONST 28 first radiation constant
+CONST 29 second radiation constant
+CONST 30 Stefan-Boltzmann constant
+CONST 31 electric constant
+CONST 32 magnetic constant
+CONST 33 magnetic flux quantum
+CONST 34 standard gravity
+CONST 35 conductance quantum
+CONST 36 characteristic impedance of vacuum
+CONST 37 Celsius temperature zero
+CONST 38 Newtonian constant of gravitation
+CONST 39 standard atmosphere
+CONV 0 in>cm
+CONV 1 cm>in
+CONV 2 ft>m
+CONV 3 m>ft
+CONV 4 yd>m
+CONV 5 m>yd
+CONV 6 mile>km
+CONV 7 km>mile
+CONV 8 n mile>m
+CONV 9 m>n mile
+CONV 10 acre>m2
+CONV 11 m2>acre
+CONV 12 gal (US)>L
+CONV 13 L>gal (US)
+CONV 14 gal (UK)>L
+CONV 15 L>gal (UK)
+CONV 16 pc>km
+CONV 17 km>pc
+CONV 18 km/h>m/s
+CONV 19 m/s>km/h
+CONV 20 oz>g
+CONV 21 g>oz
+CONV 22 lb>kg
+CONV 23 kg>lb
+CONV 24 atm>Pa
+CONV 25 Pa>atm
+CONV 26 mmHg>Pa
+CONV 27 Pa>mmHg
+CONV 28 hp>kW
+CONV 29 kW>hp
+CONV 30 kgf/cm2>Pa
+CONV 31 Pa>kgf/cm2
+CONV 32 kgf m>J
+CONV 33 J>kgf m
+CONV 34 lbf/in2>kPa
+CONV 35 kPa>lbf/in2
+CONV 36 degF>degC
+CONV 37 degC>degF
+CONV 38 cal>J
+CONV 39 J>cal
+STATVAR 0 n
+STATVAR 1 ?x
+STATVAR 2 ?x?2?
+STATVAR 3 ?
+STATVAR 4 ?x
+STATVAR 5 sx
+STATVAR 6 ?y
+STATVAR 7 ?y?2?
+STATVAR 8 ?
+STATVAR 9 ?y
+STATVAR 10 sy
+STATVAR 11 ?xy
+STATVAR 12 a
+STATVAR 13 b
+STATVAR 14 c
+STATVAR 15 r
+STATVAR 16 minX
+STATVAR 17 maxX
+STATVAR 18 minY
+STATVAR 19 maxY
+STATVAR 20 Q1
+STATVAR 21 Med
+STATVAR 22 Q3
+STATVAR 23 ?x?3?
+STATVAR 24 ?x?4?
+STATVAR 25 ?x?2?y
+VAR 0 A
+VAR 1 B
+VAR 2 C
+VAR 3 D
+VAR 4 E
+VAR 5 F
+VAR 6 X
+VAR 7 Y
+VAR 8 M

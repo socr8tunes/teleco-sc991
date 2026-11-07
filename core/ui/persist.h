@@ -5,7 +5,7 @@
 #include "ui/app.h"
 
 /* Returns 0 on success. */
-int persist_save(const app_t *a);
+int persist_save(app_t *a);
 /*
  * Returns 0 and restores the state if a valid blob (magic, version, size and CRC32
  * all match). On any mismatch the app is left untouched and non-zero is returned.
