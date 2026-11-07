@@ -1,4 +1,7 @@
 #include <string.h>
+#ifdef NM_TRACE
+#include <stdio.h>
+#endif
 #include "calc/nummethods.h"
 #include "calc/format.h"
 
@@ -47,22 +50,19 @@ static calc_err_t call(nm_t *n, nm_fn f, void *u, dec_t x, dec_t *y)
 
 #define NTAB 10
 
-calc_err_t nm_derivative(nm_fn f, void *user, const dec_t *x0, dec_t *out)
+/* Ridders extrapolation with a first step of 0.05 * scale. *zero is set when the result is indistinguishable from 0. */
+static calc_err_t ridders(nm_t *np, nm_fn f, void *user, dec_t x, dec_t scale, dec_t *out, dec_t *cond, int *zero)
 {
-    nm_t n;
-    dec_t a[NTAB][NTAB], x = *x0, h, hh, con, con2, fac, err, ans, safe, two;
-    dec_t ax;
+    nm_t n = *np;
+    dec_t a[NTAB][NTAB], h, hh, con, con2, fac, err, ans, safe, two;
     int i, j;
     calc_err_t e;
 
-    memset(&n, 0, sizeof n);
     con = ds("1.4");
     con2 = ds("1.96");
     safe = dc(2);
     two = dc(2);
-    ax = dabs(x);
-    if (lt(ax, dc(1))) ax = dc(1);
-    h = mul(&n, ax, ds("0.05"));
+    h = mul(&n, scale, ds("0.05"));
     /* make the step exactly representable */
     hh = sub(&n, add(&n, x, h), x);
     if (dec_is_zero(&hh)) hh = h;
@@ -73,6 +73,11 @@ calc_err_t nm_derivative(nm_fn f, void *user, const dec_t *x0, dec_t *out)
         e = call(&n, f, user, add(&n, x, hh), &fp); if (e) return e;
         e = call(&n, f, user, sub(&n, x, hh), &fm); if (e) return e;
         a[0][0] = dv(&n, sub(&n, fp, fm), mul(&n, two, hh));
+        /* conditioning of the first difference: |fp - fm| / max(|fp|, |fm|); its log10 + 16 is the number of digits kept */
+        {
+            dec_t big = gt(dabs(fp), dabs(fm)) ? dabs(fp) : dabs(fm);
+            *cond = dec_is_zero(&big) ? dc(0) : dv(&n, dabs(sub(&n, fp, fm)), big);
+        }
     }
     err = ds("1E90");
     ans = a[0][0];
@@ -97,9 +102,37 @@ calc_err_t nm_derivative(nm_fn f, void *user, const dec_t *x0, dec_t *out)
     if (status_err(n.st)) return CE_MATH;
     {
         dec_t ref = dabs(a[0][0]);
-        if (lt(dabs(ans), err) || lt(dabs(ans), mul(&n, ref, ds("1E-12")))) dec_zero(&ans);   /* indistinguishable from zero */
+        *zero = lt(dabs(ans), err) || lt(dabs(ans), mul(&n, ref, ds("1E-12")));   /* indistinguishable from zero */
+        if (*zero) dec_zero(&ans);
     }
     *out = ans;
+    return CE_OK;
+}
+
+/* Step sizes are relative to the point. At |x| >= 1 the step is 0.05 |x|. Below 1 two passes are made, one with a step
+ * of 0.05 (full precision for functions of size ~1 such as e^X near 0) and one with a step of 0.05 |x| (X^2 at 1E-10:
+ * the large step loses 8 digits to cancellation; at 1E-40 it cannot even tell the result from zero). The pass whose
+ * first difference |f(x+h) - f(x-h)| / |f| is larger keeps more digits and wins; ties keep the first pass. */
+calc_err_t nm_derivative(nm_fn f, void *user, const dec_t *x0, dec_t *out)
+{
+    nm_t n;
+    dec_t x = *x0, ax = dabs(x), r1, e1;
+    int zero1 = 0;
+    calc_err_t e;
+
+    memset(&n, 0, sizeof n);
+    if (!lt(ax, dc(1))) e = ridders(&n, f, user, x, ax, &r1, &e1, &zero1);
+    else e = ridders(&n, f, user, x, dc(1), &r1, &e1, &zero1);
+    if (e) return e;
+    if (!dec_is_zero(&ax) && lt(ax, dc(1))) {
+        dec_t r2, e2;
+        int zero2 = 0;
+        e = ridders(&n, f, user, x, ax, &r2, &e2, &zero2);
+        if (!e) {
+            if (gt(e2, e1)) r1 = r2;
+        }
+    }
+    *out = r1;
     return CE_OK;
 }
 
@@ -234,7 +267,17 @@ calc_err_t nm_integrate(nm_fn f, void *user, const dec_t *a, const dec_t *b, dec
         resabs_total = dc(0);
         for (i = 0; i < cnt; i++) resabs_total = add(&n, resabs_total, dabs(iv[i].r));
     }
+#ifdef NM_TRACE
+    { char b1[40], b2[40], b3[40]; dec_to_str(&total, b1, sizeof b1); dec_to_str(&etotal, b2, sizeof b2); dec_to_str(&tol, b3, sizeof b3);
+      fprintf(stderr, "NMI cnt=%d total=%s etotal=%s tol=%s resabs=", cnt, b1, b2, b3); dec_to_str(&resabs_total, b1, sizeof b1); fprintf(stderr, "%s\n", b1); }
+#endif
     if (n.st) return status_err(n.st);
+    /* Conservative rule: a result is only returned when the error estimate met the tolerance. Hitting the interval
+     * limit without meeting it means the integral diverges (pole, 1/X over a range containing 0, X^-1.1 ...), or the
+     * integrand is too singular, oscillatory or wide-ranging to verify; either way no number is shown (Math ERROR)
+     * rather than a plausible but unreliable one. Measured on a 56-integral corpus (tests/tools/make_numerical_cases.py):
+     * every cap-hit result was divergent or inaccurate beyond 3E-10, apart from a few oscillatory ones that were accurate. */
+    if (!le(etotal, tol)) return CE_MATH;
     *out = total;
     return CE_OK;
 }
@@ -299,6 +342,41 @@ static calc_err_t brent(nm_t *n, nm_fn f, void *u, dec_t a, dec_t b, dec_t fa, d
     return CE_OK;
 }
 
+/* Relative residual verification of a root candidate r (f(r) = fr). The residual must be small compared with the size
+ * of f a short relative distance away: |f(r)| <= 1E-4 * max(|f(r - d)|, |f(r + d)|), d = 1E-3 |r| (1E-3 scale at 0).
+ * Every side where f is defined must be non-zero there, which rejects plateaus: e^X = 0 "converges" where e^X
+ * underflows to 0, a place where f is exactly 0 on every side. Poles and jumps fail the ratio (about 1). A side where
+ * f is undefined is skipped (domain edge). */
+static int root_ok(nm_t *n, nm_fn f, void *u, dec_t r, dec_t fr, dec_t scale)
+{
+    dec_t d = dec_is_zero(&r) ? mul(n, scale, ds("1E-3")) : mul(n, dabs(r), ds("1E-3"));
+    dec_t big = dc(0), fv;
+    int sides = 0, k;
+
+    for (k = 0; k < 2; k++) {
+        dec_t x = k ? add(n, r, d) : sub(n, r, d);
+        if (n->st) { n->st = DEC_OK; continue; }
+        if (call(n, f, u, x, &fv) != CE_OK) continue;
+        if (dec_is_zero(&fv)) return 0;
+        sides++;
+        if (gt(dabs(fv), big)) big = dabs(fv);
+    }
+    if (!sides) return 1;
+    return le(dabs(fr), mul(n, big, ds("1E-4")));
+}
+
+/* Accept r, or r snapped to 0 when |r| is below 1E-30 of the guess scale (an X^2 = 0 style root that f can no longer
+ * resolve); returns 1 and updates *r / *fr on success. */
+static int accept_root(nm_t *n, nm_fn f, void *u, dec_t *r, dec_t *fr, dec_t scale)
+{
+    if (root_ok(n, f, u, *r, *fr, scale)) return 1;
+    if (!dec_is_zero(r) && lt(dabs(*r), mul(n, scale, ds("1E-30")))) {
+        dec_t z = dc(0), fz;
+        if (call(n, f, u, z, &fz) == CE_OK && root_ok(n, f, u, z, fz, scale)) { *r = z; *fr = fz; return 1; }
+    }
+    return 0;
+}
+
 static calc_err_t nm_solve_raw(nm_fn f, void *user, const dec_t *guess, dec_t *root, dec_t *resid);
 
 /* Prefer a short decimal root when it is at least as good a root as the computed one. */
@@ -335,10 +413,12 @@ static calc_err_t nm_solve_raw(nm_fn f, void *user, const dec_t *guess, dec_t *r
     e = call(&n, f, user, x0, &f0);
     f0_ok = (e == CE_OK);
     if (e == CE_TIME) return e;
-    if (f0_ok && dec_is_zero(&f0)) { *root = x0; dec_zero(resid); return CE_OK; }
-
     scale = dabs(x0);
     if (lt(scale, dc(1))) scale = dc(1);
+    if (f0_ok && dec_is_zero(&f0)) {
+        dec_t r0 = x0, fr0 = f0;
+        if (accept_root(&n, f, user, &r0, &fr0, scale)) { *root = r0; *resid = fr0; return CE_OK; }
+    }
     h = mul(&n, scale, ds("0.01"));
 
     for (side = 0; side < 2; side++) { prev[side] = x0; fprev[side] = f0; pvalid[side] = f0_ok; }
@@ -355,8 +435,8 @@ static calc_err_t nm_solve_raw(nm_fn f, void *user, const dec_t *guess, dec_t *r
                 if (e == CE_TIME) return e;
                 if (e) { pvalid[side] = 0; continue; }
                 if (dec_is_zero(&fx)) {
-                    dec_t d = dabs(sub(&n, x, x0));
-                    if (!have || lt(d, best_d)) { best_r = x; best_f = fx; best_d = d; have = 1; }
+                    dec_t d = dabs(sub(&n, x, x0)), rr = x, fr = fx;
+                    if (accept_root(&n, f, user, &rr, &fr, scale) && (!have || lt(d, best_d))) { best_r = rr; best_f = fr; best_d = d; have = 1; }
                 } else if (pvalid[side] && sgn(fx) != sgn(fprev[side])) {
                     dec_t r, fr;
                     e = brent(&n, f, user, prev[side], x, fprev[side], fx, &r, &fr);
@@ -365,7 +445,7 @@ static calc_err_t nm_solve_raw(nm_fn f, void *user, const dec_t *guess, dec_t *r
                         /* reject poles: the residual must be small compared with the bracket values */
                         dec_t m = dabs(fprev[side]);
                         if (lt(m, dabs(fx))) m = dabs(fx);
-                        if (lt(dabs(fr), mul(&n, m, ds("1E-6")))) {
+                        if (lt(dabs(fr), mul(&n, m, ds("1E-6"))) && accept_root(&n, f, user, &r, &fr, scale)) {
                             dec_t d = dabs(sub(&n, r, x0));
                             if (!have || lt(d, best_d)) { best_r = r; best_f = fr; best_d = d; have = 1; }
                         }
@@ -381,30 +461,38 @@ static calc_err_t nm_solve_raw(nm_fn f, void *user, const dec_t *guess, dec_t *r
         if (have) { *root = best_r; *resid = best_f; return CE_OK; }
     }
 
-    /* no sign change: Newton with multiplicity 1..4 (even-order roots) */
+    /* no sign change: Newton with multiplicity 1..4 (even-order roots). Steps are relative to the iterate, a run only
+     * counts as converged when the step is below 1E-12 of the iterate (or f is exactly 0), and the result must pass the
+     * relative residual check. */
     if (f0_ok) {
         int mult;
         dec_t best_x = x0, best_f = f0;
         int have = 0;
         for (mult = 1; mult <= 4; mult++) {
             dec_t x = x0, fx = f0;
-            int it;
+            int it, conv = 0;
             n.st = DEC_OK;
             for (it = 0; it < 100; it++) {
-                dec_t df, step, hh2 = mul(&n, scale, ds("1E-7")), f2, xn, fxn;
+                dec_t df, step, ref = dabs(x), hh2, f2, f3, xn, fxn;
+                if (lt(ref, mul(&n, scale, ds("1E-30")))) ref = mul(&n, scale, ds("1E-30"));
+                hh2 = mul(&n, ref, ds("1E-7"));
                 e = call(&n, f, user, add(&n, x, hh2), &f2);
                 if (e) break;
-                df = dv(&n, sub(&n, f2, fx), hh2);
+                e = call(&n, f, user, sub(&n, x, hh2), &f3);       /* central difference: exact for quadratics */
+                if (e) break;
+                df = dv(&n, sub(&n, f2, f3), mul(&n, dc(2), hh2));
                 if (n.st || dec_is_zero(&df)) break;
                 step = mul(&n, dc(mult), dv(&n, fx, df));
                 xn = sub(&n, x, step);
                 e = call(&n, f, user, xn, &fxn);
                 if (e || n.st) break;
                 x = xn; fx = fxn;
-                if (dec_is_zero(&fx)) break;
+                if (dec_is_zero(&fx)) { conv = 1; break; }
+                if (le(dabs(step), mul(&n, ref, ds("1E-12")))) { conv = 1; break; }
             }
-            if (!n.st && le(dabs(fx), mul(&n, add(&n, dc(1), dabs(f0)), ds("1E-13")))) {
-                if (!have || lt(dabs(fx), dabs(best_f)) || dec_is_zero(&fx)) { best_x = x; best_f = fx; have = 1; }
+            if (conv && !n.st) {
+                dec_t rr = x, fr = fx;
+                if (accept_root(&n, f, user, &rr, &fr, scale) && (!have || lt(dabs(fr), dabs(best_f)) || dec_is_zero(&fr))) { best_x = rr; best_f = fr; have = 1; }
             }
         }
         if (have) { *root = best_x; *resid = best_f; return CE_OK; }
