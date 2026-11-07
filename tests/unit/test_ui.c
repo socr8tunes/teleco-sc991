@@ -4,6 +4,7 @@
  */
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "sim_keys.h"
 
 static app_t A;
@@ -53,6 +54,36 @@ int main(int argc, char **argv)
         }
         sim_result_text(&A, got, sizeof got);
         if (strcmp(exp, "@expr") == 0) continue;
+        if (strncmp(exp, "state:", 6) == 0) {     /* state:name=value;name=value  (UI / settings assertions, no numerical oracle) */
+            char *tok = exp + 6, *next;
+            while (tok && *tok) {
+                char *eq;
+                long want, have = -1;
+                next = strchr(tok, ';');
+                if (next) *next++ = 0;
+                eq = strchr(tok, '=');
+                if (!eq) { printf("%s:%d: bad state item '%s'\n", argv[1], ln, tok); fails++; break; }
+                *eq++ = 0; want = atol(eq);
+                if (!strcmp(tok, "contrast")) have = A.contrast;
+                else if (!strcmp(tok, "screen")) have = A.screen;
+                else if (!strcmp(tok, "fmt")) have = A.ctx.fmt;
+                else if (!strcmp(tok, "digits")) have = A.ctx.fmt_digits;
+                else if (!strcmp(tok, "angle")) have = A.ctx.angle;
+                else if (!strcmp(tok, "exact")) have = A.exact;
+                else if (!strcmp(tok, "improper")) have = A.ctx.frac_improper;
+                else if (!strcmp(tok, "base")) have = A.ctx.base;
+                else if (!strcmp(tok, "cplx")) have = A.ctx.cplx;
+                else if (!strcmp(tok, "err")) have = A.err;
+                else if (!strcmp(tok, "edlen")) have = A.ed.n;
+                else if (!strcmp(tok, "hist")) have = ui_hist_count(&A.hist);
+                else if (!strcmp(tok, "beep")) have = A.beep;
+                else if (!strcmp(tok, "nres")) have = A.ctx.nres;
+                else { printf("%s:%d: unknown state name '%s'\n", argv[1], ln, tok); fails++; break; }
+                if (have != want) { printf("%s:%d: [%s] state %s = %ld, expected %ld\n", argv[1], ln, keys, tok, have, want); fails++; }
+                tok = next;
+            }
+            continue;
+        }
         if (strncmp(exp, "expr:", 5) == 0) {
             sim_expr_text(&A, got, sizeof got);
             if (strcmp(got, exp + 5) != 0) { printf("%s:%d: [%s] expr got '%s' expected '%s'\n", argv[1], ln, keys, got, exp + 5); fails++; }

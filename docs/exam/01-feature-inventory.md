@@ -44,14 +44,14 @@ Status vocabulary: **Implemented and tested**; **Implemented, insufficiently tes
 | F012 | Factorial x! | x! | Implemented and tested |
 | F013 | Percent % | SHIFT ( | Implemented and tested |
 | F014 | EXP entry x10^x | x10^x | Implemented and tested |
-| F015 | Ans / PreAns | Ans | Implemented, insufficiently tested |
-| F016 | Replay / history recall and edit | up/down, left/right | Implemented, insufficiently tested |
-| F017 | Cursor edit: insert, DEL, home/end | keys | Implemented, insufficiently tested |
-| F018 | Natural (textbook) display of fractions, roots, powers | a/b, sqrt, x^n | Implemented, insufficiently tested |
-| F019 | Stacked fraction / mixed fraction entry | a/b, SHIFT a/b | Implemented, insufficiently tested |
-| F020 | S<=>D exact/decimal toggle | S<>D | Implemented, insufficiently tested |
+| F015 | Ans / PreAns | Ans | Implemented and tested |
+| F016 | Replay / history recall and edit | up/down, left/right | Implemented and tested |
+| F017 | Cursor edit: insert, DEL, home/end | keys | Implemented and tested |
+| F018 | Natural (textbook) display of fractions, roots, powers | a/b, sqrt, x^n | Implemented and tested |
+| F019 | Stacked fraction / mixed fraction entry | a/b, SHIFT a/b | Implemented and tested |
+| F020 | S<=>D exact/decimal toggle | S<>D | Implemented and tested |
 | F021 | Exact results: fractions, surds, multiples of pi | result | Implemented and tested |
-| F022 | Engineering notation key (ENG) | ENG | Implemented, insufficiently tested |
+| F022 | Engineering notation key (ENG) | ENG | Implemented and tested |
 | F023 | Engineering symbols in input (k, M, m, n ...) | SETUP | Missing |
 | F024 | Digit separator display | SETUP | Missing |
 | F025 | Multi-statement entry (':') | ALPHA = | Not suitable for the Exam model |
@@ -196,15 +196,15 @@ Status vocabulary: **Implemented and tested**; **Implemented, insufficiently tes
 
 | ID | Capability | How it is reached | Status |
 |---|---|---|---|
-| F117 | Variables A B C D E F X Y M, STO | STO, ALPHA | Implemented, insufficiently tested |
-| F118 | M+ / M- | M+, SHIFT M+ | Implemented, insufficiently tested |
-| F119 | Fix / Sci / Norm 1 / Norm 2 | SETUP | Implemented, insufficiently tested |
-| F120 | Fraction style (a b/c, d/c) | SETUP | Implemented, insufficiently tested |
-| F121 | Reset (SHIFT SETUP) with confirmation | SHIFT SETUP | Implemented, insufficiently tested |
-| F122 | State persistence across OFF/auto-off | - | Implemented, insufficiently tested |
-| F123 | Contrast adjustment | SHIFT up/down | Implemented, insufficiently tested |
-| F124 | Auto power-off, OFF | SHIFT AC | Implemented, insufficiently tested |
-| F125 | Error messages: Math, Argument, Syntax, Stack, Time Out, No Solution | - | Implemented, insufficiently tested |
+| F117 | Variables A B C D E F X Y M, STO | STO, ALPHA | Implemented and tested |
+| F118 | M+ / M- | M+, SHIFT M+ | Implemented and tested |
+| F119 | Fix / Sci / Norm 1 / Norm 2 | SETUP | Implemented and tested |
+| F120 | Fraction style (a b/c, d/c) | SETUP | Implemented and tested |
+| F121 | Reset (SHIFT SETUP) with confirmation | SHIFT SETUP | Implemented and tested |
+| F122 | State persistence across OFF/auto-off | - | Implemented and tested |
+| F123 | Contrast adjustment | SHIFT up/down | Implemented and tested |
+| F124 | Auto power-off, OFF | SHIFT AC | Implemented and tested |
+| F125 | Error messages: Math, Argument, Syntax, Stack, Time Out, No Solution | - | Implemented and tested |
 
 ### Casio capabilities not for the Exam model
 

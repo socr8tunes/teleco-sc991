@@ -41,9 +41,26 @@ for f in sorted(glob.glob(str(ROOT / "tests/cases/*.txt"))):
         l, r = ln.split("=>", 1)
         cases.append((name, l.strip().lower(), r.strip(), bnd or name in BOUNDARY_FILES))
 ui = []
+# Evidence rule for UI / settings / state features (approved P1): no numerical oracle is required; the independent
+# check is a direct assertion of displayed text, editor content or state in tests/ui/*.txt, tagged
+#   # @evidence F119 normal|key-path|boundary|invalid ...
+TAG_EV = {}
+UI_RULE_IDS = {"F015", "F016", "F017", "F018", "F019", "F020", "F022", "F117", "F118", "F119", "F120", "F121", "F122", "F123", "F124", "F125"}
 for f in sorted(glob.glob(str(ROOT / "tests/ui/*.txt"))):
     expr_comment = ""
+    cur_tag = None
     for ln in read(f).splitlines():
+        m_tag = re.match(r"#\s*@evidence\s+(F\d+)\s+(.*)$", ln)
+        if m_tag:
+            cur_tag = (m_tag[1], set(m_tag[2].replace(",", " ").split())); continue
+        if not ln.strip(): cur_tag = None
+        if cur_tag and ln.strip() and not ln.startswith("#") and "=>" in ln:
+            d = TAG_EV.setdefault(cur_tag[0], dict(N=0, E=0, B=0, K=0, A=0))
+            if "normal" in cur_tag[1]: d["N"] += 1
+            if "key-path" in cur_tag[1]: d["K"] += 1; d["N"] += 1
+            if "invalid" in cur_tag[1]: d["E"] += 1
+            if "boundary" in cur_tag[1]: d["B"] += 1
+            d["A"] += 1                                    # a state / displayed-text assertion
         if ln.startswith("#"):
             m = re.search(r"\((.+)\)\s*$", ln); expr_comment = m.group(1) if m else ""   # menu_paths.txt: the expression behind the key path
         elif ln.strip() and "=>" in ln:
@@ -88,6 +105,7 @@ def evidence(f):
 
 # curated evidence that cannot be mined mechanically (each backed by a named committed test)
 EXTRA = {
+ "State persistence across OFF/auto-off": dict(N=1, K=1, E=1, B=1, A=1, note="tests/unit/test_shell.c: save/load, CRC corruption, old firmware version discarded, interrupted commit keeps the previous blob, auto-off"),
  "Entry limits: bracket depth, number literals and tokens per line": dict(N=1, E=1, B=1, K=1, A=1, note="capacity.txt cases and key lines at each limit; bench_stack worst-case expressions"),
  "Replay / history recall and edit": dict(N=1, K=1, note="tests/ui/keys.txt, test_shell history persistence"),
  "Cursor edit: insert, DEL, home/end": dict(N=1, K=1, note="tests/ui/keys.txt edit cases, ui_fuzz"),
@@ -101,7 +119,6 @@ EXTRA = {
  "Fix / Sci / Norm 1 / Norm 2": dict(N=1, K=1, note="basic cases (:decimal etc.) and ui"),
  "Fraction style (a b/c, d/c)": dict(N=1, K=0, note="script settings only"),
  "Reset (SHIFT SETUP) with confirmation": dict(N=1, K=1, note="test_shell, ui"),
- "State persistence across OFF/auto-off": dict(N=1, K=1, B=1, R=1, note="test_shell (CRC, torn write, version discard)"),
  "Contrast adjustment": dict(N=0, K=0, note="no dedicated test found"),
  "Auto power-off, OFF": dict(N=1, K=0, note="test_shell"),
  "Error messages: Math, Argument, Syntax, Stack, Time Out, No Solution": dict(N=1, E=1, K=1, note="spread across cases"),
@@ -127,6 +144,11 @@ def evaluate():
     rows = []
     for i, f in enumerate(F, 1):
         ev = evidence(f); x = EXTRA.get(f["name"], {})
+        fid = f"F{i:03d}"
+        if fid in TAG_EV:
+            for k in "NEBK": ev[k] += TAG_EV[fid][k]
+            ev["A"] += TAG_EV[fid]["A"] if fid in UI_RULE_IDS else 0
+            ev["files"].add("ui/state")
         for k in "NEBAK": ev[k] = max(ev[k], x.get(k, 0)) if k in x else ev[k]
         ev["R"] = x.get("R", 1 if (ev["N"] or ev["K"]) else 0)
         st = f["st"]

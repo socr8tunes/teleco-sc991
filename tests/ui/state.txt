@@ -1,0 +1,149 @@
+# UI / settings / state assertions (P1 evidence rule): behaviour is asserted directly - displayed text, editor content or
+# state: name=value - because a numerical oracle has no meaning for these features. "@evidence ID kind" marks which
+# register row and evidence kind (normal, boundary, invalid, key-path) the following lines provide.
+# state names: contrast screen(0 logo,1 calc,2 menu,6 confirm,7 off) fmt(0 Norm1,1 Norm2,2 Fix,3 Sci,4 Eng) digits angle(0 deg,1 rad,2 grad) exact improper base cplx err edlen hist beep nres
+
+# @evidence F119 normal
+MODE 2 3 2 PI EXE SD => 3.14
+MODE 2 3 3 => state:fmt=2;digits=3;screen=1
+MODE 2 4 3 PI EXE SD => 3.14E0
+# @evidence F119 boundary
+MODE 2 3 0 PI EXE SD => 3
+MODE 2 3 9 PI EXE SD => 3.141592654
+MODE 2 4 9 PI EXE SD => 3.14159265E0
+MODE 2 1 PI EXE SD => 3.141592654
+MODE 2 5 PI * 1 0 0 0 EXE SD => 3.141592654E3
+1 0 0 0 0 0 0 0 0 0 0 0 EXE SD => 1E11
+# @evidence F119 invalid
+MODE 2 3 + => state:screen=2;fmt=2
+MODE 2 3 AC AC AC => state:screen=1
+# @evidence F022 normal key-path
+1 2 3 4 EXE ENG => 1.234E3
+# @evidence F022 boundary
+1 2 3 4 EXE ENG ENG => 1234
+1 2 3 4 EXE ENG ENG ENG => 1.234E3
+# @evidence F022 invalid
+ENG => state:err=0;edlen=0
+
+# @evidence F120 key-path
+MODE 3 => state:improper=1
+MODE 3 AC 7 FRAC 2 RIGHT EXE => 7/2
+# @evidence F120 boundary
+MODE 3 3 AC 7 FRAC 2 RIGHT EXE => 3 1/2
+MODE 3 AC SHIFT FRAC 1 DOWN 1 DOWN 2 RIGHT EXE => 3/2
+# @evidence F120 invalid
+MODE 3 AC 1 FRAC 0 RIGHT EXE => Math ERROR
+
+# @evidence F019 normal
+FRAC 1 DOWN 2 RIGHT EXE => 1/2
+SHIFT FRAC 1 DOWN 2 DOWN 3 RIGHT EXE => 1 2/3
+SHIFT FRAC 1 DOWN 2 DOWN 3 RIGHT => expr:mfrac{1|2|3}
+# @evidence F019 boundary
+SHIFT FRAC 1 DOWN 5 DOWN 3 RIGHT EXE => 2 2/3
+7 FRAC 2 RIGHT EXE => 3 1/2
+# @evidence F019 invalid
+SHIFT FRAC 1 DOWN 2 DOWN 0 RIGHT EXE => Math ERROR
+1 FRAC 0 RIGHT EXE => Math ERROR
+
+# @evidence F020 normal
+1 / 3 EXE SD => 0.3333333333
+1 / 3 EXE SD SD => 1/3
+# @evidence F020 boundary
+2 EXE SD => 2
+SQRT 8 RIGHT EXE SD SD => 2sqrt(2)
+# @evidence F020 invalid
+SD => state:err=0;edlen=0
+1 / 0 EXE SD => Math ERROR
+
+# @evidence F018 normal
+SQRT 8 RIGHT EXE => 2sqrt(2)
+1 FRAC 4 RIGHT EXE => 1/4
+# @evidence F018 boundary
+SQRT 9 RIGHT EXE => 3
+PI EXE => pi
+# @evidence F018 invalid
+SQRT ( 1 - 2 ) RIGHT EXE => Math ERROR
+
+# @evidence F015 normal key-path
+2 + 3 EXE AC ANS * 2 EXE => 10
+2 + 3 EXE 4 EXE AC SHIFT ANS EXE => 5
+# @evidence F015 invalid
+ANS EXE => 0
+2 + 3 EXE 1 / 0 EXE AC ANS EXE => 5
+# @evidence F015 boundary
+2 + 3 EXE 4 EXE 6 EXE AC SHIFT ANS EXE => 4
+
+# @evidence F016 normal key-path
+1 EXE 2 EXE UP => expr:2
+1 EXE 2 EXE UP UP => expr:1
+1 EXE 2 EXE UP UP DOWN => expr:2
+# @evidence F016 boundary
+1 EXE 2 EXE UP UP UP => expr:1
+1 EXE 1 EXE => state:hist=1
+1 EXE 2 EXE 3 EXE => state:hist=3
+# @evidence F016 invalid
+UP => state:screen=1;edlen=0
+1 / 0 EXE UP => expr:1/0
+
+# @evidence F017 normal key-path
+1 + 2 LEFT LEFT 5 => expr:15+2
+1 + 2 LEFT LEFT DEL => expr:+2
+1 2 3 SHIFT LEFT 9 => expr:9123
+1 2 3 SHIFT LEFT SHIFT RIGHT 9 => expr:1239
+# @evidence F017 boundary
+1 2 3 LEFT LEFT LEFT LEFT 9 => expr:9123
+1 2 3 RIGHT RIGHT 9 => expr:1239
+# @evidence F017 invalid
+DEL => state:edlen=0;err=0
+DEL DEL DEL => state:edlen=0
+
+# @evidence F117 normal key-path
+5 STO ALPHA DMS EXE AC ALPHA DMS * 2 EXE => 10
+# @evidence F117 boundary
+ALPHA DMS EXE => 0
+5 STO ALPHA DMS EXE 6 STO ALPHA DMS EXE AC ALPHA DMS EXE => 6
+# @evidence F117 invalid
+1 / 0 EXE => state:err=2
+5 STO ALPHA ( EXE ALPHA ( EXE => 5
+
+# @evidence F118 normal key-path
+3 EXE M+ AC 4 EXE M+ AC ALPHA M+ EXE => 7
+3 EXE SHIFT M+ AC ALPHA M+ EXE => -3
+# @evidence F118 boundary
+ALPHA M+ EXE => 0
+2 EXE M+ M+ ALPHA M+ EXE => 4
+# @evidence F118 invalid
+1 / 0 EXE M+ ALPHA M+ EXE => 0
+
+# @evidence F121 normal key-path
+5 STO ALPHA DMS EXE SHIFT MODE EXE AC ALPHA DMS EXE => 0
+SHIFT MODE => state:screen=6
+# @evidence F121 boundary
+5 STO ALPHA DMS EXE SHIFT MODE AC AC ALPHA DMS EXE => 5
+SHIFT MODE AC => state:screen=1
+# @evidence F121 invalid
+5 STO ALPHA DMS EXE SHIFT MODE 2 AC ALPHA DMS EXE => 5
+
+# @evidence F123 normal key-path
+SHIFT UP SHIFT UP => state:contrast=34
+SHIFT DOWN SHIFT DOWN => state:contrast=30
+# @evidence F123 boundary
+SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP SHIFT UP => state:contrast=63
+# @evidence F123 invalid
+SHIFT UP SHIFT DOWN => state:contrast=32;err=0
+
+# @evidence F124 normal key-path
+wait:600000 => state:screen=7
+SHIFT AC => state:screen=7
+# @evidence F124 boundary
+wait:599999 => state:screen=1
+wait:599000 1 wait:599000 => state:screen=1
+# @evidence F124 invalid
+wait:300000 1 wait:300000 => state:screen=1
+
+# @evidence F125 normal
+1 / 0 EXE => Math ERROR
+1 + EXE => Syntax ERROR
+# @evidence F125 boundary
+( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( ( 1 ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) EXE => Stack ERROR
+1 EXE AC 1 + 0 EXE => 1

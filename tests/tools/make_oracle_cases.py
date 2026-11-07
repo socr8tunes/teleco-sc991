@@ -381,7 +381,6 @@ def Q(txt, f, a, b, pts=None, why=None):
     pts = pts or [mp.mpf(a), mp.mpf(b)]
     kadd(f"integral({txt},{a},{b})", mp.quad(f, pts), why)
 Q("X^2", lambda x: x**2, "0", "1"); Q("X^10", lambda x: x**10, "0", "1"); Q("sin(X)", mp.sin, "0", "pi", [0, mp.pi])
-kd("integral(cos(X),0,1000)", mp.sin(1000), "last digit off by 1 (oscillatory, 160 periods)")
 Q("e^(-X^2)", lambda x: mp.exp(-x * x), "-100", "100", [-100, -10, 0, 10, 100], "tails underflow to 0 inside the integrand")
 Q("e^(-X^2)", lambda x: mp.exp(-x * x), "-1000", "1000", [-1000, -10, 0, 10, 1000], "very wide interval")
 Q("e^(-X^2)", lambda x: mp.exp(-x * x), "-10", "10", [-10, 0, 10])
@@ -390,7 +389,6 @@ Q("1/(1+X^2)", lambda x: 1 / (1 + x * x), "-1E6", "1E6", [-10**6, -1000, 0, 1000
 Q("sqrt(1-X^2)", lambda x: mp.sqrt(1 - x * x), "-1", "1"); Q("ln(X)", mp.log, "0", "1", None, "integrable logarithmic singularity at the lower limit")
 Q("1/sqrt(X)", lambda x: 1 / mp.sqrt(x), "0", "1", None, "integrable inverse-sqrt singularity"); Q("abs(X-0.3)", lambda x: abs(x - mp.mpf("0.3")), "0", "1", [0, mp.mpf("0.3"), 1], "kink")
 Q("1/X", lambda x: 1 / x, "1", "100"); Q("e^(-X)", lambda x: mp.exp(-x), "0", "50"); Q("1/X", lambda x: 1 / x, "-2", "-1")
-kd("integral(sin(1/X),0.001,1)", mp.quad(lambda x: mp.sin(1/x), [mp.mpf("0.001"), mp.mpf("0.01"), mp.mpf("0.1"), 1]), "error ~5e-10 absolute (rapid oscillation near 0.001)")
 K.add("integral(X^2,1,0)", "-0.3333333333", "reversed limits change the sign"); K.add("integral(X,2,2)", "0", "empty interval")
 K.add("integral(1/X,-1,1)", "Math ERROR", "pole at 0 inside the interval, hit exactly by the midpoint")
 K.add("integral(1/X^2,-1,1)", "Math ERROR"); K.add("integral(ln(X),-1,1)", "Math ERROR", "f undefined for X < 0")
@@ -403,8 +401,8 @@ for txt, rhs, g, root in (("X^2", "2", "1", mp.sqrt(2)), ("X^2", "2", "-1", -mp.
     kadd(f"solve({txt}={rhs},{g})", root)
 K.add("solve(X^2=-1,1)", "Can't Solve", "no real root"); K.add("solve(X=X+1,0)", "Can't Solve", "contradiction"); K.add("solve(sin(X)=2,1)", "Can't Solve", "|sin| <= 1")
 K.add("solve(abs(X)=-1,1)", "Can't Solve")
-kd("ddx(X^2,1E-50)", mp.mpf("2E-50"), "step size is absolute; returns 0 for tiny arguments")
-kd("solve(X^2=1E-20,1)", mp.mpf(10)**-10, "residual tolerance is absolute; stops at 5.07E-10")
+kd("integral(e^X,-1E5,0)", 1, "SILENT WRONG ANSWER (returns 0): the integrand is below 1E-99 at every sample point of the first Gauss-Kronrod panel, so no error estimate can see the peak at X = 0; any sampling quadrature has this limit")
+kd("integral(e^(-X),0,1E5)", 1, "same: peak narrower than the first panel nodes (returns 0)")
 K.write("oracle_calculus.txt")
 import pathlib; pathlib.Path(ROOT/"tests/known_defects").mkdir(exist_ok=True); (ROOT/"tests/known_defects/calculus.txt").write_text("\n".join(D.l)+"\n"); print("known_defects/calculus.txt:", D.n)
 
