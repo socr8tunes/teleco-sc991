@@ -4,7 +4,7 @@ Be honest with testers about these.
 
 ## Not yet verified
 - **No real-hardware verification.** All results are from the host build and the PC/WebAssembly simulators. Desktop speed is not evidence of MCU speed (heavy operations such as integrals and sums may be hundreds of times slower on the target; unmeasured).
-- **Memory:** about 33 KB static RAM plus 11 KB stack (about 43 KB total), ~123 KB flash (cross-compile size only). Fits an STM32L4 class part (64 KB+); does not fit 12 KB class parts and is marginal at 40 KB. Confirm against the chosen part's datasheet.
+- **Memory:** about 33 KB static RAM plus 11 KB stack (about 43 KB total), ~126 KB flash (cross-compile size only). Fits an STM32L4 class part (64 KB+); does not fit 12 KB class parts and is marginal at 40 KB. Confirm against the chosen part's datasheet.
 - **No exam-body approval or compliance is claimed.** No written confirmation from WAEC or any other examining body exists; do not tell students, schools or customers the calculator is approved or compliant.
 - CI workflow is untested on GitHub (all steps pass locally via `tools/ci_local.sh`).
 - Constants are CODATA 2022 values taken from scipy.constants; the NIST site could not be fetched here to confirm.

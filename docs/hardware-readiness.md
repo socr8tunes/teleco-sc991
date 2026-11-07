@@ -22,7 +22,7 @@ done on a prototype before a pilot can rely on the hardware.
 
 | Item | Cortex-M0+ | Cortex-M4 |
 |---|---|---|
-| Code + constants (flash) | 122.3 KB (125,226 B) | not re-measured since the capacity work (was 117 KB) |
+| Code + constants (flash) | 125.3 KB (128,326 B) | 125.6 KB (128,568 B) M4 build |
 | Static RAM in core (`.bss`/`.data`: VM and solver state) | 14.8 KB (15,152 B) | not re-measured |
 
 Not included in those numbers: compiler runtime helpers (64-bit division etc., a few KB), the startup code, a flash
@@ -43,7 +43,7 @@ Consequences:
   (STM32U073/U083-class) is marginal; a 64 KB part (STM32L4 family, for example L432) fits. Confirm RAM sizes against
   the datasheets before choosing. Reduction levers, largest first: fewer temporary matrices (4 -> 2, about -3.6 KB),
   smaller matrix element type, a narrower `val_t`, sharing the VM/solver scratch.
-* **Flash**: 123 KB plus runtime fits a 256 KB part with room for a second retained-state page.
+* **Flash**: 126 KB plus runtime fits a 256 KB part with room for a second retained-state page.
 * **Speed**: host timings (`tests/bench/bench_calc.c`, desktop CPU): typical expression 1-15 us; `ddx` 56 us;
   `solve` 54-84 us; 3x3 inverse 43 us; `integral(e^(-X^2),0,3)` 1.4 ms; a 1000-term `sum` 2.9 ms. A 48 MHz Cortex-M0+
   without 64-bit hardware multiply/divide is plausibly 200-1000x slower per operation (rough guess, **to be measured**):

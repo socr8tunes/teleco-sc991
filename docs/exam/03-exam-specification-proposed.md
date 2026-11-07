@@ -1,4 +1,4 @@
-# 03 - Proposed final SC991 Exam feature specification (revised 2026-11-06, DRAFT for approval)
+# 03 - Proposed final SC991 Exam feature specification (revised 2026-11-07, DRAFT for approval)
 
 Product: SC991 Exam - non-programmable, non-graphing, silent, cordless, self-contained scientific calculator for Ghanaian SHS and university students and general users. Benchmark: Casio fx-991ES PLUS / fx-991EX capabilities (not their branding or interface). Subject to WAEC review; **no approval or compliance is claimed, and none may be claimed without written confirmation from WAEC**.
 
@@ -71,15 +71,35 @@ Targets set by the product owner on 2026-11-05: **at least 24 usable nested brac
 | Complex roots order | a conjugate pair is always listed with the positive imaginary part first |
 | Run-time | not measured on target; each CORE operation must return within 2 s on the chosen MCU; sums, products, integrals, Solve bounded by Time Out |
 
-### 3.3 Known numerical defects (documented, not fixed; decisions D4 and D5 in 07)
+### 3.3 Numerical methods: behaviour rules (implemented in P1, decisions D4 and D5)
 
-`tests/known_defects/calculus.txt` (not run by ctest): `integral(cos(X),0,1000)` and `integral(sin(1/X),0.001,1)` lose the last 1-2 digits; `ddx(X^2,1E-50)` returns 0 (absolute step); `solve(X^2=1E-20,1)` stops at 5.07E-10 (absolute tolerance). Singular or non-convergent integrals (for example `integral(1/X^2,1,1E50)`, `X^-0.9` near 0) have no clean convergence test: the error-estimate ratio does not separate good from bad results. Also `solve(e^X=0)` can return a bogus root.
+**Integral (`integral(f,a,b)`).** Adaptive Gauss-Kronrod, at most 80 intervals. The result is shown only when the error estimate meets the tolerance (1E-12 relative, with a floor tied to the integrand size). If the 80-interval limit is reached without meeting it, the answer is **Math ERROR**; no number is shown. Consequences: divergent integrals (1/X over a range containing 0, X^-1.1 from 0, a pole inside the range) give Math ERROR; so do some convergent but hard integrals: strongly oscillatory (cos(X) on 0..1000), very wide (1/X on 1..1E50) and strongly singular at an endpoint (X^-0.9 on 0..1). Measured on a 65-integral corpus against mpmath: every returned value agrees to better than 1E-8; every divergent case is an error. *Residual silent case:* an integrand that is almost zero at every sample point of the first interval and has a narrow peak elsewhere (e^X on -1E5..0) can return 0 (known defect, decision D15).
+
+**Derivative (`ddx(f,x)`).** Ridders extrapolation. For |x| >= 1 the first step is 0.05 |x|; for 0 < |x| < 1 two passes (steps 0.05 and 0.05 |x|) are made and the one with the smaller relative error estimate is used, so tiny arguments keep full accuracy (X^2 at 1E-40 gives 2E-40). f must be defined at x itself (1/X at 0 is Math ERROR) and the error estimate must be within 1E-3 of the result, otherwise Math ERROR (a pole or jump within reach of the step: 1/(X-1) at 1.001, Int(X) at 1).
+
+**Solve (`solve(f=g,guess)`).** Sign-change search outward from the guess (step 0.01 relative, growing 1.3x per step, up to about 1E50), Brent refinement, then Newton with multiplicity 1-4 for even-order roots; the steps are relative to the iterate and to the guess scale. **Every candidate root is verified:** |f(r)| <= 1E-4 times the larger of |f| at r(1 +- 1E-3) (at 0: 1E-3 of the guess scale), and f must be non-zero on every side where it is defined. A flat or underflowed function (e^X = 0, X = X+1E-20) therefore gives **Can't Solve**, as do poles and jumps and equations whose solution is a whole interval (Int(X)=2). A root below 1E-30 of the guess scale that f can no longer resolve (X^2 = 0) is reported as 0.
+
+**Quadratic.** When b^2 much larger than 4ac the small root is taken from x1 x2 = c/a (no cancellation). A conjugate pair always lists the root with the positive imaginary part first.
+
+**Sums and products.** Up to 100001 terms (Time Out beyond); bounds must be integers.
+
+### 3.4 Remaining numerical limits
+
+`tests/known_defects/calculus.txt` (not run by ctest): the narrow-peak integrals above. The Solve search may take up to about 6,000 function evaluations when there is no root: about 70 ms on the host; the target time is unmeasured (decision D17).
+
+### 3.5 Persistence and frozen identifiers (decision D8)
+
+Saved replay history stores tokens as frozen wire IDs (`core/parser/token_ids.h`; ID list `tests/exam/frozen_token_ids.txt`; groups leave reserved gaps; IDs are never reused). Constants, conversions, statistics-variable and variable tables are append-only (`tests/exam/frozen_aux.txt`). `tests/unit/test_token_ids.c` enforces both and checks that a history holding every token survives save and load. Layout changes to the state structure still bump the blob version and discard saved state; they are batched into as few firmware releases as possible. Current blob version: 7.
+
+### 3.6 Evidence rule for UI and settings features (decision D7)
+
+Rows for entry, display, settings and state features (Ans, replay, cursor editing, natural display, stacked fractions, S<=>D, ENG, variables, M+/M-, display and fraction settings, reset, persistence, contrast, auto-off, error messages) need normal, key-path, boundary and invalid evidence, but no numerical oracle: the independent check is a direct assertion of displayed text, editor content or state (`tests/ui/state.txt`, `state:` form, tagged `@evidence`). All other rows keep the oracle requirement.
 
 ## 4. Resource budget (re-measured 2026-11-06 with the capacity limits in place; `tools/check_budget.sh`, run in CI)
 
 | Resource | Now | Ceiling | Headroom |
 |---|---|---|---|
-| Flash (core only, -Os Cortex-M0+) | 125,226 B | 192 KB (196,608) | 36% |
+| Flash (core only, -Os Cortex-M0+) | 128,326 B | 192 KB (196,608) | 35% |
 | RAM: `app_t` (state, history, editor) | 16,368 B | 20 KB | - |
 | RAM: `prog_t` compile buffer (inside the static buffers) | 4,240 B | - | - |
 | RAM: core static buffers | 15,152 B | - | - |
