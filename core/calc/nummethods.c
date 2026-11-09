@@ -168,7 +168,9 @@ static const char *const WG[4] = {
     "0.381830050505118944950369775488975", "0.417959183673469387755102040816327"
 };
 
-#define MAX_IV 80
+#define MAX_IV 96
+#define SEED_IV 8
+#define SEED_IV2 11
 
 typedef struct iv {
     dec_t a, b, r, e;
@@ -231,22 +233,40 @@ static calc_err_t gk15(nm_t *n, nm_fn f, void *u, dec_t a, dec_t b, dec_t *res, 
     return CE_OK;
 }
 
-calc_err_t nm_integrate(nm_fn f, void *user, const dec_t *a, const dec_t *b, dec_t *out)
+/* The interval table is one shared pool used as a stack: an integral nested inside an integrand (evaluated while the
+ * outer integral is mid-way through its panels) works in the part of the pool above the outer integral's live panels,
+ * so it can never overwrite them. A nested integral that finds too little room left returns Math ERROR. */
+static iv_t g_pool[MAX_IV];
+static int g_pool_top;
+
+static calc_err_t integrate_core(nm_fn f, void *user, const dec_t *a, const dec_t *b, dec_t *out, dec_t *resabs_out, iv_t *iv, int base, int cap, int seed)
 {
-    static iv_t iv[MAX_IV];
     nm_t n;
     int cnt = 1, i, iter;
     dec_t total, etotal, resabs_total, tol;
+    const dec_t lo = *a, hi = *b;
     calc_err_t e;
-    dec_t ra;
 
     memset(&n, 0, sizeof n);
-    if (dec_cmp(a, b) == 0) { dec_zero(out); return CE_OK; }
-    iv[0].a = *a; iv[0].b = *b;
-    e = gk15(&n, f, user, *a, *b, &iv[0].r, &iv[0].e, &ra);
-    if (e) return e;
-    resabs_total = ra;
-    for (iter = 0; iter < MAX_IV; iter++) {
+    if (dec_cmp(&lo, &hi) == 0) { dec_zero(out); dec_zero(resabs_out); return CE_OK; }
+    /* D15: the range is first split into seed equal panels (seed*15 samples) so a feature narrower than the
+     * whole range is much less likely to fall between the samples of a single panel. */
+    {
+        /* a and b may point into evaluator storage that the integrand overwrites, so they are copied first (lo, hi) */
+        dec_t step = dv(&n, sub(&n, hi, lo), dc(seed));
+        resabs_total = dc(0);
+        for (i = 0; i < seed; i++) {
+            dec_t ra;
+            g_pool_top = base + i + 1;
+            iv[i].a = (i == 0) ? lo : add(&n, lo, mul(&n, step, dc(i)));
+            iv[i].b = (i == seed - 1) ? hi : add(&n, lo, mul(&n, step, dc(i + 1)));
+            e = gk15(&n, f, user, iv[i].a, iv[i].b, &iv[i].r, &iv[i].e, &ra);
+            if (e) return e;
+            resabs_total = add(&n, resabs_total, ra);
+        }
+        cnt = seed;
+    }
+    for (iter = 0; iter < cap; iter++) {
         int worst = 0;
         total = dc(0); etotal = dc(0);
         for (i = 0; i < cnt; i++) {
@@ -260,11 +280,12 @@ calc_err_t nm_integrate(nm_fn f, void *user, const dec_t *a, const dec_t *b, dec
             if (gt(t2, tol)) tol = t2;
         }
         if (n.st) return status_err(n.st);
-        if (le(etotal, tol) || cnt >= MAX_IV) break;
+        if (le(etotal, tol) || cnt >= cap) break;
         /* bisect the interval with the largest error */
         {
             dec_t m = mul(&n, add(&n, iv[worst].a, iv[worst].b), ds("0.5"));
             iv_t left, right;
+            g_pool_top = base + cnt;
             dec_t ra1, ra2;
             left.a = iv[worst].a; left.b = m;
             right.a = m; right.b = iv[worst].b;
@@ -288,7 +309,43 @@ calc_err_t nm_integrate(nm_fn f, void *user, const dec_t *a, const dec_t *b, dec
      * rather than a plausible but unreliable one. Measured on a 56-integral corpus (tests/tools/make_numerical_cases.py):
      * every cap-hit result was divergent or inaccurate beyond 3E-10, apart from a few oscillatory ones that were accurate. */
     if (!le(etotal, tol)) return CE_MATH;
+    /* D15: every sample of every panel was exactly zero: an integrand that is identically zero cannot be told apart
+     * from a peak narrower than the sampling, so no result is shown. */
+    if (dec_is_zero(&resabs_total)) return CE_MATH;
     *out = total;
+    *resabs_out = resabs_total;
+    return CE_OK;
+}
+
+calc_err_t nm_integrate(nm_fn f, void *user, const dec_t *a, const dec_t *b, dec_t *out)
+{
+    int base = g_pool_top;
+    int cap = MAX_IV - base;
+    calc_err_t e;
+    dec_t r1, r2, ra1, ra2;
+    const dec_t lo = *a, hi = *b; /* the caller's bounds may live in evaluator storage that the integrand overwrites */
+
+    if (cap < SEED_IV2 + 2) return CE_MATH;
+    /* D15: two independent runs on different panel partitions (8 and 11 panels). A narrow feature that is only partly
+     * resolved by one partition makes the two disagree; any disagreement beyond rounding is Math ERROR. */
+    e = integrate_core(f, user, &lo, &hi, &r1, &ra1, g_pool + base, base, cap, SEED_IV);
+    if (!e) e = integrate_core(f, user, &lo, &hi, &r2, &ra2, g_pool + base, base, cap, SEED_IV2);
+    g_pool_top = base;
+    if (e) return e;
+    {
+        nm_t n;
+        dec_t d, lim, m;
+        memset(&n, 0, sizeof n);
+        d = dabs(sub(&n, r1, r2));
+        m = gt(dabs(r1), dabs(r2)) ? dabs(r1) : dabs(r2);
+        lim = mul(&n, m, ds("1E-9"));
+        {
+            dec_t l2 = mul(&n, gt(ra1, ra2) ? ra1 : ra2, ds("1E-12"));
+            if (gt(l2, lim)) lim = l2;
+        }
+        if (n.st || gt(d, lim)) return CE_MATH;
+    }
+    *out = r1;
     return CE_OK;
 }
 

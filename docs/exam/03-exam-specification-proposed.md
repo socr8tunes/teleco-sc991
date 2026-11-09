@@ -73,7 +73,7 @@ Targets set by the product owner on 2026-11-05: **at least 24 usable nested brac
 
 ### 3.3 Numerical methods: behaviour rules (implemented in P1, decisions D4 and D5)
 
-**Integral (`integral(f,a,b)`).** Adaptive Gauss-Kronrod, at most 80 intervals. The result is shown only when the error estimate meets the tolerance (1E-12 relative, with a floor tied to the integrand size). If the 80-interval limit is reached without meeting it, the answer is **Math ERROR**; no number is shown. Consequences: divergent integrals (1/X over a range containing 0, X^-1.1 from 0, a pole inside the range) give Math ERROR; so do some convergent but hard integrals: strongly oscillatory (cos(X) on 0..1000), very wide (1/X on 1..1E50) and strongly singular at an endpoint (X^-0.9 on 0..1). Measured on a 65-integral corpus against mpmath: every returned value agrees to better than 1E-8; every divergent case is an error. *Residual silent case:* an integrand that is almost zero at every sample point of the first interval and has a narrow peak elsewhere (e^X on -1E5..0) can return 0 (known defect, decision D15).
+**Integral (`integral(f,a,b)`).** Adaptive Gauss-Kronrod, the range is first split into 8 panels, at most 96 intervals in total (shared by nested integrals). The result is shown only when the error estimate meets the tolerance (1E-12 relative, with a floor tied to the integrand size). If the 80-interval limit is reached without meeting it, the answer is **Math ERROR**; no number is shown. Consequences: divergent integrals (1/X over a range containing 0, X^-1.1 from 0, a pole inside the range) give Math ERROR; so do some convergent but hard integrals: strongly oscillatory (cos(X) on 0..1000), very wide (1/X on 1..1E50) and strongly singular at an endpoint (X^-0.9 on 0..1). Measured on a 65-integral corpus against mpmath: every returned value agrees to better than 1E-8; every divergent case is an error. *Narrow peaks (D15):* if every sample is exactly zero the answer is Math ERROR (this also refuses an identically-zero integrand). The integral is run twice (8 and 11 panels) and Math ERROR is shown if the runs disagree by more than 1E-9 relative. A 731-case Gaussian-peak sweep gave no wrong number (494 correct, 237 Math ERROR). A peak hidden between samples while the samples are non-zero cannot be excluded by any sampling method (documented).
 
 **Derivative (`ddx(f,x)`).** Ridders extrapolation. For |x| >= 1 the first step is 0.05 |x|; for 0 < |x| < 1 two passes (steps 0.05 and 0.05 |x|) are made and the one with the smaller relative error estimate is used, so tiny arguments keep full accuracy (X^2 at 1E-40 gives 2E-40). f must be defined at x itself (1/X at 0 is Math ERROR) and the error estimate must be within 1E-3 of the result, otherwise Math ERROR (a pole or jump within reach of the step: 1/(X-1) at 1.001, Int(X) at 1).
 
@@ -85,7 +85,7 @@ Targets set by the product owner on 2026-11-05: **at least 24 usable nested brac
 
 ### 3.4 Remaining numerical limits
 
-`tests/known_defects/calculus.txt` (not run by ctest): the narrow-peak integrals above. The Solve search may take up to about 6,000 function evaluations when there is no root: about 70 ms on the host; the target time is unmeasured (decision D17).
+`tests/known_defects/calculus.txt` (not run by ctest): now empty; the former narrow-peak defects are regression cases. The Solve search may take up to about 6,000 function evaluations when there is no root: about 70 ms on the host; the target time is unmeasured (decision D17).
 
 ### 3.5 Persistence and frozen identifiers (decision D8)
 
@@ -99,15 +99,15 @@ Rows for entry, display, settings and state features (Ans, replay, cursor editin
 
 | Resource | Now | Ceiling | Headroom |
 |---|---|---|---|
-| Flash (core only, -Os Cortex-M0+) | 128,326 B | 192 KB (196,608) | 35% |
+| Flash (core only, -Os Cortex-M0+) | 129,659 B | 192 KB (196,608) | 34% |
 | RAM: `app_t` (state, history, editor) | 16,368 B | 20 KB | - |
 | RAM: `prog_t` compile buffer (inside the static buffers) | 4,240 B | - | - |
 | RAM: core static buffers | 15,152 B | - | - |
-| RAM: worst-case stack (host-painted, 24-level nesting, nested integral) | 10,692 B | 12,288 B | **13%** |
+| RAM: worst-case stack (host-painted, 24-level nesting, nested integral) | 11,512 B | 12,288 B | **6%** |
 | LCD buffer (192x64, 1 bit) | 1,536 B | - | - |
-| **Total RAM** | **43,748 B (42.7 KB)** | 48 KB (49,152) | 11% (5,404 B) |
+| **Total RAM** | **45,596 B (44.5 KB)** | 48 KB (49,152) | 7% (3,556 B) |
 
-Cost of the capacity targets: about +2.4 KB RAM compared with the 11-bracket / 40-literal build (40.4 KB -> 42.7 KB): literal pool 80 x compact `lit_t`, 256-token editor, 384-instruction code buffer. The parser's former 1.5 KB frame was removed by in-place rotation, which kept the worst stack from growing. Conclusions: the targets fit the 48 KB ceiling, so an MCU with at least 64 KB RAM and 256 KB flash remains the minimum. **Stack headroom (13%) is below the 25% goal in hardware plan HW-3**; all stack figures are host-painted estimates and must be repeated on the device (risk R4/R5).
+Cost of the capacity targets: about +2.4 KB RAM compared with the 11-bracket / 40-literal build (40.4 KB -> 42.7 KB): literal pool 80 x compact `lit_t`, 256-token editor, 384-instruction code buffer. The parser's former 1.5 KB frame was removed by in-place rotation, which kept the worst stack from growing. Conclusions: the targets fit the 48 KB ceiling, so an MCU with at least 64 KB RAM and 256 KB flash remains the minimum. **Stack headroom (6%, after D15) is below the 25% goal in hardware plan HW-3**; all stack figures are host-painted estimates and must be repeated on the device (risk R4/R5).
 
 ## 5. Release gates (all required)
 

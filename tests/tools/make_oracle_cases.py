@@ -401,8 +401,9 @@ for txt, rhs, g, root in (("X^2", "2", "1", mp.sqrt(2)), ("X^2", "2", "-1", -mp.
     kadd(f"solve({txt}={rhs},{g})", root)
 K.add("solve(X^2=-1,1)", "Can't Solve", "no real root"); K.add("solve(X=X+1,0)", "Can't Solve", "contradiction"); K.add("solve(sin(X)=2,1)", "Can't Solve", "|sin| <= 1")
 K.add("solve(abs(X)=-1,1)", "Can't Solve")
-kd("integral(e^X,-1E5,0)", 1, "SILENT WRONG ANSWER (returns 0): the integrand is below 1E-99 at every sample point of the first Gauss-Kronrod panel, so no error estimate can see the peak at X = 0; any sampling quadrature has this limit")
-kd("integral(e^(-X),0,1E5)", 1, "same: peak narrower than the first panel nodes (returns 0)")
+kadd("integral(e^X,-1E5,0)", 1)  # D15: formerly a known defect (returned 0); resolved by the 8-panel seed
+kadd("integral(e^(-X),0,1E5)", 1)
+K.add("integral(e^(-(X-0.3)^2*1E16),0,1)", "Math ERROR", "D15: peak between all samples, no number shown")
 K.write("oracle_calculus.txt")
 import pathlib; pathlib.Path(ROOT/"tests/known_defects").mkdir(exist_ok=True); (ROOT/"tests/known_defects/calculus.txt").write_text("\n".join(D.l)+"\n"); print("known_defects/calculus.txt:", D.n)
 

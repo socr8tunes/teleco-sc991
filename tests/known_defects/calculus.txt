@@ -2,7 +2,3 @@
 :reset
 :decimal
 :rad
-# SILENT WRONG ANSWER (returns 0): the integrand is below 1E-99 at every sample point of the first Gauss-Kronrod panel, so no error estimate can see the peak at X = 0; any sampling quadrature has this limit
-integral(e^X,-1E5,0) => 1
-# same: peak narrower than the first panel nodes (returns 0)
-integral(e^(-X),0,1E5) => 1

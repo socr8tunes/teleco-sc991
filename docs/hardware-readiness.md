@@ -22,7 +22,7 @@ done on a prototype before a pilot can rely on the hardware.
 
 | Item | Cortex-M0+ | Cortex-M4 |
 |---|---|---|
-| Code + constants (flash) | 125.3 KB (128,326 B) | 125.6 KB (128,568 B) M4 build |
+| Code + constants (flash) | 126.6 KB (129,659 B) | 126.8 KB (129,883 B) M4 build |
 | Static RAM in core (`.bss`/`.data`: VM and solver state) | 14.8 KB (15,152 B) | not re-measured |
 
 Not included in those numbers: compiler runtime helpers (64-bit division etc., a few KB), the startup code, a flash
@@ -88,7 +88,7 @@ power-off. The blink wake-up every 250 ms costs current; consider a blink-free c
 Stack painting on a 64-bit host over the heaviest expressions (nested integral, cubic, solve, matrix inverse, deep sums):
 **worst high-water 10.7 KB** (nested integral 10.7 KB; 24-level nested brackets 10.7 KB). 64-bit frames are usually not smaller than Cortex-M
 frames, so plan about 11-12 KB of stack plus UI render depth; the test fails above 12 KB. This is a host estimate only;
-HW-3 must repeat it on the device. With ~33 KB static RAM this means **about 42.7 KB RAM total** (`tools/check_budget.sh`: 43,748 B against a 48 KB ceiling), so a 64 KB part
+HW-3 must repeat it on the device. With ~33 KB static RAM this means **about 42.7 KB RAM total** (`tools/check_budget.sh`: 45,596 B against a 48 KB ceiling), so a 64 KB part
 (STM32L4 class) fits and a 40 KB part does not. These are cross-compile and host-painting figures, not hardware measurements.
 
 ## Bring-up plan

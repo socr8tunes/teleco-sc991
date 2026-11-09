@@ -45,3 +45,6 @@ integral(1/X^2,1,1E50) => Math ERROR
 integral(1/(X-0.3),0,1) => Math ERROR
 # R-I2 integral: uninitialised output on underflow (valgrind); must stay a clean value
 integral(e^(-X^2),-100,100) ~> 1.772453851
+# D15: nested integrals share one interval pool; the inner call must never overwrite the outer panels (needs the outer to bisect)
+integral(integral(X+1,0,1),0,1) => 1.5
+integral(integral(e^(-X*5)+0*X,0,2),0,1) ~> 0.19999092014

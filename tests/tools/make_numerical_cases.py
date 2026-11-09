@@ -64,6 +64,18 @@ I.l.append("# UNVERIFIED: convergent but beyond the scheme (documented limitatio
 for t, a, b, why in (("X^-0.9", "0", "1", "strong endpoint singularity (true value 10)"), ("1/X^2", "1", "1E50", "range spans 50 decades"), ("1/sqrt(1-X^2)", "-1", "1", "two inverse-sqrt endpoints, slow convergence"),
                      ("1/X", "1", "1E50", "range spans 50 decades"), ("cos(X)", "0", "1000", "160 oscillations"), ("sin(100X)", "0", "10", "318 oscillations"), ("sin(1/X)", "0.001", "1", "oscillation accumulating at 0.001")):
     I.txt(f"integral({t},{a},{b})", "Math ERROR", why)
+I.l.append("# D15 narrow peaks: the range is seeded with 8 panels; a peak that is resolved is integrated correctly, and one that falls between all samples (every sample exactly 0) is Math ERROR, never 0")
+for k, c in ((100, "0.3"), (1000, "0.013"), (1E5, "0.37"), (1E6, "0.5"), (1E8, "0.3")):
+    kk, cc = X(k), X(c)
+    s = mp.sqrt(kk)
+    I.eq(f"integral(e^(-{lit(num(kk))}(X-{c})^2),0,1)", mp.sqrt(mp.pi) / (2 * s) * (mp.erf(s * (1 - cc)) + mp.erf(s * cc)))
+for e in ("integral(e^(-1E8(X-0.749795)^2),0,1)", "integral(e^(-1E14(X-0.5)^2),0,1)"):
+    I.txt(e, "Math ERROR", "partly resolved narrow peak: the 8-panel and 11-panel runs disagree (a single run returned 1.7691E-4 instead of 1.7725E-4); no number is shown")
+for e in ("integral(e^X,-1E5,0)", "integral(e^(-X),0,1E5)"):
+    I.eq(e, 1, "endpoint peak, formerly returned 0 (known defect), now resolved by the seed panels")
+for e, why in (("integral(e^(-(X-0.3)^2*1E16),0,1)", "peak width 1E-8 between all samples"), ("integral(e^(-X*1E6),0,1000)", "peak at the endpoint 1E-6 wide in a range of 1000"),
+               ("integral(e^(-X),0,1E10)", "peak at the endpoint, range 1E10"), ("integral(0,0,1)", "identically zero integrand cannot be told from a missed peak (documented)")):
+    I.txt(e, "Math ERROR", why)
 I.save()
 
 # ------------------------------------------------------------------ derivatives

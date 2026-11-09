@@ -20,8 +20,8 @@ mathlay            2342        0        0
 matrix             2756        0        0
 menu               5357        0        0
 num                3014        0        0
-nummethods        15067        0     5120
-persist             644        0        0
+nummethods        19174        0     6148
+persist             970        0        0
 screens            3706        0        0
 shell               540        0        0
 stat               4488        0        0
@@ -33,5 +33,5 @@ wide               1070        0        0
 xconst              440        0        0
 xfunc              4328        0        0
 xnum               3728        0        0
-TOTAL            125226        0    15152
-flash (text+data) = 125226 bytes, static RAM (data+bss) = 15152 bytes (excludes compiler-rt helpers and the call stack)
+TOTAL            129659        0    16180
+flash (text+data) = 129659 bytes, static RAM (data+bss) = 16180 bytes (excludes compiler-rt helpers and the call stack)

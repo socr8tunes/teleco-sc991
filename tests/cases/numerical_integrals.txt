@@ -76,3 +76,25 @@ integral(cos(X),0,1000) => Math ERROR
 integral(sin(100X),0,10) => Math ERROR
 # oscillation accumulating at 0.001
 integral(sin(1/X),0.001,1) => Math ERROR
+# D15 narrow peaks: the range is seeded with 8 panels; a peak that is resolved is integrated correctly, and one that falls between all samples (every sample exactly 0) is Math ERROR, never 0
+integral(e^(-100.0(X-0.3)^2),0,1) ~> 0.177243427371228
+integral(e^(-1000.0(X-0.013)^2),0,1) ~> 0.0403283058052478
+integral(e^(-100000.0(X-0.37)^2),0,1) ~> 0.00560499121639793
+integral(e^(-1000000.0(X-0.5)^2),0,1) ~> 0.00177245385090552
+integral(e^(-100000000.0(X-0.3)^2),0,1) ~> 0.000177245385090552
+# partly resolved narrow peak: the 8-panel and 11-panel runs disagree (a single run returned 1.7691E-4 instead of 1.7725E-4); no number is shown
+integral(e^(-1E8(X-0.749795)^2),0,1) => Math ERROR
+# partly resolved narrow peak: the 8-panel and 11-panel runs disagree (a single run returned 1.7691E-4 instead of 1.7725E-4); no number is shown
+integral(e^(-1E14(X-0.5)^2),0,1) => Math ERROR
+# endpoint peak, formerly returned 0 (known defect), now resolved by the seed panels
+integral(e^X,-1E5,0) ~> 1.0
+# endpoint peak, formerly returned 0 (known defect), now resolved by the seed panels
+integral(e^(-X),0,1E5) ~> 1.0
+# peak width 1E-8 between all samples
+integral(e^(-(X-0.3)^2*1E16),0,1) => Math ERROR
+# peak at the endpoint 1E-6 wide in a range of 1000
+integral(e^(-X*1E6),0,1000) => Math ERROR
+# peak at the endpoint, range 1E10
+integral(e^(-X),0,1E10) => Math ERROR
+# identically zero integrand cannot be told from a missed peak (documented)
+integral(0,0,1) => Math ERROR
