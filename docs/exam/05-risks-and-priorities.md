@@ -24,7 +24,7 @@ Severity: H = could block release or mislead customers; M = significant rework o
 | R16 | **Numerical-method edge defects.** | M | **Reduced** | integrals never show an unverified number (Math ERROR); derivatives and Solve use relative steps and verified roots; bogus roots removed; 135 oracle cases. Narrow-peak integrals now give the right value or Math ERROR (D15 seed panels + all-zero guard; two-partition cross-check, 731-case sweep, 0 wrong); residual: a peak hidden between non-zero samples cannot be excluded; valid but hard integrals give Math ERROR (D14); whole-interval Solve gives Can't Solve (D16) | Decisions D14-D16 |
 | R17 | **Defects found and fixed in P0.** Quadratic small-root cancellation (`quad(1,1E10,1)` returned 0 instead of -1E-10); conjugate pair order depended on sign of a; entry of -2147483648 in decimal base-n; vector angle of a zero vector; `r` of constant-y regression (now Math ERROR); uninitialised output on underflow in numeric integration (valgrind-confirmed). | - | **Closed** | pinned by oracle cases | - |
 | R18 | **Register rule vs UI features.** | L | **Closed** | evidence rule approved (D7) and applied; 16 rows moved to tested | - |
-| R19 | **Conservative integral errors may frustrate users.** Valid oscillatory or wide-range integrals now give Math ERROR instead of a number. | M | **New** | 7 such cases listed in `numerical_integrals.txt`; documented in the pilot limitations | Teacher sample; D14 |
+| R19 | **Conservative integral errors may frustrate users** (approved to keep for the pilot, D14; D15 added more Math ERROR cases for unresolvable narrow peaks). Valid oscillatory or wide-range integrals now give Math ERROR instead of a number. | M | **New** | 7 such cases listed in `numerical_integrals.txt`; documented in the pilot limitations | Teacher sample; D14 |
 | R20 | **Solve time on the target.** No-root Solve evaluates f up to about 6,000 times. | M | **New** | 70 ms on the host | Measure on hardware; time-based Time Out (D17) |
 | R21 | **Numerical changes invalidate earlier pilot expectations.** | L | **Closed** | pilot bank and all suites pass; no pilot answer changed | - |
 
@@ -35,7 +35,7 @@ Severity: H = could block release or mislead customers; M = significant rework o
 **P1 - complete** (2026-11-07): conservative integrals, relative derivative and Solve with verified roots, regression and oracle tests for every identified numerical defect, evidence rule for UI/settings features, frozen token IDs and persistence version 7, valgrind in CI, Cortex-M4 bring-up plan, decision log.
 
 **P2 - approved sequence, one feature at a time** (D2). Each needs a specification, implementation, key-path tests, independent expected values, boundary and error tests and regression coverage before the next starts:
-1. CALC (single expression, session only, never persisted)
+1. CALC (single expression, session only, never persisted) - **specification submitted for review (D18); no implementation yet**
 2. TABLE (one f(X), at most 30 rows, session only)
 3. Inequality solver (one interval per page, k/N, endpoint inclusion)
 4. Quartic solver (from the parked branch; exact where practical, multiplicity, complex roots)

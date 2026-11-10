@@ -43,3 +43,7 @@ Flash grew 3.1 KB since P0 (relative-residual Solve, derivative passes, history 
 - No hardware measurements (R4, R15); stack margin is provisional.
 - Valid but hard integrals give Math ERROR (D14); narrow peaks give a value or Math ERROR (D15); whole-interval Solve gives Can't Solve (D16); Solve worst-case time on the target unknown (D17).
 - WAEC enquiry (D1) and legal review (D12) pending.
+
+## Update 2026-11-10 (D15)
+
+Full CI green (gcc, clang, sanitize, valgrind, wasm, footprint, budget, template). Integrals now run twice on different panel partitions (8 and 11) and show Math ERROR on disagreement or on an all-zero sample set. Evidence: 731-case Gaussian-peak sweep against the closed form (494 correct, 237 Math ERROR, 0 wrong); the two former known defects are regression cases; nested-integral regression cases added (shared interval pool). Known-defects file is empty. Budget: flash 129,659 B, RAM 45,596 B, worst stack 11,512 B of 12,288 B (6% headroom, R15 open).
